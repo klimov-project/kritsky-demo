@@ -20,10 +20,12 @@ from .utils import (
     ADMIN_LOGIN,
     ADMIN_PASSWORD,
     AuthenticatedUser,
+    TokenPrincipal,
     build_auth_response,
     create_access_token,
     create_refresh_token,
     decode_token,
+    get_access_principal,
     get_current_user,
     get_user_by_email,
     is_admin_email,
@@ -36,16 +38,20 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @router.get("/me", response_model=PublicUser)
-async def get_me(auth: AuthenticatedUser = Depends(get_current_user)) -> PublicUser:
+async def get_me(principal: TokenPrincipal = Depends(get_access_principal)) -> PublicUser:
     """
     Получение данных текущего авторизованного пользователя.
     
     Args:
-        auth (AuthenticatedUser): Объект с данными текущего пользователя.
+        principal (TokenPrincipal): JWT principal текущей сессии.
         
     Returns:
         PublicUser: Публичные данные пользователя.
     """
+    if principal.role == "admin":
+        return _admin_stub_user()
+
+    auth = await get_current_user(principal)
     return _to_public_user(auth.user)
 
 
@@ -127,10 +133,10 @@ async def admin_login(payload: AdminLoginPayload) -> dict:
     Авторизация в панели администратора.
     Использует статический пароль администратора.
     """
-    if payload.password != ADMIN_PASSWORD:
+    if payload.login != ADMIN_LOGIN or payload.password != ADMIN_PASSWORD:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Неверный пароль администратора",
+            detail="Неверный логин или пароль администратора",
         )
 
     return build_auth_response(
