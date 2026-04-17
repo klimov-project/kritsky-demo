@@ -39,9 +39,6 @@ pip-delete-this-directory.txt
 .env
 .env.*
 
-# Alembic migration scripts lock files
-alembic.ini
-alembic/script.py.mako
 
 # Docker
 **/docker-compose.override.yml
