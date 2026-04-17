@@ -1,0 +1,158 @@
+# Frontend Refactor Plan (Next.js)
+
+## Scope
+- Refactor only frontend code in `frontend/`.
+- Do not change backend code and public UI behavior without explicit request.
+- Refactor one page per cycle.
+
+## Progress
+- [x] `frontend/src/app/new_test/page.tsx` (2026-04-17)
+  - moved page-local helper prop/state types to `frontend/src/types/ui/newTestPage.ts`
+  - extracted page helper UI components to `frontend/src/components/new-test/*` (`SelectField`, `RichTextBlock`, `CollapsibleInstruction`, `QuestionActions`, `QuestionNumberBadge`, `AdminTaskMeta`, overlays/popups, action dock, global styles, etc.)
+  - moved page helper functions to `frontend/src/utils/newTestPage.ts` (`getExcerptChapters`, `getTextColumnsCount`, admin task meta helpers)
+  - removed local inline helper components/functions and `any` usages from page; removed technical comment separators
+  - preserved behavior and page contract; build check passed: `npm run -s build`
+- [x] Shared frontend constants (`utils/lib/api`) (2026-04-17)
+  - moved module-level constants from `frontend/src/utils/**`, `frontend/src/lib/**`, and `frontend/src/lib/api/**` to `frontend/src/consts/**`
+  - reconnected existing `utils/lib/api` modules to constants via imports/re-exports to keep public imports stable
+  - build check passed: `npm run -s build`
+- [x] `frontend/src/app/admin/books/page.tsx` (2026-04-17)
+  - moved page inline types to `frontend/src/types/api/adminBooks.ts` and `frontend/src/types/ui/adminBooks.ts`
+  - extracted large JSX to `frontend/src/components/admin/books/AdminBookForm/index.tsx` and `frontend/src/components/admin/books/AdminBooksProductsTable/index.tsx`
+  - moved business logic to `frontend/src/hooks/useAdminBooksPage.ts`
+  - moved API orchestration to `frontend/src/lib/api/adminBooks.ts`
+  - moved data helpers to `frontend/src/utils/adminBooks.ts`
+- [x] `frontend/src/app/admin/users/page.tsx` (2026-04-17)
+  - moved page inline types to `frontend/src/types/api/adminUsers.ts` and `frontend/src/types/ui/adminUsers.ts`
+  - extracted large JSX to `frontend/src/components/admin/users/AdminUsersFilters/index.tsx` and `frontend/src/components/admin/users/AdminUsersTable/index.tsx`
+  - moved business logic to `frontend/src/hooks/useAdminUsersPage.ts`
+  - moved API orchestration to `frontend/src/lib/api/adminUsers.ts`
+  - moved data helpers to `frontend/src/utils/adminUsers.ts`
+- [x] `frontend/src/app/admin/payments/page.tsx` (2026-04-17)
+  - moved page-related types to `frontend/src/types/api/adminPayments.ts` and `frontend/src/types/ui/adminPayments.ts`
+  - extracted large JSX to `frontend/src/components/admin/payments/AdminPaymentsStats/index.tsx` and `frontend/src/components/admin/payments/AdminPaymentsTable/index.tsx`
+  - moved business logic to `frontend/src/hooks/useAdminPaymentsPage.ts`
+  - moved API orchestration to `frontend/src/lib/api/adminPayments.ts`
+  - moved data helpers to `frontend/src/utils/adminPayments.ts`
+- [x] `frontend/src/app/admin/orders/page.tsx` (2026-04-17)
+  - moved page-related types to `frontend/src/types/api/adminOrders.ts` and `frontend/src/types/ui/adminOrders.ts`
+  - extracted large JSX to `frontend/src/components/admin/orders/AdminOrdersTable/index.tsx`
+  - moved business logic to `frontend/src/hooks/useAdminOrdersPage.ts`
+  - moved API orchestration to `frontend/src/lib/api/adminOrders.ts`
+  - moved data helpers to `frontend/src/utils/adminOrders.ts`
+- [x] `frontend/src/app/admin/login/page.tsx` (2026-04-17)
+  - moved page-related types to `frontend/src/types/api/adminLogin.ts` and `frontend/src/types/ui/adminLogin.ts`
+  - extracted large JSX to `frontend/src/components/admin/login/AdminLoginCard/index.tsx`
+  - moved business logic to `frontend/src/hooks/useAdminLoginPage.ts`
+  - moved API orchestration helper to `frontend/src/lib/api/adminLogin.ts`
+  - moved data helpers to `frontend/src/utils/adminLogin.ts`
+- [x] `frontend/src/app/admin/page.tsx` (2026-04-17)
+  - moved page-related types to `frontend/src/types/api/adminDashboard.ts` and `frontend/src/types/ui/adminDashboard.ts`
+  - extracted large JSX to `frontend/src/components/admin/dashboard/AdminDashboardMetrics/index.tsx` and `frontend/src/components/admin/dashboard/AdminDashboardQuickLinks/index.tsx`
+  - moved business logic to `frontend/src/hooks/useAdminDashboardPage.ts`
+  - moved API orchestration to `frontend/src/lib/api/adminDashboard.ts`
+  - moved data helpers to `frontend/src/utils/adminDashboard.ts`
+- [x] `frontend/src/app/admin/users/variants/[id]/page.tsx` (2026-04-17)
+  - moved page-related types to `frontend/src/types/api/adminUserVariant.ts` and `frontend/src/types/ui/adminUserVariant.ts`
+  - extracted large JSX to `frontend/src/components/admin/users/variants/AdminUserVariantViewContent.tsx`
+  - moved business logic to `frontend/src/hooks/useAdminUserVariantPage.ts`
+  - moved API orchestration to `frontend/src/lib/api/adminUserVariants.ts`
+  - moved data helpers to `frontend/src/utils/adminUserVariant.ts`
+- [x] `frontend/src/app/admin/users/[id]/page.tsx` (2026-04-17)
+  - moved page-related types to `frontend/src/types/api/adminUserDetail.ts` and `frontend/src/types/ui/adminUserDetail.ts`
+  - extracted large JSX to `frontend/src/components/admin/users/AdminUserDetailContent/index.tsx`
+  - moved business logic to `frontend/src/hooks/useAdminUserDetailPage.ts`
+  - moved API orchestration to `frontend/src/lib/api/adminUserDetail.ts`
+  - moved data helpers to `frontend/src/utils/adminUserDetail.ts`
+- [x] `frontend/src/app/admin/materials/page.tsx` (2026-04-17)
+  - page already thin (`<MaterialsExplorer />` wrapper), no additional extraction required
+- [x] `frontend/src/app/admin/materials/[...slug]/page.tsx` (2026-04-17)
+  - page already thin (`<MaterialsExplorer />` wrapper), no additional extraction required
+- [x] `frontend/src/app/login/page.tsx` (2026-04-17)
+  - moved page-related types to `frontend/src/types/api/login.ts` and `frontend/src/types/ui/login.ts`
+  - extracted large JSX to `frontend/src/components/login/LoginAuthCard/index.tsx`
+  - moved business logic to `frontend/src/hooks/useLoginPage.ts`
+  - moved API orchestration helper to `frontend/src/lib/api/login.ts`
+  - moved data helpers to `frontend/src/utils/login.ts`
+- [x] `frontend/src/app/author-variant/page.tsx` (2026-04-17)
+  - moved page-related types to `frontend/src/types/api/authorVariant.ts` and `frontend/src/types/ui/authorVariant.ts`
+  - extracted large JSX to `frontend/src/components/author-variant/AuthorVariantContent.tsx`, `frontend/src/components/author-variant/AuthorVariantActionDock.tsx`, `frontend/src/components/author-variant/CollapsibleInstruction.tsx`, and `frontend/src/components/author-variant/RichTextBlock.tsx`
+  - moved business logic to `frontend/src/hooks/useAuthorVariantPage.ts`
+  - moved API orchestration to `frontend/src/lib/api/authorVariant.ts`
+  - moved data helpers to `frontend/src/utils/authorVariant.ts`
+- [x] `frontend/src/app/my-variants/[id]/page.tsx` (2026-04-17)
+  - moved page-related types to `frontend/src/types/api/myVariantDetails.ts` and `frontend/src/types/ui/myVariantDetails.ts`
+  - extracted large JSX to `frontend/src/components/my-variants/details/MyVariantDetailsContent.tsx`, `frontend/src/components/my-variants/details/MyVariantDetailsNotFound.tsx`, and `frontend/src/components/my-variants/details/MyVariantDetailsRichTextBlock.tsx`
+  - moved business logic to `frontend/src/hooks/useMyVariantDetailsPage.ts`
+  - moved API orchestration to `frontend/src/lib/api/myVariantDetails.ts`
+  - moved data helpers to `frontend/src/utils/myVariantDetails.ts`
+- [x] `frontend/src/app/my-variants/page.tsx` (2026-04-17)
+  - moved page-related types to `frontend/src/types/api/myVariants.ts` and `frontend/src/types/ui/myVariants.ts`
+  - extracted large JSX to `frontend/src/components/my-variants/list/MySavedVariantPreview.tsx` and `frontend/src/components/my-variants/list/MyVariantsRichTextBlock.tsx`
+  - moved business logic to `frontend/src/hooks/useMyVariantsPage.ts`
+  - moved API orchestration to `frontend/src/lib/api/myVariants.ts`
+  - moved data helpers to `frontend/src/utils/myVariants.ts`
+- [x] `frontend/src/app/my-books/[id]/page.tsx` (2026-04-17)
+  - moved page-related types to `frontend/src/types/api/myBookDetails.ts` and `frontend/src/types/ui/myBookDetails.ts`
+  - extracted large JSX to `frontend/src/components/my-books/details/MyBookDetailsContent.tsx`, `frontend/src/components/my-books/details/MyBookGeneratedCollectionSection.tsx`, `frontend/src/components/my-books/details/MyBookGeneratedVariantCard.tsx`, and `frontend/src/components/my-books/details/MyBookDetailsNotFound.tsx`
+  - moved business logic to `frontend/src/hooks/useMyBookDetailsPage.ts`
+  - moved API orchestration to `frontend/src/lib/api/myBookDetails.ts`
+  - moved data helpers to `frontend/src/utils/myBookDetails.ts`
+- [x] `frontend/src/app/my-books/page.tsx` (2026-04-17)
+  - moved page-related types to `frontend/src/types/api/myBooks.ts` and `frontend/src/types/ui/myBooks.ts`
+  - extracted large JSX to `frontend/src/components/my-books/list/MyBooksPageContent.tsx` and `frontend/src/components/my-books/list/MyBookPurchaseCard.tsx`
+  - moved business logic to `frontend/src/hooks/useMyBooksPage.ts`
+  - moved API orchestration to `frontend/src/lib/api/myBooks.ts`
+  - moved data helpers to `frontend/src/utils/myBooks.ts`
+- [x] `frontend/src/app/shop/[id]/page.tsx` (2026-04-17)
+  - moved page-related types to `frontend/src/types/api/shopProductDetails.ts` and `frontend/src/types/ui/shopProductDetails.ts`
+  - extracted large JSX to `frontend/src/components/shop/details/ShopProductDetailsContent.tsx` and `frontend/src/components/shop/details/ShopProductDetailsError.tsx`
+  - moved business logic to `frontend/src/hooks/useShopProductDetailsPage.ts`
+  - moved API orchestration to `frontend/src/lib/api/shopProductDetails.ts`
+  - moved data helpers to `frontend/src/utils/shopProductDetails.ts`
+- [x] `frontend/src/app/shop/page.tsx` (2026-04-17)
+  - moved page-related types to `frontend/src/types/api/shopCatalog.ts` and `frontend/src/types/ui/shopCatalog.ts`
+  - extracted large JSX to `frontend/src/components/shop/catalog/ShopCatalogContent.tsx` and `frontend/src/components/shop/catalog/ShopCatalogFilters.tsx`
+  - moved business logic to `frontend/src/hooks/useShopPage.ts`
+  - moved API orchestration to `frontend/src/lib/api/shopCatalog.ts`
+  - moved data helpers to `frontend/src/utils/shopCatalog.ts`
+- [x] `frontend/src/app/cart/page.tsx` (2026-04-17)
+  - moved page-related types to `frontend/src/types/api/cartPage.ts` and `frontend/src/types/ui/cartPage.ts`
+  - extracted large JSX to `frontend/src/components/cart/CartPageContent.tsx`, `frontend/src/components/cart/CartItemsSection.tsx`, and `frontend/src/components/cart/CartCheckoutPanel.tsx`
+  - moved business logic to `frontend/src/hooks/useCartPage.ts`
+  - moved API orchestration to `frontend/src/lib/api/cartPage.ts`
+  - moved data helpers to `frontend/src/utils/cartPage.ts`
+- [x] `frontend/src/app/saved/page.tsx` (2026-04-17)
+  - moved page-related types to `frontend/src/types/api/savedPage.ts` and `frontend/src/types/ui/savedPage.ts`
+  - extracted large JSX to `frontend/src/components/saved/SavedPageContent.tsx` and `frontend/src/components/saved/SavedFavoriteCard.tsx`
+  - moved business logic to `frontend/src/hooks/useSavedPage.ts`
+  - moved API orchestration to `frontend/src/lib/api/savedPage.ts`
+- [x] `frontend/src/app/about/page.tsx` (2026-04-17)
+  - extracted shared placeholder layout to `frontend/src/components/shared/PlaceholderPageContent.tsx`
+  - moved placeholder props type to `frontend/src/types/ui/placeholderPage.ts`
+  - page now remains a thin wrapper over shared placeholder component
+- [x] `frontend/src/app/feedback/page.tsx` (2026-04-17)
+  - extracted shared placeholder layout to `frontend/src/components/shared/PlaceholderPageContent.tsx`
+  - moved placeholder props type to `frontend/src/types/ui/placeholderPage.ts`
+  - page now remains a thin wrapper over shared placeholder component
+- [x] `frontend/src/app/policy/page.tsx` (2026-04-17)
+  - extracted static legal UI to `frontend/src/components/legal/LegalPageContent.tsx`
+  - moved legal page types to `frontend/src/types/ui/legalPage.ts`
+  - moved legal content constants to `frontend/src/utils/legalPageContent.ts`
+- [x] `frontend/src/app/privacy/page.tsx` (2026-04-17)
+  - extracted static legal UI to `frontend/src/components/legal/LegalPageContent.tsx`
+  - moved legal page types to `frontend/src/types/ui/legalPage.ts`
+  - moved legal content constants to `frontend/src/utils/legalPageContent.ts`
+- [x] `frontend/src/app/rules/page.tsx` (2026-04-17)
+  - extracted static legal UI to `frontend/src/components/legal/LegalPageContent.tsx`
+  - moved legal page types to `frontend/src/types/ui/legalPage.ts`
+  - moved legal content constants to `frontend/src/utils/legalPageContent.ts`
+- [x] `frontend/src/app/terms/page.tsx` (2026-04-17)
+  - extracted static legal UI to `frontend/src/components/legal/LegalPageContent.tsx`
+  - moved legal page types to `frontend/src/types/ui/legalPage.ts`
+  - moved legal content constants to `frontend/src/utils/legalPageContent.ts`
+- [x] `frontend/src/app/page.tsx` (2026-04-17)
+  - moved page inline props type to `frontend/src/types/ui/home.ts`
+  - page remains a thin wrapper over `HomePageContent`
+- [x] `frontend/src/app/test/page.tsx` (2026-04-17)
+  - page already thin redirect wrapper (`redirect('/new_test')`), no additional extraction required

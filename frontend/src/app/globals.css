@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+@font-face {
+    font-family: 'Minion Pro';
+    src: url('/fonts/MinionPro/MinionPro-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Minion Pro';
+    src: url('/fonts/MinionPro/MinionPro-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Minion Pro';
+    src: url('/fonts/MinionPro/MinionPro-It.woff') format('woff');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Minion Pro';
+    src: url('/fonts/MinionPro/MinionPro-Bold.woff') format('woff');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Minion Pro';
+    src: url('/fonts/MinionPro/MinionPro-BoldIt.woff') format('woff');
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+
+@layer base {
+    html {
+        font-family: 'Minion Pro', serif;
+    }
+}
+
+@layer utilities {
+    .rich-content p {
+        min-height: 1.5em;
+    }
+
+    .nav-link-animated {
+        @apply relative py-1;
+    }
+
+    .nav-link-animated::after {
+        content: "";
+        @apply absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#221E20] transition-all duration-300 ease-in-out;
+    }
+
+    .nav-link-animated:hover::after {
+        @apply w-full;
+    }
+
+    .smooth-scroll {
+        scroll-behavior: smooth;
+    }
+}

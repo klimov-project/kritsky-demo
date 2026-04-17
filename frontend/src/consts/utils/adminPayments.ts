@@ -1,0 +1,1 @@
+export const ADMIN_PAYMENTS_PAGE_SIZE = 6;
