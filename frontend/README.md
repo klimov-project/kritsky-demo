@@ -25,6 +25,7 @@ npm ci
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_SUPPORT_EMAIL=admin@kritsky.local
 ```
 
 4. Запустите dev-сервер:
@@ -49,6 +50,7 @@ npm start
 
 ```env
 NEXT_PUBLIC_API_URL=https://ege.kritsky.academy
+NEXT_PUBLIC_SUPPORT_EMAIL=admin@kritsky.local
 ```
 
 2. Пересоберите frontend (обязательно, переменная вшивается в bundle):
@@ -60,5 +62,5 @@ docker compose up -d frontend
 
 ## Важно про `NEXT_PUBLIC_API_URL`
 
-`NEXT_PUBLIC_API_URL` читается во время `build`.  
-Если изменить переменную и не пересобрать фронтенд, запросы продолжат идти по старому адресу (или в текущий origin как относительные `/api/...`).
+`NEXT_PUBLIC_API_URL` и `NEXT_PUBLIC_SUPPORT_EMAIL` читаются во время `build`.  
+Если изменить переменные и не пересобрать фронтенд, приложение продолжит использовать старые значения.

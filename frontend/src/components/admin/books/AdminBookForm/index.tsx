@@ -32,6 +32,9 @@ export default function AdminBookForm({
         onCollectionKindChange,
         onDownloadPackCountChange,
     } = draftHandlers;
+    const isBookCategory = category === 'books';
+    const isPosterCategory = category === 'posters';
+    const isMerchOrFigurineCategory = category === 'merch' || category === 'figurines';
 
     return (
         <form id="product-form" onSubmit={onSubmit} className="space-y-6 font-serif">
@@ -168,41 +171,68 @@ export default function AdminBookForm({
             {!(isCollectionCategory || isDownloadPackCategory) ? (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <Input label="Формат" name="format" defaultValue={selectedProduct?.format} width="full" />
+                        {!isMerchOrFigurineCategory && (
+                            <Input label="Формат" name="format" defaultValue={selectedProduct?.format} width="full" />
+                        )}
                         <Input
                             label="Возраст (например, 12+)"
                             name="ageLimit"
                             defaultValue={selectedProduct?.ageLimit}
                             width="full"
                         />
-                        <Input
-                            label="Файл товара (для цифровых)"
-                            name="digitalFileName"
-                            defaultValue={selectedProduct?.digitalFileName}
-                            width="full"
-                        />
+                        {!isMerchOrFigurineCategory && (
+                            <Input
+                                label="Файл товара (для цифровых)"
+                                name="digitalFileName"
+                                defaultValue={selectedProduct?.digitalFileName}
+                                width="full"
+                            />
+                        )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <Input
-                            label="Год"
-                            name="year"
-                            type="number"
-                            defaultValue={selectedProduct?.year?.toString()}
-                            width="full"
-                        />
-                        <Input
-                            label="Страниц"
-                            name="pages"
-                            type="number"
-                            defaultValue={selectedProduct?.pages?.toString()}
-                            width="full"
-                        />
-                        <Input label="ISBN" name="isbn" defaultValue={selectedProduct?.isbn} width="full" />
-                    </div>
+                    {isBookCategory && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <Input
+                                label="Год"
+                                name="year"
+                                type="number"
+                                inputMode="numeric"
+                                step={1}
+                                min={0}
+                                defaultValue={selectedProduct?.year?.toString()}
+                                width="full"
+                            />
+                            <Input
+                                label="Страниц"
+                                name="pages"
+                                type="number"
+                                inputMode="numeric"
+                                step={1}
+                                min={0}
+                                defaultValue={selectedProduct?.pages?.toString()}
+                                width="full"
+                            />
+                            <Input label="ISBN" name="isbn" defaultValue={selectedProduct?.isbn} width="full" />
+                        </div>
+                    )}
+
+                    {isPosterCategory && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Input
+                                label="Год"
+                                name="year"
+                                type="number"
+                                inputMode="numeric"
+                                step={1}
+                                min={0}
+                                defaultValue={selectedProduct?.year?.toString()}
+                                width="full"
+                            />
+                        </div>
+                    )}
 
                     <Input
-                        label="Теги (через запятую)"
+                        label={isMerchOrFigurineCategory ? 'Характеристики/теги (через запятую)' : 'Теги (через запятую)'}
                         name="tags"
                         defaultValue={selectedProduct?.tags.join(', ')}
                         width="full"

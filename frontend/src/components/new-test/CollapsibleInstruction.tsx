@@ -3,6 +3,7 @@ import { IoChevronDownOutline, IoChevronUpOutline } from 'react-icons/io5';
 import type { CollapsibleInstructionProps } from '@/types/ui/newTestPage';
 import { normalizeNbspText } from '@/utils/newTest';
 import RichTextBlock from '@/components/new-test/RichTextBlock';
+import styles from './CollapsibleInstruction.module.scss';
 
 export default function CollapsibleInstruction({
     value,
@@ -14,21 +15,25 @@ export default function CollapsibleInstruction({
     const isCollapsible = collapsible && Boolean(normalized);
 
     return (
-        <div className="border border-gray-400 px-4 py-3 text-sm leading-relaxed">
+        <div className={styles.root}>
             <div
-                className={`collapsible-instruction-content overflow-hidden transition-[max-height] duration-300 ease-out ${isExpanded || !isCollapsible ? 'max-h-[40rem]' : 'max-h-[3.6em]'}`}
+                className={[
+                    'collapsible-instruction-content',
+                    styles.content,
+                    isExpanded || !isCollapsible ? styles.contentExpanded : styles.contentCollapsed,
+                ].join(' ').trim()}
             >
                 <RichTextBlock
                     value={normalized}
                     fallback={fallback}
-                    className="rich-content variant-copy text-sm leading-relaxed"
+                    className="rich-content variant-copy"
                 />
             </div>
             {isCollapsible && (
-                <div className="no-print mt-1 flex justify-center">
+                <div className={`no-print ${styles.toggleWrap}`}>
                     <button
                         type="button"
-                        className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-400 bg-white text-[#221E20]/75 transition-colors hover:bg-[#faf7ef] hover:text-[#221E20]"
+                        className={styles.toggleButton}
                         onClick={() => setIsExpanded((prev) => !prev)}
                         aria-label={isExpanded ? 'Свернуть блок' : 'Развернуть блок'}
                     >

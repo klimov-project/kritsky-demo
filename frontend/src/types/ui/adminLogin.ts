@@ -8,4 +8,5 @@ export interface AdminLoginCardProps {
     onLoginValueChange: (value: string) => void;
     onPasswordChange: (value: string) => void;
     onSubmit: FormEventHandler<HTMLFormElement>;
+    onClose?: () => void;
 }

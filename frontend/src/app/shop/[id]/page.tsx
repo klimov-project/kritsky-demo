@@ -24,11 +24,12 @@ export default function ProductDetailsPage({ params }: ShopProductDetailsPagePro
         selectImage,
         goToShop,
         goToCart,
+        openFeedbackModal,
     } = useShopProductDetailsPage({ productId: resolvedParams.id });
 
     if (isLoading) {
         return (
-            <PageLayout hideHeader={false} hideFooter={false}>
+            <PageLayout hideHeader={false} hideFooter={false} bodyClassName="index-page">
                 <div className="w-full max-w-[955px] mx-auto px-4 md:px-0 pt-[90px] pb-20 text-sm opacity-60">
                     Загружаю товар...
                 </div>
@@ -38,7 +39,7 @@ export default function ProductDetailsPage({ params }: ShopProductDetailsPagePro
 
     if (error || !product) {
         return (
-            <PageLayout hideHeader={false} hideFooter={false}>
+            <PageLayout hideHeader={false} hideFooter={false} bodyClassName="index-page">
                 <ShopProductDetailsError
                     message={error}
                     onBackToShop={goToShop}
@@ -48,7 +49,7 @@ export default function ProductDetailsPage({ params }: ShopProductDetailsPagePro
     }
 
     return (
-        <PageLayout hideHeader={false} hideFooter={false}>
+        <PageLayout hideHeader={false} hideFooter={false} bodyClassName="index-page">
             <ShopProductDetailsContent
                 product={product}
                 isBookmarked={isBookmarked}
@@ -60,6 +61,7 @@ export default function ProductDetailsPage({ params }: ShopProductDetailsPagePro
                 onAddToCart={handleAddToCart}
                 onSelectImage={selectImage}
                 onGoToCart={goToCart}
+                onOpenFeedback={openFeedbackModal}
             />
         </PageLayout>
     );

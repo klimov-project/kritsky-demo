@@ -14,7 +14,7 @@ except Exception:
     RedisError = Exception
 
 
-from db.config import SETTINGS
+from api.config import SETTINGS
 
 REDIS_URL = SETTINGS.REDIS_URL
 KB_CACHE_KEY = SETTINGS.KB_CACHE_KEY

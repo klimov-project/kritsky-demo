@@ -18,7 +18,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     useEffect(() => {
         if (isLoading) return;
         if (!user || user.role !== 'admin') {
-            router.replace('/admin/login');
+            router.replace('/?modal=admin-login');
         }
     }, [isLoading, router, user]);
 

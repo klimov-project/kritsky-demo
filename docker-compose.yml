@@ -22,17 +22,12 @@ services:
       dockerfile: backend/Dockerfile
       network: host
     restart: always
+    env_file:
+      - ./.env
     environment:
       DB_HOST: db
       DB_PORT: 5432
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DB_NAME: ${DB_NAME:-kritsky}
-      JWT_SECRET: ${JWT_SECRET:-your-secret-key}
-      ADMIN_LOGIN: ${ADMIN_LOGIN:-admin}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
-      KB_CACHE_DB_SYNC_INTERVAL_SECONDS: ${KB_CACHE_DB_SYNC_INTERVAL_SECONDS:-5}
     depends_on:
       - db
       - redis
@@ -44,8 +39,10 @@ services:
       network: host
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+        NEXT_PUBLIC_SUPPORT_EMAIL: ${NEXT_PUBLIC_SUPPORT_EMAIL:-admin@kritsky.local}
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      NEXT_PUBLIC_SUPPORT_EMAIL: ${NEXT_PUBLIC_SUPPORT_EMAIL:-admin@kritsky.local}
     restart: always
     depends_on:
       - backend

@@ -49,7 +49,7 @@ export default function NewTestGlobalStyles() {
             .test-page-with-bg {
                 position: relative;
                 isolation: isolate;
-                background: white;
+                background: #f6f6f6;
             }
             .test-page-with-bg::before {
                 content: '';
@@ -61,7 +61,7 @@ export default function NewTestGlobalStyles() {
                 background-repeat: no-repeat;
                 background-position: center top;
                 background-size: cover;
-                opacity: 0.05;
+                opacity: 0.12;
             }
             .test-page-with-bg > * {
                 position: relative;
@@ -71,8 +71,8 @@ export default function NewTestGlobalStyles() {
                 position: relative;
                 isolation: isolate;
                 overflow: visible;
-                background: white;
-                max-width: 860px;
+                background: transparent;
+                max-width: 954px;
             }
             .test-content-surface::before {
                 content: '';

@@ -1,0 +1,57 @@
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.fieldLabel {
+    color: #828282;
+    font-family: var(--font-pt-serif);
+    font-size: 14px;
+    line-height: 1;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.input {
+    height: 50px;
+    border-radius: 10px;
+    border: 1px solid #cfcfcf;
+    background: #ffffff;
+    color: #333333;
+    padding: 0 24px;
+    font-family: var(--font-pt-serif);
+    font-size: 16px;
+    line-height: 1;
+    outline: none;
+    transition: border-color 0.2s ease;
+
+    &::placeholder {
+        color: #cfcfcf;
+    }
+
+    &:focus {
+        border-color: #828282;
+    }
+
+    &:disabled {
+        background: #fafafa;
+    }
+}
+
+@media (max-width: 768px) {
+    .field {
+        gap: 8px;
+    }
+
+    .fieldLabel {
+        font-size: 12px;
+    }
+
+    .input {
+        padding: 0 16px;
+        font-size: 15px;
+    }
+}
+

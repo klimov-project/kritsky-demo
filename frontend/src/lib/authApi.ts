@@ -39,12 +39,11 @@ interface AdminLoginPayload {
 
 interface UpdateProfilePayload {
     name?: string;
-    email?: string;
     phone?: string;
 }
 
 interface ChangePasswordPayload {
-    currentPassword: string;
+    oldPassword: string;
     newPassword: string;
 }
 
@@ -116,4 +115,3 @@ export const changePassword = async (payload: ChangePasswordPayload): Promise<vo
         body: JSON.stringify(payload),
     });
 };
-

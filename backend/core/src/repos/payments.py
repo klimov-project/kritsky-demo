@@ -3,6 +3,7 @@ from typing import Optional, List, Iterable
 
 from sqlalchemy import select, delete as sa_delete, update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from pydantic import BaseModel
 
 from db.src.connect import init_session

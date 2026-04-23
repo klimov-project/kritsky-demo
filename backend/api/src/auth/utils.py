@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -15,7 +14,7 @@ from db.src.connect import ainit_session
 from db.src.models import User
 from .schemas import PublicUser
 
-from db.config import SETTINGS
+from api.config import SETTINGS
 
 bearer_scheme = HTTPBearer(auto_error=False)
 

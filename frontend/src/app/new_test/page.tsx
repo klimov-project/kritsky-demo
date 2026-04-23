@@ -24,6 +24,8 @@ import {
     IoRefreshOutline,
     IoLockClosedOutline,
     IoPin,
+    IoCloseOutline,
+    IoDocumentTextOutline,
 } from 'react-icons/io5';
 import { PaywallModal } from '@/components/PaywallModal';
 import type { Task1Filters } from '@/types/testVariant';
@@ -36,6 +38,7 @@ import {
 } from '@/utils/newTest';
 import { getExcerptChapters, getTextColumnsCount } from '@/utils/newTestPage';
 import { useNewTestPage } from '@/hooks/useNewTestPage';
+import styles from './NewTestPage.module.scss';
 
 export default function TestPage() {
     const page = useNewTestPage();
@@ -158,8 +161,8 @@ export default function TestPage() {
                 message={loadingOverlayMessage}
             />
 
-            <div className="mx-auto w-full max-w-[960px] px-4 md:px-0 py-8 pb-80">
-                <div className="print-area test-content-surface min-w-0 variant-uniform mx-auto w-full max-w-[860px]">
+            <div className={styles.pageContainer}>
+                <div className={`print-area test-content-surface min-w-0 variant-uniform ${styles.surface}`}>
                     {shouldShowVariantSkeleton && (
                         <TestVariantSkeleton />
                     )}
@@ -181,122 +184,134 @@ export default function TestPage() {
 
                     {!isKnowledgeBaseLoading && !knowledgeBaseError && works.length > 0 && poets.length > 0 && variant && (
                         <div className="space-y-8 scene-animate" key={animationKey}>
-                            <div className="space-y-2 text-center">
-                                <div className="inline-flex flex-col items-center gap-1">
-                                    <h1 className="text-lg font-bold uppercase tracking-[0.16em]">ВАРИАНТ 1</h1>
-                                    <div className="new-test-title-lines flex flex-col items-center gap-1" aria-hidden="true">
-                                        <span />
-                                        <span />
-                                        <span />
-                                    </div>
+                            <div className={styles.variantHeader}>
+                                <div className={styles.folderBar}>
+                                    <span className={styles.folderTitle}>Название папки</span>
+                                    <button type="button" className={styles.folderClose} aria-label="Закрыть папку">
+                                        <IoCloseOutline size={20} />
+                                    </button>
                                 </div>
-                                <p className="text-sm font-bold uppercase">Часть 1</p>
-                            </div>
 
-                            <div className="no-print border border-gray-300 px-4 py-3 space-y-3">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    <SelectField
-                                        label="Произведение"
-                                        value={selectedWorkId}
-                                        onChange={(value) => {
-                                            setSelectedWorkId(value);
-                                            setSelectedExcerptId('');
-                                            setSelectedChapter('');
-                                        }}
-                                        options={works.map((work) => ({ value: work.id, label: `${work.author} — ${work.title}` }))}
-                                        placeholder="Выберите произведение"
-                                    />
+                                <div className={styles.modeTabs}>
+                                    <div className={`${styles.modeTab} ${styles.modeTabActive}`}>Весь вариант</div>
+                                    <div className={styles.modeTab}>Только отрывок</div>
+                                    <div className={styles.modeTab}>Только стих.</div>
+                                </div>
 
-                                    {selectedWork && (
-                                        <SelectField
-                                            label="Глава"
-                                            value={selectedChapter}
-                                            onChange={(val) => {
-                                                setSelectedChapter(val);
-                                                setSelectedExcerptId('');
-                                            }}
-                                            options={getExcerptChapters(selectedWork).map((ch, i) => ({ value: ch, label: `${i + 1}. ${ch}` }))}
-                                            placeholder="Все главы"
-                                        />
-                                    )}
+                                <div className={`${styles.topGrid} no-print`}>
+                                    <div className={styles.leftCards}>
+                                        <div className={`${styles.leftCard} ${styles.leftCardMain}`}>Вариант 1</div>
+                                        <div className={`${styles.leftCard} ${styles.leftCardSub}`}>Часть 1</div>
+                                    </div>
 
-                                    <div className="relative">
-                                        <SelectField
-                                            label="Отрывок"
-                                            value={selectedExcerptId}
-                                            onChange={(val) => {
-                                                if (!isPro) openPaywall('Выбор отрывка доступен только по подписке.');
-                                                else setSelectedExcerptId(val);
-                                            }}
-                                            options={excerptDropdownOptions}
-                                            placeholder="Выберите отрывок"
-                                        />
-                                        {!isPro && (
-                                            <div
-                                                className="absolute inset-0 cursor-pointer z-10 bg-transparent flex items-center justify-end pr-8"
-                                                onClick={() => openPaywall('Выбор отрывка доступен только по подписке.')}
-                                            >
-                                                <IoLockClosedOutline className="text-gray-500 mt-5" />
+                                    <div className={styles.filtersWrap}>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            <SelectField
+                                                label="Произведение"
+                                                value={selectedWorkId}
+                                                onChange={(value) => {
+                                                    setSelectedWorkId(value);
+                                                    setSelectedExcerptId('');
+                                                    setSelectedChapter('');
+                                                }}
+                                                options={works.map((work) => ({ value: work.id, label: `${work.author} — ${work.title}` }))}
+                                                placeholder="Выберите произведение"
+                                            />
+
+                                            {selectedWork && (
+                                                <SelectField
+                                                    label="Глава"
+                                                    value={selectedChapter}
+                                                    onChange={(val) => {
+                                                        setSelectedChapter(val);
+                                                        setSelectedExcerptId('');
+                                                    }}
+                                                    options={getExcerptChapters(selectedWork).map((ch, i) => ({ value: ch, label: `${i + 1}. ${ch}` }))}
+                                                    placeholder="Все главы"
+                                                />
+                                            )}
+
+                                            <div className="relative">
+                                                <SelectField
+                                                    label="Отрывок"
+                                                    value={selectedExcerptId}
+                                                    onChange={(val) => {
+                                                        if (!isPro) openPaywall('Выбор отрывка доступен только по подписке.');
+                                                        else setSelectedExcerptId(val);
+                                                    }}
+                                                    options={excerptDropdownOptions}
+                                                    placeholder="Выберите отрывок"
+                                                />
+                                                {!isPro && (
+                                                    <div
+                                                        className="absolute inset-0 cursor-pointer z-10 bg-transparent flex items-center justify-end pr-8"
+                                                        onClick={() => openPaywall('Выбор отрывка доступен только по подписке.')}
+                                                    >
+                                                        <IoLockClosedOutline className="text-gray-500 mt-5" />
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
-                                </div>
-                                {isAdmin && Object.keys(weeklyPins).length > 0 && (
-                                    <div className="no-print mb-3 p-2 rounded border border-orange-200 bg-orange-50 text-xs text-orange-800">
-                                        <div className="flex items-center justify-between gap-2 mb-1">
-                                            <span className="font-semibold flex items-center gap-1">
-                                                <IoPin className="w-3 h-3" />
-                                                Закреплённые задания ({Object.keys(weeklyPins).length})
-                                            </span>
-                                            <button
-                                                type="button"
-                                                onClick={() => void handleClearAllPins()}
-                                                className="text-orange-600 underline hover:no-underline cursor-pointer"
+                                        </div>
+
+                                        <div className="flex justify-between items-center">
+                                            {user?.role === 'admin' && variant && (
+                                                <Button
+                                                    variant="outlined"
+                                                    size="small"
+                                                    onClick={handleSetWeeklyVariant}
+                                                    disabled={isSettingWeeklyVariant}
+                                                >
+                                                    {isSettingWeeklyVariant ? 'Сохранение...' : 'Сделать вариантом недели'}
+                                                </Button>
+                                            )}
+                                            <div className="flex-1" />
+                                            <Button
+                                                variant="outlined"
+                                                onClick={refreshBlock1}
+                                                disabled={isBusyWithFullOperations || isAnyTaskRefreshing || refreshLoadingByBlock.block1}
+                                                className="inline-flex items-center gap-2"
                                             >
-                                                Снять все
-                                            </button>
-                                        </div>
-                                        <div className="flex flex-wrap gap-1">
-                                            {Object.entries(weeklyPins).map(([key, id]) => (
-                                                <span key={key} className="inline-flex items-center gap-0.5 bg-white border border-orange-200 rounded px-1.5 py-0.5">
-                                                    <span className="font-mono">{key}</span>
-                                                    <span className="text-orange-400">→</span>
-                                                    <span className="font-mono">#{id}</span>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => void handleUnpinTask(key)}
-                                                        className="ml-0.5 text-orange-400 hover:text-orange-700 cursor-pointer leading-none"
-                                                        title="Открепить"
-                                                    >×</button>
-                                                </span>
-                                            ))}
+                                                {refreshLoadingByBlock.block1 && <IoRefreshOutline className="animate-spin" />}
+                                                {!user && <IoLockClosedOutline className="opacity-50" />}
+                                                Обновить отрывок и задания 1–5
+                                            </Button>
                                         </div>
                                     </div>
-                                )}
-                                <div className="flex justify-between items-center">
-                                    {user?.role === 'admin' && variant && (
-                                        <Button
-                                            variant="outlined"
-                                            size="small"
-                                            onClick={handleSetWeeklyVariant}
-                                            disabled={isSettingWeeklyVariant}
-                                        >
-                                            {isSettingWeeklyVariant ? 'Сохранение...' : 'Сделать вариантом недели'}
-                                        </Button>
-                                    )}
-                                    <div className="flex-1" />
-                                    <Button
-                                        variant="outlined"
-                                        onClick={refreshBlock1}
-                                        disabled={isBusyWithFullOperations || isAnyTaskRefreshing || refreshLoadingByBlock.block1}
-                                        className="inline-flex items-center gap-2"
-                                    >
-                                        {refreshLoadingByBlock.block1 && <IoRefreshOutline className="animate-spin" />}
-                                        {!user && <IoLockClosedOutline className="opacity-50" />}
-                                        Обновить отрывок и задания 1–5
-                                    </Button>
                                 </div>
                             </div>
+
+                            {isAdmin && Object.keys(weeklyPins).length > 0 && (
+                                <div className="no-print mb-3 p-2 rounded border border-orange-200 bg-orange-50 text-xs text-orange-800">
+                                    <div className="flex items-center justify-between gap-2 mb-1">
+                                        <span className="font-semibold flex items-center gap-1">
+                                            <IoPin className="w-3 h-3" />
+                                            Закреплённые задания ({Object.keys(weeklyPins).length})
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => void handleClearAllPins()}
+                                            className="text-orange-600 underline hover:no-underline cursor-pointer"
+                                        >
+                                            Снять все
+                                        </button>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1">
+                                        {Object.entries(weeklyPins).map(([key, id]) => (
+                                            <span key={key} className="inline-flex items-center gap-0.5 bg-white border border-orange-200 rounded px-1.5 py-0.5">
+                                                <span className="font-mono">{key}</span>
+                                                <span className="text-orange-400">→</span>
+                                                <span className="font-mono">#{id}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => void handleUnpinTask(key)}
+                                                    className="ml-0.5 text-orange-400 hover:text-orange-700 cursor-pointer leading-none"
+                                                    title="Открепить"
+                                                >×</button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             {isAdmin && (
                                 <div className="no-print mt-2 mb-1 text-xs text-gray-500 flex flex-wrap items-center gap-1">
@@ -312,7 +327,7 @@ export default function TestPage() {
                                 </div>
                             )}
 
-                            <div className="border border-gray-400 px-5 py-5 mt-4 mb-8 text-center text-lg leading-relaxed">
+                            <div className={`${styles.introCard} mt-4 mb-8 text-lg leading-relaxed`}>
                                 <RichTextBlock
                                     value={knowledgeBaseSettings.variantTexts.part1Intro}
                                     fallback="Инструкция к первой части не задана."
@@ -320,7 +335,7 @@ export default function TestPage() {
                                 />
                             </div>
 
-                            <div className="space-y-4">
+                            <div className={`${styles.textCard} space-y-4`}>
                                 {getTextColumnsCount(variant.excerpt.textColumns) === 2 && (variant.excerpt.textSecondColumn || '').trim() ? (
                                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                         <RichTextBlock
@@ -370,7 +385,7 @@ export default function TestPage() {
                                 </div>
                             </div>
 
-                            <div className="print-page-break border border-gray-400 px-5 py-5 mt-8 mb-6 text-center text-base leading-relaxed">
+                            <div className={`print-page-break ${styles.introCard} mt-8 mb-6 text-base leading-relaxed`}>
                                 <RichTextBlock
                                     value={knowledgeBaseSettings.variantTexts.part1QuestionsIntro}
                                     fallback="Формулировка перед заданиями 1–3 не задана."
@@ -378,7 +393,7 @@ export default function TestPage() {
                                 />
                             </div>
 
-                            <div className="space-y-[40px]">
+                            <div className={styles.taskStack}>
                                 <div className="flex items-start gap-3">
                                     <QuestionActions
                                         isLocked={!isPro}
@@ -563,7 +578,7 @@ export default function TestPage() {
                                 </div>
                             </div>
 
-                            <div className="print-page-break border border-gray-400 px-5 py-4 text-center text-base leading-relaxed">
+                            <div className={`print-page-break ${styles.introCard} text-base leading-relaxed`}>
                                 <RichTextBlock
                                     value={knowledgeBaseSettings.variantTexts.part1Task4Lead}
                                     fallback="Вводная формулировка перед заданиями 4.1 и 4.2 не задана."
@@ -670,7 +685,7 @@ export default function TestPage() {
                             </div>
 
                             <section className="print-part-break space-y-4">
-                                <div className="no-print border border-gray-200 rounded-xl p-3 space-y-3">
+                                <div className={`no-print ${styles.controlPanel}`}>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                         <SelectField
                                             label="Автор"
@@ -795,7 +810,7 @@ export default function TestPage() {
                                     </div>
                                 </div>
 
-                                <div className="print-page-break border border-gray-400 px-5 py-3 text-center text-base leading-relaxed">
+                                <div className={`print-page-break ${styles.introCard} text-base leading-relaxed`}>
                                     <RichTextBlock
                                         value={knowledgeBaseSettings.variantTexts.part2QuestionsIntro}
                                         fallback="Формулировка перед заданиями 6–8 не задана."
@@ -803,7 +818,7 @@ export default function TestPage() {
                                     />
                                 </div>
 
-                                <div className="space-y-[30px]">
+                                <div className={styles.taskStack}>
                                     <div className="flex items-start gap-3">
                                         <QuestionActions
                                             isLocked={!isPro}
@@ -1031,7 +1046,7 @@ export default function TestPage() {
                                     fallback="Инструкция ко второй части (задания 11) не задана."
                                 />
 
-                                <div className="no-print border border-gray-200 rounded-xl p-3 space-y-3">
+                                <div className={`no-print ${styles.controlPanel}`}>
                                     <div className="flex justify-end">
                                         <Button
                                             variant="outlined"
@@ -1052,7 +1067,7 @@ export default function TestPage() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-[30px]">
+                                <div className={styles.taskStack}>
                                     <div className="flex items-start gap-3">
                                         <QuestionActions
                                             isLocked={!isPro}
@@ -1178,6 +1193,29 @@ export default function TestPage() {
                         </div>
                     )}
                 </div>
+
+                {variant && (
+                    <div className={`no-print ${styles.bottomActions}`}>
+                        <button
+                            type="button"
+                            className={styles.bottomActionButton}
+                            onClick={() => generateVariant(false)}
+                            disabled={isBusyWithFullOperations || isAnyTaskRefreshing}
+                        >
+                            {variantGenerationMode === 'new' ? <IoRefreshOutline className="animate-spin" /> : <IoDocumentTextOutline />}
+                            Новый рандомный вариант
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.bottomActionButton}
+                            onClick={() => generateVariant(true)}
+                            disabled={isBusyWithFullOperations || isAnyTaskRefreshing}
+                        >
+                            {variantGenerationMode === 'selected' ? <IoRefreshOutline className="animate-spin" /> : <IoRefreshOutline />}
+                            Обновить все задания в варианте
+                        </button>
+                    </div>
+                )}
             </div>
 
             <NewTestActionDock

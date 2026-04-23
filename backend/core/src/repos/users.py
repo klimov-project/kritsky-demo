@@ -650,7 +650,7 @@ class DbUsersRepo(DbMixin, AbcDBRepository):
 
 
     async def alist_with_stats(self, session: AsyncSession, week_start: datetime) -> List[dict]:
-        from db.src.models import Subscription, SavedVariant
+        from db.src.models import Subscription, SavedVariant, VariantExport
         
         users = (await session.execute(select(User).order_by(User.id.desc()))).scalars().all()
         if not users:
@@ -678,6 +678,13 @@ class DbUsersRepo(DbMixin, AbcDBRepository):
             .group_by(SavedVariant.user_id)
         )
         gen_week_map = {int(uid): int(c) for uid, c in gen_week_q.all()}
+
+        downloads_week_q = await session.execute(
+            select(VariantExport.user_id, func.count(VariantExport.id))
+            .where(VariantExport.user_id.in_(user_ids), VariantExport.createdAt >= week_start)
+            .group_by(VariantExport.user_id)
+        )
+        downloads_week_map = {int(uid): int(c) for uid, c in downloads_week_q.all()}
         
         results = []
         for u in users:
@@ -685,7 +692,8 @@ class DbUsersRepo(DbMixin, AbcDBRepository):
                 "user": u,
                 "expires_at": subs_map.get(u.id),
                 "variants_total": gen_total_map.get(u.id, 0),
-                "variants_week": gen_week_map.get(u.id, 0)
+                "variants_week": gen_week_map.get(u.id, 0),
+                "downloads_week": downloads_week_map.get(u.id, 0),
             })
         return results
 

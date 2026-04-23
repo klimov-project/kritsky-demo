@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -15,6 +15,7 @@ import { getShopProductDisplayImage, getShopProductMarketplaceLinks } from '@/ut
 
 export const useShopProductDetailsPage = ({ productId }: UseShopProductDetailsPageOptions): UseShopProductDetailsPageResult => {
     const router = useRouter();
+    const pathname = usePathname();
     const { user } = useAuth();
 
     const [product, setProduct] = useState<ShopProductDetailsProduct>(null);
@@ -83,7 +84,7 @@ export const useShopProductDetailsPage = ({ productId }: UseShopProductDetailsPa
         setCartMessage('');
 
         if (!user || user.role !== 'user') {
-            router.push('/login');
+            router.push('/?modal=login');
             return;
         }
 
@@ -107,7 +108,7 @@ export const useShopProductDetailsPage = ({ productId }: UseShopProductDetailsPa
         setCartMessage('');
 
         if (!user || user.role !== 'user') {
-            router.push('/login');
+            router.push('/?modal=login');
             return;
         }
 
@@ -131,6 +132,11 @@ export const useShopProductDetailsPage = ({ productId }: UseShopProductDetailsPa
         router.push('/cart');
     }, [router]);
 
+    const openFeedbackModal = useCallback(() => {
+        const targetPath = pathname || `/shop/${productId}`;
+        router.push(`${targetPath}?modal=feedback`);
+    }, [pathname, productId, router]);
+
     return {
         product,
         isBookmarked,
@@ -145,5 +151,6 @@ export const useShopProductDetailsPage = ({ productId }: UseShopProductDetailsPa
         selectImage,
         goToShop,
         goToCart,
+        openFeedbackModal,
     };
 };

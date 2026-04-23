@@ -34,7 +34,7 @@ export const getAuthTelegramButtonLabel = (activeTab: AuthTab): string => {
 };
 
 export const getAuthTabToggleLabel = (activeTab: AuthTab): string => {
-    return activeTab === 'login' ? 'У меня нет аккаунта' : 'У меня уже есть аккаунт';
+    return activeTab === 'login' ? 'У меня нет аккаунта' : 'У меня есть аккаунт';
 };
 
 export const getAuthErrorMessage = (errorValue: unknown): string => {

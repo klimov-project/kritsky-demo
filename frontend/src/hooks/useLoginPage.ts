@@ -13,11 +13,13 @@ import {
     toggleAuthTab,
 } from '@/utils/login';
 
-export const useLoginPage = () => {
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export const useLoginPage = (initialTab: AuthTab = 'login') => {
     const router = useRouter();
     const { user, isLoading, login, register } = useAuth();
 
-    const [activeTab, setActiveTab] = useState<AuthTab>('login');
+    const [activeTab, setActiveTab] = useState<AuthTab>(initialTab);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -31,9 +33,20 @@ export const useLoginPage = () => {
         }
     }, [isLoading, router, user]);
 
+    useEffect(() => {
+        setActiveTab(initialTab);
+    }, [initialTab]);
+
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setError('');
+
+        const normalizedEmail = email.trim();
+        if (!EMAIL_RE.test(normalizedEmail)) {
+            setError('Введите корректный email, например example@mail.com');
+            return;
+        }
+
         setIsSubmitting(true);
 
         try {
@@ -42,11 +55,11 @@ export const useLoginPage = () => {
                 loginExecutor: login,
                 registerExecutor: register,
                 loginCredentials: {
-                    email,
+                    email: normalizedEmail,
                     password,
                 },
                 registerCredentials: {
-                    email,
+                    email: normalizedEmail,
                     password,
                     name,
                 },

@@ -1,10 +1,5 @@
-import PlaceholderPageContent from '@/components/shared/PlaceholderPageContent';
+import { redirect } from 'next/navigation';
 
 export default function FeedbackPage() {
-    return (
-        <PlaceholderPageContent
-            title="В разработке"
-            description="Эта страница появится в ближайшее время."
-        />
-    );
+    redirect('/?modal=feedback');
 }

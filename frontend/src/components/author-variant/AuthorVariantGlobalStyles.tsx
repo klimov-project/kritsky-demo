@@ -77,7 +77,7 @@ export default function AuthorVariantGlobalStyles() {
                 z-index: 1;
             }
             .{
-                font-family: "Minion Pro", "Times New Roman", serif;
+                font-family: "Minion Cyrillic", "Times New Roman", serif;
             }
             .new-test-title-lines > span {
                 display: block;

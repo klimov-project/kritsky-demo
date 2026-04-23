@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -18,6 +18,7 @@ import {
 
 export const useCartPage = (): UseCartPageResult => {
     const router = useRouter();
+    const pathname = usePathname();
     const { user, isLoading: isAuthLoading } = useAuth();
 
     const [cart, setCart] = useState<CartPageState>(null);
@@ -39,7 +40,7 @@ export const useCartPage = (): UseCartPageResult => {
     useEffect(() => {
         if (isAuthLoading) return;
         if (!user || user.role !== 'user') {
-            router.replace('/login');
+            router.replace('/?modal=login');
             return;
         }
 
@@ -180,6 +181,11 @@ export const useCartPage = (): UseCartPageResult => {
         router.push('/my-books');
     }, [router]);
 
+    const openFeedbackModal = useCallback(() => {
+        const targetPath = pathname || '/cart';
+        router.push(`${targetPath}?modal=feedback`);
+    }, [pathname, router]);
+
     return {
         user,
         isAuthLoading,
@@ -204,5 +210,6 @@ export const useCartPage = (): UseCartPageResult => {
         handleCheckout,
         goToShop,
         goToMyBooks,
+        openFeedbackModal,
     };
 };

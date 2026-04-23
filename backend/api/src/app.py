@@ -30,8 +30,6 @@ def on_startup() -> None:
     warm_runtime_variant_payload_cache()
 
 
-
-
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}

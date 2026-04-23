@@ -119,7 +119,7 @@ async def list_users(_: AuthenticatedAdmin = Depends(get_current_admin)) -> Admi
                     variantsGeneratedTotal=user.variantsGeneratedTotal or r["variants_total"],
                     downloadsTotal=user.downloadsTotal,
                     weeklyGenerated=r["variants_week"],
-                    weeklyDownloaded=0,
+                    weeklyDownloaded=r["downloads_week"],
                     isBlocked=getattr(user, "is_blocked", False),
                 )
             )

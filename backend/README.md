@@ -17,8 +17,8 @@
 cd backend
 ```
 
-2. Создайте файл `backend/.env` (backend читает переменные именно из него).  
-Можно скопировать из корня:
+2. Создайте файл `backend/.env` (локальный backend читает переменные именно из него).  
+Если у вас уже есть корневой `.env` для Docker Compose, можно взять его за основу:
 
 ```bash
 cp ../.env .env
@@ -54,10 +54,14 @@ Backend контейнер сам выполняет:
 - `alembic upgrade head`
 - запуск `uvicorn` на `:8000`
 
-## Основные переменные окружения
+## Схема env-файлов
 
-- `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
-- `JWT_SECRET`, `JWT_ALGORITHM`
-- `JWT_ACCESS_EXPIRE_MINUTES`, `JWT_REFRESH_EXPIRE_DAYS`
-- `ADMIN_LOGIN`, `ADMIN_PASSWORD`, `ADMIN_EMAILS`
-- `REDIS_URL`
+- `/.env` - используется Docker Compose из корня проекта
+- `backend/.env` - используется для локального запуска backend
+- `frontend/.env.local` - используется для локального запуска frontend
+
+## Конфиги backend
+
+- `db/config.py` - только настройки БД и тестовой БД
+- `api/config.py` - JWT, admin, Redis и cache-related настройки
+- `core/config.py` - Minio/S3 и другие core-интеграции

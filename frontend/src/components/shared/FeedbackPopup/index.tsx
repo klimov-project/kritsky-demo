@@ -1,12 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-
-import Button from '@/components/shared/Button';
-import Checkbox from '@/components/shared/Checkbox';
-import Input from '@/components/shared/Input';
-import Popup from '@/components/shared/Popup';
-import Textarea from '@/components/shared/Textarea';
+import { IoCloseCircleOutline } from 'react-icons/io5';
+import styles from './FeedbackPopup.module.scss';
 
 interface FeedbackPopupProps {
     isOpen: boolean;
@@ -23,31 +19,34 @@ export default function FeedbackPopup({
     defaultEmail = '',
     onSubmit,
 }: FeedbackPopupProps) {
-    const [isSubmitted, setIsSubmitted] = useState(false);
     const [name, setName] = useState(defaultName);
     const [email, setEmail] = useState(defaultEmail);
     const [comment, setComment] = useState('');
-    const [isPolicyAccepted, setIsPolicyAccepted] = useState(false);
+    const [isPolicyAccepted, setIsPolicyAccepted] = useState(true);
+    const [isAdsAccepted, setIsAdsAccepted] = useState(true);
     const [isSending, setIsSending] = useState(false);
 
     useEffect(() => {
-        if (!isOpen) {
-            setIsSubmitted(false);
-            setName(defaultName);
-            setEmail(defaultEmail);
-            setComment('');
-            setIsPolicyAccepted(false);
-            setIsSending(false);
-            return;
-        }
+        if (!isOpen) return;
 
         setName(defaultName);
         setEmail(defaultEmail);
+        setComment('');
+        setIsPolicyAccepted(true);
+        setIsAdsAccepted(true);
     }, [defaultEmail, defaultName, isOpen]);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [isOpen]);
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        if (!name.trim() || !email.trim() || !isPolicyAccepted || isSending) return;
+        if (!name.trim() || !email.trim() || !isPolicyAccepted || !isAdsAccepted || isSending) return;
 
         setIsSending(true);
         try {
@@ -56,70 +55,99 @@ export default function FeedbackPopup({
                 email: email.trim(),
                 comment: comment.trim(),
             });
-            setIsSubmitted(true);
+            onClose();
         } finally {
             setIsSending(false);
         }
     };
 
+    if (!isOpen) return null;
+
     return (
-        <Popup
-            isOpen={isOpen}
-            onClose={onClose}
-            title="Обратная связь"
-            size="medium"
-        >
-            {isSubmitted ? (
-                <div className="py-8 text-center">
-                    <p className="font-serif text-2xl font-bold text-[#221E20]">Спасибо, мы получили вашу заявку.</p>
-                    <p className="text-sm text-[#221E20]/60 mt-3">Свяжемся с вами в ближайшее время.</p>
-                    <Button variant="filled" className="mt-6" onClick={onClose}>Закрыть</Button>
-                </div>
-            ) : (
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    <Input
-                        label="Ваше имя"
-                        width="full"
-                        placeholder="Иван Иванов"
-                        value={name}
-                        onChange={(event) => setName(event.target.value)}
-                        required
-                    />
-                    <Input
-                        label="E-mail"
-                        width="full"
-                        placeholder="example@mail.com"
-                        type="email"
-                        value={email}
-                        onChange={(event) => setEmail(event.target.value)}
-                        required
-                    />
-                    <Textarea
-                        label="Комментарий"
-                        width="full"
-                        placeholder="Ваш комментарий"
-                        value={comment}
-                        onChange={(event) => setComment(event.target.value)}
-                    />
+        <div className={styles.overlay}>
+            <div className={styles.backdrop} onClick={onClose} />
+            <section className={styles.modal}>
+                <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Закрыть окно">
+                    <IoCloseCircleOutline size={30} />
+                </button>
+                <div className={styles.inner}>
+                    <h2 className={styles.title}>Есть идея или вопрос?</h2>
+                    <p className={styles.description}>
+                        Поделитесь своими мыслями о работе сервиса.
+                        <br />
+                        Мы внимательно читаем каждое письмо и помогаем со всеми техническими нюансами
+                    </p>
 
-                    <Checkbox
-                        label="Соглашаюсь с политикой обработки персональных данных"
-                        checked={isPolicyAccepted}
-                        onChange={(event) => setIsPolicyAccepted(event.target.checked)}
-                    />
+                    <form onSubmit={handleSubmit} className={styles.form}>
+                        <div className={styles.fieldsGrid}>
+                            <div className={styles.leftFields}>
+                                <label className={styles.field}>
+                                    <span className={styles.label}>ВАШЕ ИМЯ</span>
+                                    <input
+                                        className={styles.input}
+                                        value={name}
+                                        onChange={(event) => setName(event.target.value)}
+                                        placeholder="Введите ваше имя"
+                                        autoComplete="name"
+                                        required
+                                    />
+                                </label>
+                                <label className={styles.field}>
+                                    <span className={styles.label}>E-MAIL</span>
+                                    <input
+                                        className={styles.input}
+                                        value={email}
+                                        onChange={(event) => setEmail(event.target.value)}
+                                        placeholder="Введите вашу почту"
+                                        autoComplete="email"
+                                        type="email"
+                                        required
+                                    />
+                                </label>
+                            </div>
 
-                    <div className="pt-2">
-                        <Button
+                            <label className={`${styles.field} ${styles.commentField}`}>
+                                <span className={styles.label}>ВАШ КОММЕНТАРИЙ</span>
+                                <textarea
+                                    className={styles.textarea}
+                                    value={comment}
+                                    onChange={(event) => setComment(event.target.value)}
+                                    placeholder="Введите комментарий"
+                                />
+                            </label>
+                        </div>
+
+                        <div className={styles.consents}>
+                            <label className={styles.consentRow}>
+                                <input
+                                    type="checkbox"
+                                    checked={isPolicyAccepted}
+                                    onChange={(event) => setIsPolicyAccepted(event.target.checked)}
+                                />
+                                <span className={styles.checkVisual} aria-hidden="true" />
+                                <span>Выражаю Согласие на обработку персональных данных в соответствии с условиями Политики конфиденциальности</span>
+                            </label>
+                            <label className={styles.consentRow}>
+                                <input
+                                    type="checkbox"
+                                    checked={isAdsAccepted}
+                                    onChange={(event) => setIsAdsAccepted(event.target.checked)}
+                                />
+                                <span className={styles.checkVisual} aria-hidden="true" />
+                                <span>Выражаю Согласие на получение рассылки рекламно-информационных материалов</span>
+                            </label>
+                        </div>
+
+                        <button
                             type="submit"
-                            variant="filled"
-                            fullWidth
-                            disabled={!name.trim() || !email.trim() || !isPolicyAccepted || isSending}
+                            className={styles.submitButton}
+                            disabled={!name.trim() || !email.trim() || !isPolicyAccepted || !isAdsAccepted || isSending}
                         >
-                            {isSending ? 'Отправляю...' : 'Отправить'}
-                        </Button>
-                    </div>
-                </form>
-            )}
-        </Popup>
+                            {isSending ? 'ОТПРАВКА...' : 'ОТПРАВИТЬ'}
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
     );
 }

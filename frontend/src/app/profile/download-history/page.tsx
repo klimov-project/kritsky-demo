@@ -42,7 +42,7 @@ export default function DownloadHistoryPage() {
     useEffect(() => {
         if (isLoading) return;
         if (!user || user.role !== 'user') {
-            router.replace('/login');
+            router.replace('/?modal=login');
         }
     }, [isLoading, router, user]);
 

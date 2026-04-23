@@ -16,4 +16,5 @@ export interface LoginAuthCardProps {
     onTelegramAuthClick: () => void;
     onToggleTab: () => void;
     onSubmit: FormEventHandler<HTMLFormElement>;
+    onClose?: () => void;
 }

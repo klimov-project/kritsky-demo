@@ -38,7 +38,7 @@ export function PaywallModal({ isOpen, onClose, isAuthenticated, message }: Payw
                             <Button className="w-full flex justify-center">Оформить подписку</Button>
                         </Link>
                     ) : (
-                        <Link href="/login" className="w-full">
+                        <Link href="/?modal=register" className="w-full">
                             <Button className="w-full flex justify-center">Зарегистрироваться</Button>
                         </Link>
                     )}

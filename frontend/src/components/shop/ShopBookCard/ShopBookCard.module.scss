@@ -1,0 +1,191 @@
+.card {
+    position: relative;
+    border-radius: 10px;
+    background: #ffffff;
+    min-height: 277px;
+    padding: 40px;
+    display: grid;
+    grid-template-columns: 137px minmax(0, 1fr) 210px;
+    gap: 40px;
+}
+
+.bookmarkButton {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    border: none;
+    background: transparent;
+    color: #bdbdbd;
+    padding: 0;
+    cursor: pointer;
+    z-index: 3;
+}
+
+.bookmarkButton--active {
+    color: #bd5343;
+}
+
+.linkWrap {
+    display: contents;
+    color: inherit;
+    text-decoration: none;
+}
+
+.coverWrap {
+    width: 137px;
+    height: 197px;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 0;
+}
+
+.cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.coverPlaceholder {
+    width: 100%;
+    height: 100%;
+    background: #f6f6f6;
+    color: #bdbdbd;
+    font-family: var(--font-pt-serif);
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.info {
+    min-width: 0;
+}
+
+.tags {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tag {
+    height: 30px;
+    border-radius: 5px;
+    border: 1px solid #cfcfcf;
+    padding: 7px 15px 8px;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 14px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.title {
+    margin: 12px 0 0;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.15;
+}
+
+.description {
+    margin: 10px 0 0;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 16px;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.actions {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 14px;
+}
+
+.price {
+    margin: 0;
+    color: #bd5343;
+    font-family: var(--font-pt-serif);
+    font-size: 24px;
+    line-height: 1;
+    text-align: right;
+}
+
+.cartButton {
+    width: 210px;
+    min-height: 50px;
+    border: none;
+    border-radius: 10px;
+    background: #f6f6f6;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 18px 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    align-self: flex-end;
+}
+
+@media (max-width: 1024px) {
+    .card {
+        min-height: 648px;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding: 20px;
+    }
+
+    .bookmarkButton {
+        top: 20px;
+        right: 20px;
+    }
+
+    .coverWrap {
+        width: 160px;
+        height: 229px;
+        margin: 0 auto;
+    }
+
+    .info {
+        text-align: center;
+    }
+
+    .tags {
+        justify-content: center;
+    }
+
+    .title {
+        font-size: 20px;
+    }
+
+    .description {
+        font-size: 14px;
+        -webkit-line-clamp: 7;
+        text-align: left;
+    }
+
+    .actions {
+        gap: 16px;
+    }
+
+    .price {
+        text-align: center;
+        font-size: 24px;
+    }
+
+    .cartButton {
+        width: 100%;
+        align-self: stretch;
+    }
+}

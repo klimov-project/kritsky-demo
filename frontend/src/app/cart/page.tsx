@@ -29,6 +29,7 @@ export default function CartPage() {
         handleCheckout,
         goToShop,
         goToMyBooks,
+        openFeedbackModal,
     } = useCartPage();
 
     if (isAuthLoading || !user || user.role !== 'user') {
@@ -36,7 +37,7 @@ export default function CartPage() {
     }
 
     return (
-        <PageLayout>
+        <PageLayout bodyClassName="index-page">
             <CartPageContent
                 isPageLoading={isPageLoading}
                 error={error}
@@ -59,6 +60,7 @@ export default function CartPage() {
                 onChangeQuantity={changeQuantity}
                 onRemoveItem={removeItem}
                 onCheckout={handleCheckout}
+                onOpenFeedback={openFeedbackModal}
             />
         </PageLayout>
     );

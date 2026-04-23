@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import os
 import time
 from datetime import date, datetime, timezone
 from typing import Any
 
 from sqlalchemy import func, select
 
+from api.config import SETTINGS
 from db.src.connect import init_session
 from db.src.models import KnowledgeBaseState, SavedVariant, Subscription, User
 from api.src.cache.knowledge_base_cache import (
@@ -19,16 +19,7 @@ from api.src.variants.randomizer import generate_variant_runtime
 from .schemas import ExportQuotaResponse, SavedVariantResponse
 
 
-def _parse_sync_interval_seconds() -> float:
-    raw = os.getenv("KB_CACHE_DB_SYNC_INTERVAL_SECONDS", "5")
-    try:
-        value = float(raw or "5")
-    except (TypeError, ValueError):
-        value = 5.0
-    return max(0.0, value)
-
-
-KB_CACHE_DB_SYNC_INTERVAL_SECONDS = _parse_sync_interval_seconds()
+KB_CACHE_DB_SYNC_INTERVAL_SECONDS = max(0.0, SETTINGS.KB_CACHE_DB_SYNC_INTERVAL_SECONDS)
 _next_kb_cache_db_sync_monotonic = 0.0
 _in_memory_kb_payload: dict[str, Any] | None = None
 _in_memory_kb_updated_at: datetime | None = None

@@ -15,6 +15,7 @@ export interface UseShopProductDetailsPageResult {
     selectImage: (index: number) => void;
     goToShop: () => void;
     goToCart: () => void;
+    openFeedbackModal: () => void;
 }
 
 export interface ShopProductDetailsPageProps {
@@ -36,6 +37,7 @@ export interface ShopProductDetailsContentProps {
     onAddToCart: () => Promise<void>;
     onSelectImage: (index: number) => void;
     onGoToCart: () => void;
+    onOpenFeedback: () => void;
 }
 
 export interface ShopProductDetailsErrorProps {

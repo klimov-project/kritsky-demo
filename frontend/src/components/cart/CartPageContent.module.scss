@@ -1,0 +1,121 @@
+.page {
+    width: 100%;
+    max-width: 1197px;
+    margin: 0 auto;
+    padding: 40px 0 120px;
+}
+
+.title {
+    margin: 0;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 36px;
+    line-height: 1;
+    text-align: center;
+}
+
+.statusText {
+    margin: 18px 0 0;
+    color: #828282;
+    font-family: var(--font-pt-serif);
+    font-size: 14px;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.notice {
+    margin-top: 14px;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-family: var(--font-pt-serif);
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.noticeError {
+    background: #fff0ee;
+    border: 1px solid #f5cbc5;
+    color: #ab4a3c;
+}
+
+.noticeSuccess {
+    background: #eff8f1;
+    border: 1px solid #cde7d4;
+    color: #1f6a35;
+}
+
+.emptyState {
+    margin-top: 20px;
+    border-radius: 10px;
+    background: #ffffff;
+    padding: 24px;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 16px;
+    line-height: 1.2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.contentGrid {
+    margin-top: 79px;
+    display: grid;
+    grid-template-columns: minmax(0, 954px) 223px;
+    gap: 20px;
+    align-items: start;
+}
+
+.sideColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.feedbackButton {
+    width: 223px;
+    height: 50px;
+    border: none;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    line-height: 1;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 0 12px;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+        background: #f1f1f1;
+    }
+}
+
+@media (max-width: 1024px) {
+    .page {
+        max-width: 350px;
+        padding: 20px 0 80px;
+    }
+
+    .title {
+        margin-top: 10px;
+        font-size: 24px;
+    }
+
+    .contentGrid {
+        margin-top: 18px;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .feedbackButton {
+        width: 100%;
+    }
+}

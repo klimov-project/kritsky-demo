@@ -18,10 +18,11 @@ const parsePrice = (value: FormDataEntryValue | null): number => {
     return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const parseNumber = (value: FormDataEntryValue | null): number | undefined => {
+const parseInteger = (value: FormDataEntryValue | null): number | undefined => {
     const raw = String(value || '').trim();
     if (!raw) return undefined;
-    const parsed = Number(raw);
+    if (!/^-?\d+$/.test(raw)) return undefined;
+    const parsed = Number.parseInt(raw, 10);
     return Number.isFinite(parsed) ? parsed : undefined;
 };
 
@@ -70,8 +71,8 @@ export const buildShopBookPayload = (formData: FormData, previous?: ProductRecor
         fulfillment,
         format: String(formData.get('format') || '').trim() || undefined,
         ageLimit: String(formData.get('ageLimit') || '').trim() || undefined,
-        year: parseNumber(formData.get('year')),
-        pages: parseNumber(formData.get('pages')),
+        year: parseInteger(formData.get('year')),
+        pages: parseInteger(formData.get('pages')),
         isbn: String(formData.get('isbn') || '').trim() || undefined,
         tags: String(formData.get('tags') || '')
             .split(',')
@@ -89,7 +90,7 @@ export const buildShopBookPayload = (formData: FormData, previous?: ProductRecor
                 ? (() => {
                       const authorId = String(formData.get('collectionAuthorId') || '').trim();
                       const authorName = String(formData.get('collectionAuthorName') || '').trim();
-                      const variantsCount = Number(String(formData.get('collectionVariantsCount') || '').trim());
+                      const variantsCount = Number.parseInt(String(formData.get('collectionVariantsCount') || '').trim(), 10);
                       const collectionKind =
                           (String(formData.get('collectionKind') || DEFAULT_COLLECTION_KIND).trim() as CollectionKind) ||
                           DEFAULT_COLLECTION_KIND;
@@ -113,7 +114,7 @@ export const buildShopBookPayload = (formData: FormData, previous?: ProductRecor
         downloadPackConfig:
             category === 'download_packs'
                 ? (() => {
-                      const downloadsCount = Number(String(formData.get('downloadPackCount') || '').trim());
+                      const downloadsCount = Number.parseInt(String(formData.get('downloadPackCount') || '').trim(), 10);
                       if (!Number.isFinite(downloadsCount) || downloadsCount <= 0) {
                           return undefined;
                       }

@@ -8,6 +8,7 @@ import {
     IoRefreshOutline,
 } from 'react-icons/io5';
 import type { QuestionActionsProps } from '@/types/ui/newTestPage';
+import styles from './QuestionActions.module.scss';
 
 export default function QuestionActions({
     onRefresh,
@@ -23,10 +24,10 @@ export default function QuestionActions({
     isAnswerChecked,
 }: QuestionActionsProps) {
     return (
-        <div className="no-print flex items-center md:flex-col lg:flex-row gap-1 pt-0.5 md:w-0 md:shrink-0 md:-translate-x-16 md:-mr-4 flex-wrap">
+        <div className={`no-print ${styles.actions}`}>
             <button
                 type="button"
-                className="p-1 border border-gray-300 rounded text-base disabled:opacity-40 bg-white flex items-center justify-center gap-0.5"
+                className={styles.iconButton}
                 onClick={onRefresh}
                 aria-label="Обновить вопрос"
                 disabled={disableRefresh || isRefreshing}
@@ -42,7 +43,7 @@ export default function QuestionActions({
             </button>
             <button
                 type="button"
-                className="p-1 border border-gray-300 rounded text-base disabled:opacity-40 bg-white"
+                className={styles.iconButton}
                 onClick={onBack}
                 aria-label="Вернуть предыдущий вариант"
                 disabled={disableBack}
@@ -53,7 +54,7 @@ export default function QuestionActions({
             {onCheck && (
                 <button
                     type="button"
-                    className={`p-1 border border-gray-300 rounded text-base bg-white transition-colors ${isAnswerChecked ? 'text-blue-600 border-blue-600' : ''}`}
+                    className={`${styles.iconButton} ${isAnswerChecked ? styles.iconButtonActive : ''}`}
                     onClick={onCheck}
                     aria-label={isAnswerChecked ? 'Скрыть ответ' : 'Показать ответ'}
                     title={isAnswerChecked ? 'Скрыть ответ' : 'Показать ответ'}
@@ -63,7 +64,7 @@ export default function QuestionActions({
             )}
             <button
                 type="button"
-                className="p-1 border border-gray-300 rounded text-base bg-white"
+                className={styles.iconButton}
                 onClick={onToggleCollapse}
                 aria-label={isCollapsed ? 'Развернуть задание' : 'Свернуть задание'}
                 title={isCollapsed ? 'Развернуть задание' : 'Свернуть задание'}

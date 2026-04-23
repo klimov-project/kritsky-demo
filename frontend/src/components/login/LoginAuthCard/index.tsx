@@ -1,15 +1,14 @@
 'use client';
 
-import Button from '@/components/shared/Button';
-import Input from '@/components/shared/Input';
+import { useState } from 'react';
+import { IoCloseCircleOutline } from 'react-icons/io5';
 import type { LoginAuthCardProps } from '@/types/ui/login';
 import {
     getAuthPageTitle,
-    getAuthPhoneButtonLabel,
     getAuthSubmitLabel,
     getAuthTabToggleLabel,
-    getAuthTelegramButtonLabel,
 } from '@/utils/login';
+import styles from './LoginAuthCard.module.scss';
 
 export default function LoginAuthCard({
     activeTab,
@@ -22,82 +21,115 @@ export default function LoginAuthCard({
     onEmailChange,
     onPasswordChange,
     onPhoneAuthClick,
-    onTelegramAuthClick,
     onToggleTab,
     onSubmit,
+    onClose,
 }: LoginAuthCardProps) {
+    const [consentOffer, setConsentOffer] = useState(true);
+    const [consentPrivacy, setConsentPrivacy] = useState(true);
+    const [consentAds, setConsentAds] = useState(true);
+    const isRegisterConsentInvalid = activeTab === 'register' && (!consentOffer || !consentPrivacy || !consentAds);
+
+    const handleClose = () => {
+        onClose?.();
+    };
+
     return (
-        <div className="flex min-h-[calc(100vh-180px)] w-full items-center justify-center py-10 md:py-14">
-            <section className="w-full max-w-[520px] rounded-[24px] border border-[#221E20]/10 bg-white px-5 py-7 shadow-sm md:px-8 md:py-8">
-                <div className="mx-auto w-full max-w-[420px]">
-                    <div className="mb-8 text-center">
-                        <h1 className="font-serif text-[30px] font-bold text-[#221E20]">
-                            {getAuthPageTitle(activeTab)}
-                        </h1>
-                    </div>
+        <div className={styles.overlay}>
+            <div className={styles.backdrop} />
+            <section className={`${styles.modal} ${activeTab === 'register' ? styles.modalRegister : ''}`}>
+                <button type="button" className={styles.closeButton} onClick={handleClose} aria-label="Закрыть окно">
+                    <IoCloseCircleOutline size={30} />
+                </button>
+                <div className={styles.inner}>
+                    <h1 className={styles.title}>{getAuthPageTitle(activeTab)}</h1>
 
-                    <form onSubmit={onSubmit} className="flex flex-col gap-4">
-                        {activeTab === 'register' && (
-                            <Input
-                                label="Имя"
-                                value={name}
-                                onChange={(event) => onNameChange(event.target.value)}
-                                width="full"
-                                placeholder="Иван Иванов"
+                    <form onSubmit={onSubmit} className={styles.form}>
+                        {activeTab === 'register' ? (
+                            <label className={styles.field}>
+                                <span className={styles.label}>ВАШЕ ИМЯ</span>
+                                <input
+                                    className={styles.input}
+                                    value={name}
+                                    onChange={(event) => onNameChange(event.target.value)}
+                                    placeholder="Введите ваше имя"
+                                    autoComplete="name"
+                                />
+                            </label>
+                        ) : null}
+
+                        <label className={styles.field}>
+                            <span className={styles.label}>E-MAIL</span>
+                            <input
+                                className={styles.input}
+                                value={email}
+                                onChange={(event) => onEmailChange(event.target.value)}
+                                placeholder="Введите вашу почту"
+                                autoComplete="email"
+                                type="email"
+                                required
                             />
-                        )}
-                        <Input
-                            label="E-mail"
-                            value={email}
-                            onChange={(event) => onEmailChange(event.target.value)}
-                            width="full"
-                            type="email"
-                            placeholder="example@mail.com"
-                            required
-                            state={error ? 'error' : 'regular'}
-                        />
-                        <Input
-                            label="Пароль"
-                            value={password}
-                            onChange={(event) => onPasswordChange(event.target.value)}
-                            width="full"
-                            type="password"
-                            placeholder="••••••••"
-                            required
-                            state={error ? 'error' : 'regular'}
-                            helperText={error}
-                        />
+                        </label>
 
-                        <div className="grid grid-cols-2 gap-2 pt-1">
-                            <Button
-                                type="button"
-                                variant="filled"
-                                size="small"
-                                fullWidth
-                                onClick={onPhoneAuthClick}
-                            >
-                                {getAuthPhoneButtonLabel(activeTab)}
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="filled"
-                                size="small"
-                                fullWidth
-                                onClick={onTelegramAuthClick}
-                            >
-                                {getAuthTelegramButtonLabel(activeTab)}
-                            </Button>
-                        </div>
+                        <label className={styles.field}>
+                            <span className={styles.label}>ПАРОЛЬ</span>
+                            <input
+                                className={styles.input}
+                                value={password}
+                                onChange={(event) => onPasswordChange(event.target.value)}
+                                placeholder={activeTab === 'login' ? 'Введите пароль' : 'Придумайте пароль'}
+                                autoComplete={activeTab === 'login' ? 'current-password' : 'new-password'}
+                                type="password"
+                                required
+                            />
+                        </label>
 
-                        <Button fullWidth variant="filled" className="mt-2" type="submit" disabled={isSubmitting}>
+                        {error ? <p className={styles.error}>{error}</p> : null}
+
+                        <button type="button" className={`${styles.button} ${styles.buttonSecondary}`} onClick={onPhoneAuthClick}>
+                            ПО НОМЕРУ
+                        </button>
+                        <button type="submit" className={`${styles.button} ${styles.buttonPrimary}`} disabled={isSubmitting || isRegisterConsentInvalid}>
                             {getAuthSubmitLabel(activeTab, isSubmitting)}
-                        </Button>
+                        </button>
+
+                        {activeTab === 'register' ? (
+                            <div className={styles.consents}>
+                                <label className={styles.consentRow}>
+                                    <input
+                                        type="checkbox"
+                                        checked={consentOffer}
+                                        onChange={(event) => setConsentOffer(event.target.checked)}
+                                    />
+                                    <span className={styles.checkVisual} aria-hidden="true" />
+                                    <span>Принимаю условия Оферты на заключение лицензионного соглашения</span>
+                                </label>
+                                <label className={styles.consentRow}>
+                                    <input
+                                        type="checkbox"
+                                        checked={consentPrivacy}
+                                        onChange={(event) => setConsentPrivacy(event.target.checked)}
+                                    />
+                                    <span className={styles.checkVisual} aria-hidden="true" />
+                                    <span>Выражаю Согласие на обработку персональных данных в соответствии с условиями Политики конфиденциальности</span>
+                                </label>
+                                <label className={styles.consentRow}>
+                                    <input
+                                        type="checkbox"
+                                        checked={consentAds}
+                                        onChange={(event) => setConsentAds(event.target.checked)}
+                                    />
+                                    <span className={styles.checkVisual} aria-hidden="true" />
+                                    <span>Выражаю Согласие на получение рассылки рекламно-информационных материалов</span>
+                                </label>
+                            </div>
+                        ) : null}
                     </form>
 
-                    <div className="mt-7 border-t border-[#221E20]/10 pt-4 text-center">
+                    <div className={`${styles.switchBlock} ${activeTab === 'register' ? styles.switchBlockWithLine : ''}`}>
                         <button
                             type="button"
-                            className="text-sm text-[#221E20]/60 transition-colors hover:text-[#221E20]"
+                            className={styles.switchButton}
                             onClick={onToggleTab}
                         >
                             {getAuthTabToggleLabel(activeTab)}

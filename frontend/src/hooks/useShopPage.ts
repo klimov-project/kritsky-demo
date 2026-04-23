@@ -136,7 +136,7 @@ export const useShopPage = (): UseShopPageResult => {
         setCartMessage('');
 
         if (!user || user.role !== 'user') {
-            router.push('/login');
+            router.push('/?modal=login');
             return;
         }
 
@@ -167,7 +167,7 @@ export const useShopPage = (): UseShopPageResult => {
         setCartMessage('');
 
         if (!user || user.role !== 'user') {
-            router.push('/login');
+            router.push('/?modal=login');
             return;
         }
 

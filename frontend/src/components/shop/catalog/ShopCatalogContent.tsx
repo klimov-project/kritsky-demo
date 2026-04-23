@@ -1,12 +1,12 @@
 'use client';
 
 import PageLayout from '@/components/layout/PageLayout';
-import Button from '@/components/shared/Button';
 import ShopBookCard from '@/components/shop/ShopBookCard';
 import ShopCatalogFilters from '@/components/shop/catalog/ShopCatalogFilters';
 import { useShopPage } from '@/hooks/useShopPage';
 import { CATEGORY_LABELS } from '@/mocks/shop';
 import { SHOP_CATALOG_FULFILLMENT_FILTERS } from '@/utils/shopCatalog';
+import styles from './ShopCatalogContent.module.scss';
 
 export default function ShopCatalogContent() {
     const {
@@ -37,9 +37,11 @@ export default function ShopCatalogContent() {
     } = useShopPage();
 
     return (
-        <PageLayout hideHeader={false} hideFooter={false}>
-            <div className="w-full flex flex-col items-center min-h-screen">
-                <div className="w-full max-w-[750px] px-4 md:px-0 flex flex-col">
+        <PageLayout bodyClassName="index-page">
+            <div className={styles.page}>
+                <h1 className={styles.title}>Магазин</h1>
+
+                <div className={styles.content}>
                     <ShopCatalogFilters
                         searchValue={searchValue}
                         isFiltersOpen={isFiltersOpen}
@@ -57,19 +59,19 @@ export default function ShopCatalogContent() {
                         onClearFilters={clearFilters}
                     />
 
-                    <div className="mt-[85px] flex flex-col gap-[60px] pb-20">
-                        {isLoading && <div className="text-sm opacity-60">Загружаю товары...</div>}
+                    <div className={styles.products}>
+                        {isLoading && <p className={styles.statusText}>Загружаю товары...</p>}
 
                         {!isLoading && error && (
-                            <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">{error}</div>
+                            <p className={styles.errorText}>{error}</p>
                         )}
 
                         {!isLoading && !error && bookmarkError && (
-                            <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">{bookmarkError}</div>
+                            <p className={styles.errorText}>{bookmarkError}</p>
                         )}
 
                         {!isLoading && !error && cartMessage && (
-                            <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700">{cartMessage}</div>
+                            <p className={styles.successText}>{cartMessage}</p>
                         )}
 
                         {!isLoading && !error && visibleProducts.map((product) => (
@@ -89,27 +91,23 @@ export default function ShopCatalogContent() {
                         ))}
 
                         {!isLoading && !error && filteredProducts.length === 0 && (
-                            <div className="text-center opacity-40 font-serif text-sm py-8">
+                            <p className={styles.statusText}>
                                 По заданным фильтрам товары не найдены
-                            </div>
+                            </p>
                         )}
 
                         {!isLoading && !error && visibleCount < filteredProducts.length && (
-                            <div className="flex justify-center mt-4">
-                                <Button
-                                    variant="outlined"
-                                    onClick={handleLoadMore}
-                                    className="!border-[#221E20]/20 hover:!border-[#221E20] min-w-[200px]"
-                                >
+                            <div className={styles.loadMoreWrap}>
+                                <button type="button" className={styles.loadMoreButton} onClick={handleLoadMore}>
                                     Показать ещё
-                                </Button>
+                                </button>
                             </div>
                         )}
 
                         {!isLoading && !error && filteredProducts.length > 0 && visibleCount >= filteredProducts.length && (
-                            <div className="text-center opacity-40 font-serif text-sm py-8">
+                            <p className={styles.statusText}>
                                 Вы просмотрели все товары
-                            </div>
+                            </p>
                         )}
                     </div>
                 </div>

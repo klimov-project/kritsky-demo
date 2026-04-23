@@ -1,4 +1,5 @@
 import type { SelectFieldProps } from '@/types/ui/newTestPage';
+import styles from './SelectField.module.scss';
 
 export default function SelectField({
     label,
@@ -8,12 +9,12 @@ export default function SelectField({
     placeholder,
 }: SelectFieldProps) {
     return (
-        <label className="flex flex-col gap-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider opacity-60">{label}</span>
+        <label className={styles.root}>
+            <span className={styles.label}>{label}</span>
             <select
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+                className={styles.select}
             >
                 <option value="">{placeholder || 'Выбрать'}</option>
                 {options.map((option) => (

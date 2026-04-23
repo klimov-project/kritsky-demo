@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from 'react';
 import "./globals.css";
 import CopyProtection from "@/components/shared/CopyProtection";
+import GlobalModals from "@/components/layout/GlobalModals";
 
 export const metadata: Metadata = {
     title: 'Крицкий - подготовка к ЕГЭ',
@@ -19,10 +21,13 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="ru">
-            <body className="font-serif text-[#221E20] antialiased">
+            <body className="text-[#221E20] antialiased">
                 <AuthProvider>
                     <CopyProtection />
                     {children}
+                    <Suspense fallback={null}>
+                        <GlobalModals />
+                    </Suspense>
                 </AuthProvider>
             </body>
         </html>

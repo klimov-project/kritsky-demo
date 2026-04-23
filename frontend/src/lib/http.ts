@@ -7,6 +7,44 @@ const resolveApiUrl = () => {
 
 const buildUrl = (path: string) => `${resolveApiUrl()}${path.startsWith('/') ? path : `/${path}`}`;
 
+const getValidationErrorMessage = (detail: unknown): string | null => {
+    if (!Array.isArray(detail) || detail.length === 0) {
+        return null;
+    }
+
+    const firstIssue = detail[0];
+    if (!firstIssue || typeof firstIssue !== 'object') {
+        return null;
+    }
+
+    const issue = firstIssue as {
+        loc?: unknown;
+        msg?: unknown;
+        type?: unknown;
+    };
+    const loc = Array.isArray(issue.loc) ? issue.loc : [];
+    const field = typeof loc[loc.length - 1] === 'string' ? loc[loc.length - 1] : '';
+    const msg = typeof issue.msg === 'string' ? issue.msg : '';
+
+    if (field === 'email') {
+        return 'Введите корректный email, например example@mail.com';
+    }
+    if (field === 'name' && String(issue.type).includes('too_long')) {
+        return 'Имя не должно превышать 255 символов';
+    }
+    if (field === 'phone') {
+        return msg || 'Введите телефон в формате +7 999 123 45 67';
+    }
+    if (field === 'oldPassword' || field === 'currentPassword') {
+        return 'Введите текущий пароль';
+    }
+    if (field === 'newPassword') {
+        return msg || 'Новый пароль должен содержать минимум 6 символов';
+    }
+
+    return msg || null;
+};
+
 const tryParseErrorMessage = async (response: Response) => {
     try {
         const contentType = response.headers.get('content-type') || '';
@@ -14,6 +52,10 @@ const tryParseErrorMessage = async (response: Response) => {
             const data = await response.json();
             if (typeof data?.detail === 'string') {
                 return data.detail;
+            }
+            const validationMessage = getValidationErrorMessage(data?.detail);
+            if (validationMessage) {
+                return validationMessage;
             }
             if (typeof data?.message === 'string') {
                 return data.message;

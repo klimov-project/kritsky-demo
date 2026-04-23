@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { FaBookmark } from 'react-icons/fa';
+import { IoBagHandleOutline, IoHeartOutline, IoHeart } from 'react-icons/io5';
 import type { ProductFulfillment } from '@/types/shop';
+import styles from './ShopBookCard.module.scss';
 
 interface ShopBookCardProps {
     id: string;
@@ -36,8 +36,7 @@ export default function ShopBookCard({
     const bookmarked = typeof isBookmarked === 'boolean' ? isBookmarked : internalBookmark;
 
     return (
-        <div className="w-full relative border border-[#221E20] bg-white flex flex-col sm:flex-row group transition-all duration-300">
-            {/* Bookmark Icon */}
+        <article className={styles.card}>
             <button
                 onClick={(e) => {
                     e.preventDefault();
@@ -49,75 +48,65 @@ export default function ShopBookCard({
                     }
                     setInternalBookmark(next);
                 }}
-                className={`absolute top-[15px] right-[10px] z-20 p-1 transition-colors ${bookmarked ? 'text-[#cc0000]' : 'text-[#221E20] hover:text-[#cc0000]'
-                    }`}
+                className={[
+                    styles.bookmarkButton,
+                    bookmarked ? styles['bookmarkButton--active'] : '',
+                ].join(' ').trim()}
                 aria-label="В закладки"
             >
-                <FaBookmark size={20} />
+                {bookmarked ? <IoHeart size={22} /> : <IoHeartOutline size={22} />}
             </button>
 
-            {/* Clickable Area */}
-            <Link href={`/shop/${id}`} className="contents">
-                {/* Image Section */}
-                <div className="relative w-full sm:w-[225px] h-[315px] sm:h-[315px] shrink-0 bg-gray-100 border-b sm:border-b-0 sm:border-r border-[#221E20]">
+            <Link href={`/shop/${id}`} className={styles.linkWrap}>
+                <div className={styles.coverWrap}>
                     {imageUrl ? (
-                        <Image
+                        <img
                             src={imageUrl}
                             alt={title}
-                            fill
-                            className="object-cover"
+                            className={styles.cover}
                         />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[#221E20]/20 font-serif text-4xl">
+                        <div className={styles.coverPlaceholder}>
                             COVER
                         </div>
                     )}
                 </div>
 
-                {/* Info Section */}
-                <div className="flex-1 p-5 sm:pl-[20px] sm:pt-[20px] sm:pr-[40px] flex flex-col relative">
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        <span className="text-[11px] px-2 py-1 border border-[#221E20]/15 rounded-full uppercase tracking-wider">
+                <div className={styles.info}>
+                    <div className={styles.tags}>
+                        <span className={styles.tag}>
                             {categoryLabel}
                         </span>
-                        <span className="text-[11px] px-2 py-1 bg-[#F2D2C3] rounded-full uppercase tracking-wider">
+                        <span className={styles.tag}>
                             {fulfillmentLabel}
                         </span>
                     </div>
 
-                    {/* Title */}
-                    <h3 className="font-serif font-bold text-xl leading-tight mb-[20px] max-w-[420px] text-[#221E20] group-hover:opacity-70 transition-opacity">
+                    <h3 className={styles.title}>
                         {title}
                     </h3>
 
-                    {/* Description */}
-                    <p className="font-serif text-[15px] leading-relaxed opacity-80 max-w-[480px] text-[#221E20] line-clamp-4">
+                    <p className={styles.description}>
                         {description}
                     </p>
-
-                    {/* Actions / Price */}
-                    <div className="mt-auto pt-[40px] sm:pt-[70px] flex items-center justify-between gap-3">
-                        {onAddToCart ? (
-                            <button
-                                type="button"
-                                className="text-[12px] px-3 py-1.5 border border-[#221E20]/20 rounded hover:border-[#221E20] transition-colors"
-                                onClick={(event) => {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    onAddToCart(id);
-                                }}
-                            >
-                                В корзину
-                            </button>
-                        ) : <span />}
-                        <div className="bg-[#F2D2C3] rounded-[4px] px-[8px] py-[4px] h-[25px] max-w-[100px] flex items-center justify-center">
-                            <span className="font-serif font-bold text-[13px] text-[#221E20] leading-none">
-                                {price} ₽
-                            </span>
-                        </div>
-                    </div>
                 </div>
             </Link>
-        </div>
+
+            <div className={styles.actions}>
+                <p className={styles.price}>{price} ₽</p>
+                <button
+                    type="button"
+                    className={styles.cartButton}
+                    onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        onAddToCart?.(id);
+                    }}
+                >
+                    <IoBagHandleOutline size={16} />
+                    <span>В корзину</span>
+                </button>
+            </div>
+        </article>
     );
 }

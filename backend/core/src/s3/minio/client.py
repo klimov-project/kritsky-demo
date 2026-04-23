@@ -36,7 +36,7 @@ class MinioS3Client(AbcS3Client):
                 SETTINGS.MINIO_ENDPOINT,
                 access_key=SETTINGS.MINIO_ACCESS_KEY,
                 secret_key=SETTINGS.MINIO_SECRET_KEY,
-                secure=bool(getattr(SETTINGS, "MINIO_SECURE", False)),
+                secure=SETTINGS.MINIO_SECURE,
             )
             
             if hasattr(self._client, '_http'):

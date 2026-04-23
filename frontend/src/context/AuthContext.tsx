@@ -24,7 +24,7 @@ interface AuthContextType {
     adminLogin: (login: string, password: string) => Promise<AuthUser>;
     logout: (redirectTo?: string) => void;
     refreshUser: () => Promise<void>;
-    updateProfile: (payload: { name?: string; email?: string; phone?: string }) => Promise<AuthUser>;
+    updateProfile: (payload: { name?: string; phone?: string }) => Promise<AuthUser>;
     changePassword: (payload: { currentPassword: string; newPassword: string }) => Promise<void>;
 }
 
@@ -92,14 +92,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         router.push(redirectTo);
     }, [router]);
 
-    const updateProfile = useCallback(async (payload: { name?: string; email?: string; phone?: string }) => {
+    const updateProfile = useCallback(async (payload: { name?: string; phone?: string }) => {
         const nextUser = await apiUpdateProfile(payload);
         setUser(nextUser);
         return nextUser;
     }, []);
 
     const changePassword = useCallback(async (payload: { currentPassword: string; newPassword: string }) => {
-        await apiChangePassword(payload);
+        await apiChangePassword({
+            oldPassword: payload.currentPassword,
+            newPassword: payload.newPassword,
+        });
     }, []);
 
     const value = useMemo<AuthContextType>(() => ({
@@ -128,4 +131,3 @@ export function useAuth() {
     if (!context) throw new Error('useAuth must be used within an AuthProvider');
     return context;
 }
-

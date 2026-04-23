@@ -235,4 +235,4 @@ async def change_password(
 
         user.password = get_password_hash(payload.newPassword)
         await session.commit()
-        return {"status": "ok"}
+        return {"ok": True}

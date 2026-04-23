@@ -9,6 +9,13 @@ export interface CartItemsSectionProps {
     onRemoveItem: (bookId: string) => Promise<void>;
 }
 
+export interface CartItemCardProps {
+    item: CartLineItem;
+    isSubmitting: boolean;
+    onChangeQuantity: (bookId: string, nextQuantity: number) => Promise<void>;
+    onRemoveItem: (bookId: string) => Promise<void>;
+}
+
 export interface CartCheckoutPanelProps {
     cartTotalAmount: number;
     deliveryAmount: number;
@@ -49,6 +56,7 @@ export interface CartPageContentProps {
     onChangeQuantity: (bookId: string, nextQuantity: number) => Promise<void>;
     onRemoveItem: (bookId: string) => Promise<void>;
     onCheckout: () => Promise<void>;
+    onOpenFeedback: () => void;
 }
 
 export interface UseCartPageResult {
@@ -75,4 +83,5 @@ export interface UseCartPageResult {
     handleCheckout: () => Promise<void>;
     goToShop: () => void;
     goToMyBooks: () => void;
+    openFeedbackModal: () => void;
 }

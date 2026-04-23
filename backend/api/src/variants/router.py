@@ -28,7 +28,7 @@ router = APIRouter(prefix="/api/variants", tags=["variants"])
 SUBSCRIPTION_DAILY_EXPORT_LIMIT = 3
 
 
-from db.config import SETTINGS
+from api.config import SETTINGS
 
 KB_CACHE_DB_SYNC_INTERVAL_SECONDS = SETTINGS.KB_CACHE_DB_SYNC_INTERVAL_SECONDS
 _next_kb_cache_db_sync_monotonic = 0.0
