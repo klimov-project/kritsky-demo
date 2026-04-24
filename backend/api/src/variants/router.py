@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import time
 from datetime import date, datetime, timezone
-from typing import Any, Literal
+from typing import Any, Dict, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
@@ -19,6 +19,12 @@ from api.src.variants.randomizer import (
     generate_variant_runtime,
     refresh_block_runtime,
     refresh_task_runtime,
+)
+from api.src.variants.randomizer_v2 import (
+    generate_variant_runtime2,
+    refresh_task_runtime2,
+    refresh_block_runtime2,
+    generate_block_standalone2,
 )
 from db.src.connect import ainit_session, init_session
 from db.src.models import KnowledgeBaseState, SavedVariant, Subscription, User, VariantExport
@@ -36,7 +42,9 @@ _in_memory_kb_payload: dict[str, Any] | None = None
 _in_memory_kb_updated_at: datetime | None = None
 
 _cached_pregenerated_variant = None
+_cached_pregenerated_variant_v2 = None
 _cached_pregenerated_variant_at = None
+_cached_pregenerated_variant_v2_at = None
 
 
 class SavedVariantPayload(BaseModel):
@@ -221,6 +229,7 @@ def warm_runtime_variant_payload_cache() -> None:
         return
     try:
         _generate_pregenerated_variant()
+        _generate_pregenerated_variant_v2()
     except Exception:
         return
 
@@ -331,6 +340,55 @@ def runtime_refresh_task(payload: RuntimeRefreshTaskPayload) -> RuntimeVariantRe
         ) from error
 
 
+@router.post("/runtime/generate-v2", response_model=RuntimeVariantResponse)
+def runtime_generate_variant_v2(payload: RuntimeGeneratePayload) -> RuntimeVariantResponse:
+    try:
+        response = generate_variant_runtime2(_load_knowledge_base_payload(), payload.model_dump())
+        return RuntimeVariantResponse(
+            variant=response["variant"],
+            evaluation=response["evaluation"],
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
+    except Exception as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate variant v2: {error}",
+        ) from error
+
+
+@router.post("/runtime/generate-block-v2")
+def runtime_generate_block_v2(payload: dict[str, Any]) -> dict[str, Any]:
+    """
+    Автономная генерация отдельного блока (block1, block2 или block3) V2.
+    """
+    try:
+        response = generate_block_standalone2(_load_knowledge_base_payload(), payload)
+        return response
+    except Exception as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate standalone block: {error}",
+        ) from error
+
+
+@router.post("/runtime/refresh-task-v2", response_model=RuntimeVariantResponse)
+def runtime_refresh_task_v2(payload: RuntimeRefreshTaskPayload) -> RuntimeVariantResponse:
+    try:
+        response = refresh_task_runtime2(_load_knowledge_base_payload(), payload.model_dump())
+        return RuntimeVariantResponse(
+            variant=response["variant"],
+            evaluation=response["evaluation"],
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
+    except Exception as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to refresh task v2: {error}",
+        ) from error
+
+
 def _generate_pregenerated_variant() -> dict[str, Any]:
     """
     Генерирует и кэширует эталонный вариант ЕГЭ.
@@ -363,6 +421,37 @@ def _generate_pregenerated_variant() -> dict[str, Any]:
     response = generate_variant_runtime(kb_payload, payload)
     _cached_pregenerated_variant = response
     _cached_pregenerated_variant_at = datetime.now(timezone.utc)
+    return response
+
+
+def _generate_pregenerated_variant_v2() -> dict[str, Any]:
+    """
+    Генерирует и кэширует эталонный вариант ЕГЭ (V2).
+    """
+    global _cached_pregenerated_variant_v2, _cached_pregenerated_variant_v2_at
+
+    kb_payload = _load_knowledge_base_payload()
+
+    works = [w for w in (kb_payload.get("works") or []) if isinstance(w, dict)]
+    poets = [p for p in (kb_payload.get("poets") or []) if isinstance(p, dict)]
+
+    first_work_id = str((works[0].get("id") or "")) if works else ""
+    first_poet_id = str((poets[0].get("id") or "")) if poets else ""
+
+    payload = {
+        "useSelected": True,
+        "selectedWorkId": first_work_id,
+        "selectedExcerptId": "",
+        "selectedPoetId": first_poet_id,
+        "selectedPoemId": "",
+        "selectedThemeId": "",
+        "selectedBlock3AuthorId": "",
+        "task1Filters": {"includeWorkQuestions": True, "includeTermQuestions": True},
+    }
+
+    response = generate_variant_runtime2(kb_payload, payload)
+    _cached_pregenerated_variant_v2 = response
+    _cached_pregenerated_variant_v2_at = datetime.now(timezone.utc)
     return response
 
 
@@ -402,6 +491,37 @@ def force_generate_pregenerated_variant() -> RuntimeVariantResponse:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to force generate pregenerated variant: {error}",
+        ) from error
+
+
+@router.get("/runtime/pregenerated-v2", response_model=RuntimeVariantResponse)
+def get_runtime_pregenerated_variant_v2() -> RuntimeVariantResponse:
+    if _cached_pregenerated_variant_v2 is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "Pregenerated V2 variant is not ready yet. "
+                "Trigger generation via GET /api/variants/runtime/pregenerated-v2/generate."
+            ),
+        )
+    return RuntimeVariantResponse(
+        variant=_cached_pregenerated_variant_v2["variant"],
+        evaluation=_cached_pregenerated_variant_v2["evaluation"],
+    )
+
+
+@router.get("/runtime/pregenerated-v2/generate", response_model=RuntimeVariantResponse)
+def force_generate_pregenerated_variant_v2() -> RuntimeVariantResponse:
+    try:
+        response = _generate_pregenerated_variant_v2()
+        return RuntimeVariantResponse(
+            variant=response["variant"],
+            evaluation=response["evaluation"],
+        )
+    except Exception as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to force generate pregenerated V2 variant: {error}",
         ) from error
 
 
