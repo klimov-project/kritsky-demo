@@ -56,11 +56,11 @@ def upgrade() -> None:
         op.create_index('ix_variant_exports_user_id', 'variant_exports', ['user_id'])
         op.create_index('ix_variant_exports_saved_variant_id', 'variant_exports', ['saved_variant_id'])
 
-    def add_col_if_missing(table_name, column_name, column_type, **kwargs):
+    def add_col_if_missing(table_name, column_name, column_type, *args, **kwargs):
         if table_name in existing_tables:
             columns = [c['name'] for c in inspector.get_columns(table_name)]
             if column_name not in columns:
-                op.add_column(table_name, sa.Column(column_name, column_type, **kwargs))
+                op.add_column(table_name, sa.Column(column_name, column_type, *args, **kwargs))
 
     add_col_if_missing('cart_items', 'quantity', sa.Integer(), nullable=False, server_default='1')
     add_col_if_missing('payments', 'order_id', sa.Integer(), sa.ForeignKey('orders.id', ondelete='SET NULL'), nullable=True)

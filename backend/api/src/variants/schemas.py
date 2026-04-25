@@ -120,10 +120,18 @@ class VariantFolderPayload(BaseModel):
     name: str
 
 
+class VariantFolderUpdatePayload(BaseModel):
+    name: str | None = None
+    position: int | None = None
+
+
 class VariantFolderResponse(BaseModel):
     id: int
     name: str
     createdAt: datetime
+    shareToken: str | None = None
+    isShared: bool = False
+    position: int = 0
 
 
 class VariantFolderListResponse(BaseModel):
