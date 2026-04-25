@@ -655,6 +655,20 @@ def _order_item_to_purchase_dto(item: OrderItem, include_payload: bool = True) -
     generated_collection = None
     if include_payload and isinstance(item.payload, dict) and item.payload.get("kind") in ("author_collection_1_5", "full_variant_collection"):
         generated_collection = item.payload
+        if hasattr(item, "tasks") and item.tasks:
+            from api.src.variants.task_links import rebuild_variant_from_links
+            tasks_by_variant_idx = {}
+            for t in item.tasks:
+                tasks_by_variant_idx.setdefault(t.variant_index, []).append(t)
+            
+            packs = generated_collection.get("packs", [])
+            vi = 0
+            for pack in packs:
+                variants = pack.get("variants", [])
+                for i in range(len(variants)):
+                    variant_tasks = tasks_by_variant_idx.get(vi, [])
+                    variants[i] = rebuild_variant_from_links(variant_tasks, variants[i])
+                    vi += 1
     return PurchasedItemResponse(
         id=item.id,
         orderId=item.order_id,

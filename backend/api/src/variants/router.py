@@ -8,6 +8,7 @@ from typing import Any, Dict, Literal
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
+from sqlalchemy.orm import selectinload
 
 from api.src.auth.utils import AuthenticatedUser, get_current_user
 from api.src.cache.knowledge_base_cache import (
@@ -27,7 +28,10 @@ from api.src.variants.randomizer_v2 import (
     generate_block_standalone2,
 )
 from db.src.connect import ainit_session, init_session
-from db.src.models import KnowledgeBaseState, SavedVariant, Subscription, User, VariantExport
+from db.src.models import KnowledgeBaseState, SavedVariant, SavedVariantTask, Subscription, User, VariantExport
+
+import logging
+_logger = logging.getLogger(__name__)
 
 
 router = APIRouter(prefix="/api/variants", tags=["variants"])
@@ -186,12 +190,18 @@ async def _get_export_quota(user: User, session) -> ExportQuotaResponse:
 
 
 def _to_dto(item: SavedVariant) -> SavedVariantResponse:
+    variant_payload = item.variant_payload or {}
+    
+    if hasattr(item, "tasks") and item.tasks:
+        from api.src.variants.task_links import rebuild_variant_from_links
+        variant_payload = rebuild_variant_from_links(item.tasks, variant_payload)
+
     return SavedVariantResponse(
         id=item.id,
         userId=item.user_id,
         createdAt=item.createdAt,
         updatedAt=item.updatedAt,
-        variant=item.variant_payload or {},
+        variant=variant_payload,
         settings=item.settings_payload or {},
     )
 
@@ -289,6 +299,27 @@ def _load_knowledge_base_payload() -> dict[str, Any]:
     return _normalize_payload(cached_payload)
 
 
+_in_memory_kb_payload_v2: dict[str, Any] | None = None
+_in_memory_kb_v2_updated_at: float = 0.0
+
+
+def _load_v2_knowledge_base_payload() -> dict[str, Any]:
+    global _in_memory_kb_payload_v2, _in_memory_kb_v2_updated_at
+    
+    now = time.monotonic()
+    if _in_memory_kb_payload_v2 is not None and now - _in_memory_kb_v2_updated_at < 60:
+        return _in_memory_kb_payload_v2
+        
+    from db.src.connect import init_session
+    from api.src.knowledge_base.builder import build_kb_payload_from_tables
+    
+    with init_session() as session:
+        _in_memory_kb_payload_v2 = build_kb_payload_from_tables(session)
+        _in_memory_kb_v2_updated_at = now
+        
+    return _in_memory_kb_payload_v2
+
+
 @router.post("/runtime/generate", response_model=RuntimeVariantResponse)
 def runtime_generate_variant(payload: RuntimeGeneratePayload) -> RuntimeVariantResponse:
     try:
@@ -343,7 +374,7 @@ def runtime_refresh_task(payload: RuntimeRefreshTaskPayload) -> RuntimeVariantRe
 @router.post("/runtime/generate-v2", response_model=RuntimeVariantResponse)
 def runtime_generate_variant_v2(payload: RuntimeGeneratePayload) -> RuntimeVariantResponse:
     try:
-        response = generate_variant_runtime2(_load_knowledge_base_payload(), payload.model_dump())
+        response = generate_variant_runtime2(_load_v2_knowledge_base_payload(), payload.model_dump())
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
@@ -363,7 +394,7 @@ def runtime_generate_block_v2(payload: dict[str, Any]) -> dict[str, Any]:
     Автономная генерация отдельного блока (block1, block2 или block3) V2.
     """
     try:
-        response = generate_block_standalone2(_load_knowledge_base_payload(), payload)
+        response = generate_block_standalone2(_load_v2_knowledge_base_payload(), payload)
         return response
     except Exception as error:
         raise HTTPException(
@@ -375,7 +406,7 @@ def runtime_generate_block_v2(payload: dict[str, Any]) -> dict[str, Any]:
 @router.post("/runtime/refresh-block-v2", response_model=RuntimeVariantResponse)
 def runtime_refresh_block_v2(payload: RuntimeRefreshBlockPayload) -> RuntimeVariantResponse:
     try:
-        response = refresh_block_runtime2(_load_knowledge_base_payload(), payload.model_dump())
+        response = refresh_block_runtime2(_load_v2_knowledge_base_payload(), payload.model_dump())
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
@@ -392,7 +423,7 @@ def runtime_refresh_block_v2(payload: RuntimeRefreshBlockPayload) -> RuntimeVari
 @router.post("/runtime/refresh-task-v2", response_model=RuntimeVariantResponse)
 def runtime_refresh_task_v2(payload: RuntimeRefreshTaskPayload) -> RuntimeVariantResponse:
     try:
-        response = refresh_task_runtime2(_load_knowledge_base_payload(), payload.model_dump())
+        response = refresh_task_runtime2(_load_v2_knowledge_base_payload(), payload.model_dump())
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
@@ -447,7 +478,7 @@ def _generate_pregenerated_variant_v2() -> dict[str, Any]:
     """
     global _cached_pregenerated_variant_v2, _cached_pregenerated_variant_v2_at
 
-    kb_payload = _load_knowledge_base_payload()
+    kb_payload = _load_v2_knowledge_base_payload()
 
     works = [w for w in (kb_payload.get("works") or []) if isinstance(w, dict)]
     poets = [p for p in (kb_payload.get("poets") or []) if isinstance(p, dict)]
@@ -548,6 +579,7 @@ async def list_saved_variants(auth: AuthenticatedUser = Depends(get_current_user
         query = await session.execute(
             select(SavedVariant)
             .where(SavedVariant.user_id == auth.user.id)
+            .options(selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task))
             .order_by(SavedVariant.id.desc())
         )
         items = query.scalars().all()
@@ -558,10 +590,12 @@ async def list_saved_variants(auth: AuthenticatedUser = Depends(get_current_user
 async def get_saved_variant(variant_id: int, auth: AuthenticatedUser = Depends(get_current_user)) -> SavedVariantResponse:
     async with ainit_session() as session:
         query = await session.execute(
-            select(SavedVariant).where(
+            select(SavedVariant)
+            .where(
                 SavedVariant.id == variant_id,
                 SavedVariant.user_id == auth.user.id,
             )
+            .options(selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task))
         )
         item = query.scalar_one_or_none()
         if item is None:
@@ -583,6 +617,17 @@ async def create_saved_variant(
         session.add(item)
         await session.commit()
         await session.refresh(item)
+
+        # Phase 2: dual-write — link tasks to kb_tasks (non-fatal)
+        try:
+            from api.src.variants.task_links import link_saved_variant_tasks
+            linked = await link_saved_variant_tasks(item.id, payload.variant, session)
+            await session.commit()
+            if linked:
+                _logger.info("Linked %d tasks for saved_variant %d", linked, item.id)
+        except Exception:
+            _logger.exception("Failed to link tasks for saved_variant %d", item.id)
+
         return _to_dto(item)
 
 

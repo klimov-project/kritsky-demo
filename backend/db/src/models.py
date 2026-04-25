@@ -214,6 +214,7 @@ class SavedVariant(Base, BaseMixin, CreatedAtMixin, UpdatedAtMixin):
 
     user: Mapped["User"] = relationship("User", back_populates="saved_variants")
     exports: Mapped[List["VariantExport"]] = relationship("VariantExport", back_populates="saved_variant", cascade="all, delete-orphan")
+    tasks: Mapped[List["SavedVariantTask"]] = relationship("SavedVariantTask", back_populates="saved_variant", cascade="all, delete-orphan")
 
 
 class VariantExport(Base, BaseMixin, CreatedAtMixin):
@@ -271,6 +272,7 @@ class OrderItem(Base, BaseMixin, CreatedAtMixin):
 
     order: Mapped["Order"] = relationship("Order", back_populates="items")
     book: Mapped[Optional["Book"]] = relationship("Book")
+    tasks: Mapped[List["OrderItemTask"]] = relationship("OrderItemTask", back_populates="order_item", cascade="all, delete-orphan")
 
 
 class PhoneVerificationCode(Base):
@@ -388,3 +390,162 @@ class KnowledgeBaseState(Base, BaseMixin, CreatedAtMixin, UpdatedAtMixin):
     __tablename__ = "knowledge_base_state"
 
     payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+
+
+class KbSetting(Base, CreatedAtMixin, UpdatedAtMixin):
+    __tablename__ = "kb_settings"
+
+    key: Mapped[str] = mapped_column(String(255), primary_key=True)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+
+
+# ---------------------------------------------------------------------------
+# Versioned Knowledge Base tables
+# ---------------------------------------------------------------------------
+
+
+class KbAuthor(Base, BaseMixin, CreatedAtMixin):
+    __tablename__ = "kb_authors"
+
+    external_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+
+
+class KbWork(Base, BaseMixin, CreatedAtMixin):
+    __tablename__ = "kb_works"
+
+    external_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    work_code: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    author_id: Mapped[Optional[int]] = mapped_column(ForeignKey("kb_authors.id"), nullable=True)
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    age18: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false", default=False)
+    internal_tags: Mapped[str] = mapped_column(Text, nullable=False, server_default="", default="")
+    external_tags: Mapped[str] = mapped_column(Text, nullable=False, server_default="", default="")
+
+    author: Mapped[Optional["KbAuthor"]] = relationship("KbAuthor", lazy="joined")
+    excerpts: Mapped[List["KbExcerpt"]] = relationship(
+        "KbExcerpt", back_populates="work", cascade="all, delete-orphan", passive_deletes=True,
+    )
+
+
+class KbExcerpt(Base, BaseMixin, CreatedAtMixin):
+    __tablename__ = "kb_excerpts"
+
+    external_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    excerpt_code: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    work_id: Mapped[int] = mapped_column(ForeignKey("kb_works.id", ondelete="CASCADE"), nullable=False)
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0", default=0)
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    chapter: Mapped[str] = mapped_column(String(500), nullable=False, server_default="", default="")
+    theme_internal_id: Mapped[str] = mapped_column(String(255), nullable=False, server_default="", default="")
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+
+    work: Mapped["KbWork"] = relationship("KbWork", back_populates="excerpts")
+    exclusions: Mapped[List["KbExcerptExclusion"]] = relationship(
+        "KbExcerptExclusion", back_populates="excerpt", cascade="all, delete-orphan", passive_deletes=True,
+    )
+
+
+class KbPoem(Base, BaseMixin, CreatedAtMixin):
+    __tablename__ = "kb_poems"
+
+    external_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    poem_code: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    author_id: Mapped[Optional[int]] = mapped_column(ForeignKey("kb_authors.id"), nullable=True)
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    age18: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false", default=False)
+
+    author: Mapped[Optional["KbAuthor"]] = relationship("KbAuthor", lazy="joined")
+
+
+class KbTask(Base, BaseMixin, CreatedAtMixin):
+    """Версионированное задание ЕГЭ."""
+    __tablename__ = "kb_tasks"
+
+    external_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1", default=1)
+
+    task_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    format: Mapped[str] = mapped_column(String(30), nullable=False)
+    scope: Mapped[str] = mapped_column(String(30), nullable=False)
+
+    work_id: Mapped[Optional[int]] = mapped_column(ForeignKey("kb_works.id"), nullable=True, index=True)
+    excerpt_id: Mapped[Optional[int]] = mapped_column(ForeignKey("kb_excerpts.id"), nullable=True, index=True)
+    poem_id: Mapped[Optional[int]] = mapped_column(ForeignKey("kb_poems.id"), nullable=True, index=True)
+
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true", default=True)
+    author_id_str: Mapped[str] = mapped_column("author_id_str", String(255), nullable=False, server_default="", default="")
+    term_id: Mapped[str] = mapped_column(String(255), nullable=False, server_default="", default="")
+    tags: Mapped[str] = mapped_column(String(1000), nullable=False, server_default="", default="")
+
+    content: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+    created_by: Mapped[str] = mapped_column(String(255), nullable=False, server_default="system", default="system")
+
+    __table_args__ = (
+        UniqueConstraint("external_id", "version", name="uq_kb_tasks_external_version"),
+        Index("ix_kb_tasks_type", "task_type"),
+        Index("ix_kb_tasks_scope", "scope"),
+        Index("ix_kb_tasks_active_lookup", "external_id", "is_active"),
+    )
+
+
+class KbExcerptExclusion(Base, BaseMixin, CreatedAtMixin):
+    __tablename__ = "kb_excerpt_exclusions"
+
+    excerpt_id: Mapped[int] = mapped_column(ForeignKey("kb_excerpts.id", ondelete="CASCADE"), nullable=False, index=True)
+    exclusion_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    excluded_value: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    excerpt: Mapped["KbExcerpt"] = relationship("KbExcerpt", back_populates="exclusions")
+
+    __table_args__ = (
+        UniqueConstraint("excerpt_id", "exclusion_type", "excluded_value", name="uq_kb_excerpt_exclusion"),
+    )
+
+
+class SavedVariantTask(Base, BaseMixin, CreatedAtMixin):
+    """Связь сохранённого варианта с конкретными версиями заданий."""
+    __tablename__ = "saved_variant_tasks"
+
+    saved_variant_id: Mapped[int] = mapped_column(
+        ForeignKey("saved_variants.id", ondelete="CASCADE"), nullable=False, index=True,
+    )
+    task_id: Mapped[int] = mapped_column(ForeignKey("kb_tasks.id"), nullable=False)
+    task_slot: Mapped[str] = mapped_column(String(30), nullable=False)
+    slot_order: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0", default=0)
+
+    runtime_snapshot: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
+
+    saved_variant: Mapped["SavedVariant"] = relationship("SavedVariant", back_populates="tasks")
+    task: Mapped["KbTask"] = relationship("KbTask", lazy="joined")
+
+    __table_args__ = (
+        UniqueConstraint("saved_variant_id", "task_slot", "slot_order", name="uq_saved_variant_task_slot"),
+    )
+
+
+class OrderItemTask(Base, BaseMixin, CreatedAtMixin):
+    """Связь элемента заказа (сборника) с конкретными версиями заданий."""
+    __tablename__ = "order_item_tasks"
+
+    order_item_id: Mapped[int] = mapped_column(
+        ForeignKey("order_items.id", ondelete="CASCADE"), nullable=False, index=True,
+    )
+    variant_index: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0", default=0)
+    task_id: Mapped[int] = mapped_column(ForeignKey("kb_tasks.id"), nullable=False)
+    task_slot: Mapped[str] = mapped_column(String(30), nullable=False)
+    slot_order: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0", default=0)
+
+    runtime_snapshot: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
+
+    order_item: Mapped["OrderItem"] = relationship("OrderItem", back_populates="tasks")
+    task: Mapped["KbTask"] = relationship("KbTask", lazy="joined")
+
+    __table_args__ = (
+        UniqueConstraint(
+            "order_item_id", "variant_index", "task_slot", "slot_order",
+            name="uq_order_item_task_slot",
+        ),
+    )

@@ -66,6 +66,7 @@ def save_knowledge_base(payload: KnowledgeBasePayload) -> KnowledgeBaseResponse:
     try:
         from db.src.connect import init_session
         from sqlalchemy.exc import IntegrityError
+        from .saver import sync_kb_payload_to_tables
 
         with init_session() as session:
             state = session.get(KnowledgeBaseState, 1)
@@ -75,6 +76,9 @@ def save_knowledge_base(payload: KnowledgeBasePayload) -> KnowledgeBaseResponse:
                 state.payload = normalized_payload
 
             session.add(state)
+            
+            # Phase 4 dual-write:
+            sync_kb_payload_to_tables(normalized_payload, session)
             try:
                 session.commit()
             except IntegrityError:
@@ -107,6 +111,7 @@ def set_weekly_pins(payload: WeeklyPinsPayload) -> dict[str, bool]:
     """
     try:
         from db.src.connect import init_session
+        from db.src.models import KbSetting
 
         with init_session() as session:
             state = session.get(KnowledgeBaseState, 1)
@@ -124,6 +129,13 @@ def set_weekly_pins(payload: WeeklyPinsPayload) -> dict[str, bool]:
             state.payload = current_payload
 
             session.add(state)
+            
+            # Dual-write to KbSetting
+            setting_db = session.get(KbSetting, "weeklyPins")
+            if setting_db:
+                setting_db.payload = payload.weeklyPins
+            else:
+                session.add(KbSetting(key="weeklyPins", payload=payload.weeklyPins))
             session.commit()
             session.refresh(state)
 
@@ -149,6 +161,7 @@ def set_weekly_variant(payload: WeeklyVariantPayload) -> dict[str, bool]:
     """
     try:
         from db.src.connect import init_session
+        from db.src.models import KbSetting
 
         with init_session() as session:
             state = session.get(KnowledgeBaseState, 1)
@@ -166,6 +179,13 @@ def set_weekly_variant(payload: WeeklyVariantPayload) -> dict[str, bool]:
             state.payload = current_payload
 
             session.add(state)
+            
+            # Dual-write to KbSetting
+            setting_db = session.get(KbSetting, "weeklyVariant")
+            if setting_db:
+                setting_db.payload = payload.weeklyVariant
+            else:
+                session.add(KbSetting(key="weeklyVariant", payload=payload.weeklyVariant))
             session.commit()
             session.refresh(state)
 
@@ -213,9 +233,30 @@ def refresh_knowledge_base_cache_route() -> KnowledgeBaseCacheMetaResponse:
 
 def warm_knowledge_base_cache_from_db() -> None:
     try:
+        from db.src.connect import init_session
+        from sqlalchemy import select, func
+        from db.src.models import KbTask
+        from .saver import sync_kb_payload_to_tables
+        import logging
+        
         state = _get_or_create_state()
+        normalized_payload = _normalize_payload(state.payload)
+        
+        # Phase 4 auto-sync: if tables are empty but blob has data, sync them now
+        # This prevents V2 Randomizer from failing on first deploy.
+        with init_session() as session:
+            task_count = session.execute(select(func.count(KbTask.id))).scalar() or 0
+            if task_count == 0 and normalized_payload.get("works"):
+                logging.getLogger(__name__).info("KB tables are empty. Running automatic initial sync from blob...")
+                try:
+                    sync_kb_payload_to_tables(normalized_payload, session)
+                    session.commit()
+                    logging.getLogger(__name__).info("Automatic KB sync completed.")
+                except Exception as e:
+                    session.rollback()
+                    logging.getLogger(__name__).error(f"Failed to auto-sync KB tables on startup: {e}")
+
     except SQLAlchemyError:
         return
 
-    normalized_payload = _normalize_payload(state.payload)
     set_cached_knowledge_base_payload(normalized_payload, state.updatedAt)

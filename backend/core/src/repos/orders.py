@@ -66,13 +66,14 @@ class DbOrdersRepo(DbMixin, AbcDBRepository):
 
 
     async def aget_user_purchases(self, user_id: int, session: AsyncSession) -> List[OrderItem]:
-        from db.src.models import Book
+        from db.src.models import Book, OrderItemTask
         query = await session.execute(
             select(OrderItem)
             .join(Order, Order.id == OrderItem.order_id)
             .options(
                 selectinload(OrderItem.order),
-                selectinload(OrderItem.book).selectinload(Book.digital_file)
+                selectinload(OrderItem.book).selectinload(Book.digital_file),
+                selectinload(OrderItem.tasks).selectinload(OrderItemTask.task)
             )
             .where(Order.user_id == user_id)
             .order_by(OrderItem.id.desc())
@@ -80,13 +81,14 @@ class DbOrdersRepo(DbMixin, AbcDBRepository):
         return list(query.scalars().all())
 
     async def aget_user_purchase(self, purchase_id: int, user_id: int, session: AsyncSession) -> Optional[OrderItem]:
-        from db.src.models import Book
+        from db.src.models import Book, OrderItemTask
         query = await session.execute(
             select(OrderItem)
             .join(Order, Order.id == OrderItem.order_id)
             .options(
                 selectinload(OrderItem.order),
-                selectinload(OrderItem.book).selectinload(Book.digital_file)
+                selectinload(OrderItem.book).selectinload(Book.digital_file),
+                selectinload(OrderItem.tasks).selectinload(OrderItemTask.task)
             )
             .where(OrderItem.id == purchase_id, Order.user_id == user_id)
         )
