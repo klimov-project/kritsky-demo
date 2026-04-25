@@ -9,6 +9,11 @@ from pydantic import BaseModel, Field
 class SavedVariantPayload(BaseModel):
     variant: dict[str, Any] = Field(default_factory=dict)
     settings: dict[str, Any] = Field(default_factory=dict)
+    folderIds: list[int] = Field(default_factory=list)
+
+
+class UpdateSavedVariantPayload(BaseModel):
+    folderIds: list[int] = Field(default_factory=list)
 
 
 class SavedVariantResponse(BaseModel):
@@ -18,6 +23,9 @@ class SavedVariantResponse(BaseModel):
     updatedAt: datetime
     variant: dict[str, Any]
     settings: dict[str, Any]
+    folderIds: list[int] = Field(default_factory=list)
+    shareToken: str | None = None
+    isShared: bool = False
 
 
 class SavedVariantListResponse(BaseModel):
@@ -104,3 +112,17 @@ class RuntimeRefreshTaskPayload(BaseModel):
 class RuntimeVariantResponse(BaseModel):
     variant: dict[str, Any]
     evaluation: dict[str, Any]
+
+
+class VariantFolderPayload(BaseModel):
+    name: str
+
+
+class VariantFolderResponse(BaseModel):
+    id: int
+    name: str
+    createdAt: datetime
+
+
+class VariantFolderListResponse(BaseModel):
+    items: list[VariantFolderResponse]

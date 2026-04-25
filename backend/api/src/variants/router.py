@@ -28,7 +28,7 @@ from api.src.variants.randomizer_v2 import (
     generate_block_standalone2,
 )
 from db.src.connect import ainit_session, init_session
-from db.src.models import KnowledgeBaseState, SavedVariant, SavedVariantTask, Subscription, User, VariantExport
+from db.src.models import KnowledgeBaseState, SavedVariant, SavedVariantTask, Subscription, User, VariantExport, VariantFolder
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -54,6 +54,11 @@ _cached_pregenerated_variant_v2_at = None
 class SavedVariantPayload(BaseModel):
     variant: dict[str, Any] = Field(default_factory=dict)
     settings: dict[str, Any] = Field(default_factory=dict)
+    folderIds: list[int] = Field(default_factory=list)
+
+
+class UpdateSavedVariantPayload(BaseModel):
+    folderIds: list[int] = Field(default_factory=list)
 
 
 class SavedVariantResponse(BaseModel):
@@ -63,6 +68,9 @@ class SavedVariantResponse(BaseModel):
     updatedAt: datetime
     variant: dict[str, Any]
     settings: dict[str, Any]
+    folderIds: list[int] = Field(default_factory=list)
+    shareToken: str | None = None
+    isShared: bool = False
 
 
 class SavedVariantListResponse(BaseModel):
@@ -203,6 +211,9 @@ def _to_dto(item: SavedVariant) -> SavedVariantResponse:
         updatedAt=item.updatedAt,
         variant=variant_payload,
         settings=item.settings_payload or {},
+        folderIds=[f.id for f in item.folders] if hasattr(item, "folders") and item.folders else [],
+        shareToken=item.share_token,
+        isShared=item.is_shared,
     )
 
 
@@ -574,12 +585,21 @@ def force_generate_pregenerated_variant_v2() -> RuntimeVariantResponse:
 
 
 @router.get("", response_model=SavedVariantListResponse)
-async def list_saved_variants(auth: AuthenticatedUser = Depends(get_current_user)) -> SavedVariantListResponse:
+async def list_saved_variants(
+    folder_id: int | None = None,
+    auth: AuthenticatedUser = Depends(get_current_user)
+) -> SavedVariantListResponse:
     async with ainit_session() as session:
+        stmt = select(SavedVariant).where(SavedVariant.user_id == auth.user.id)
+        if folder_id is not None:
+            stmt = stmt.where(SavedVariant.folders.any(VariantFolder.id == folder_id))
+        
         query = await session.execute(
-            select(SavedVariant)
-            .where(SavedVariant.user_id == auth.user.id)
-            .options(selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task))
+            stmt
+            .options(
+                selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task),
+                selectinload(SavedVariant.folders)
+            )
             .order_by(SavedVariant.id.desc())
         )
         items = query.scalars().all()
@@ -614,6 +634,17 @@ async def create_saved_variant(
             variant_payload=payload.variant,
             settings_payload=payload.settings,
         )
+        
+        if payload.folderIds:
+            query = await session.execute(
+                select(VariantFolder).where(
+                    VariantFolder.id.in_(payload.folderIds),
+                    VariantFolder.user_id == auth.user.id
+                )
+            )
+            folders = query.scalars().all()
+            item.folders = list(folders)
+
         session.add(item)
         await session.commit()
         await session.refresh(item)
@@ -636,6 +667,131 @@ async def create_saved_variant(
         )
         item = query.scalar_one()
 
+        return _to_dto(item)
+
+
+@router.patch("/{variant_id}", response_model=SavedVariantResponse)
+async def update_saved_variant(
+    variant_id: int, 
+    payload: UpdateSavedVariantPayload, 
+    auth: AuthenticatedUser = Depends(get_current_user)
+) -> SavedVariantResponse:
+    async with ainit_session() as session:
+        query = await session.execute(
+            select(SavedVariant).where(
+                SavedVariant.id == variant_id,
+                SavedVariant.user_id == auth.user.id,
+            ).options(selectinload(SavedVariant.folders))
+        )
+        item = query.scalar_one_or_none()
+        if not item:
+            raise HTTPException(status_code=404, detail="Variant not found")
+        
+        if payload.folderIds is not None:
+            if not payload.folderIds:
+                item.folders = []
+            else:
+                folder_query = await session.execute(
+                    select(VariantFolder).where(
+                        VariantFolder.id.in_(payload.folderIds),
+                        VariantFolder.user_id == auth.user.id
+                    )
+                )
+                folders = folder_query.scalars().all()
+                item.folders = list(folders)
+            
+        await session.commit()
+        await session.refresh(item)
+        
+        # Reload relations for DTO
+        query = await session.execute(
+            select(SavedVariant)
+            .where(SavedVariant.id == item.id)
+            .options(
+                selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task),
+                selectinload(SavedVariant.folders)
+            )
+        )
+        item = query.scalar_one()
+        return _to_dto(item)
+
+
+@router.post("/{variant_id}/share", response_model=SavedVariantResponse)
+async def share_variant(variant_id: int, auth: AuthenticatedUser = Depends(get_current_user)) -> SavedVariantResponse:
+    async with ainit_session() as session:
+        query = await session.execute(
+            select(SavedVariant).where(
+                SavedVariant.id == variant_id,
+                SavedVariant.user_id == auth.user.id,
+            )
+        )
+        item = query.scalar_one_or_none()
+        if not item:
+            raise HTTPException(status_code=404, detail="Variant not found")
+        
+        if not item.share_token:
+            import uuid
+            item.share_token = uuid.uuid4().hex
+        
+        item.is_shared = True
+        await session.commit()
+        await session.refresh(item)
+        
+        # Reload relations for DTO
+        query = await session.execute(
+            select(SavedVariant)
+            .where(SavedVariant.id == item.id)
+            .options(selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task))
+        )
+        item = query.scalar_one()
+        return _to_dto(item)
+
+
+@router.delete("/{variant_id}/share", response_model=SavedVariantResponse)
+async def unshare_variant(variant_id: int, auth: AuthenticatedUser = Depends(get_current_user)) -> SavedVariantResponse:
+    async with ainit_session() as session:
+        query = await session.execute(
+            select(SavedVariant).where(
+                SavedVariant.id == variant_id,
+                SavedVariant.user_id == auth.user.id,
+            )
+        )
+        item = query.scalar_one_or_none()
+        if not item:
+            raise HTTPException(status_code=404, detail="Variant not found")
+        
+        item.is_shared = False
+        await session.commit()
+        await session.refresh(item)
+        
+        # Reload relations for DTO
+        query = await session.execute(
+            select(SavedVariant)
+            .where(SavedVariant.id == item.id)
+            .options(selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task))
+        )
+        item = query.scalar_one()
+        return _to_dto(item)
+
+
+@router.get("/shared/{token}", response_model=SavedVariantResponse)
+async def get_shared_variant(token: str, auth: AuthenticatedUser = Depends(get_current_user)) -> SavedVariantResponse:
+    if not auth.user.isPro:
+        raise HTTPException(status_code=403, detail="Active subscription required to view shared variants")
+    
+    async with ainit_session() as session:
+        query = await session.execute(
+            select(SavedVariant)
+            .where(
+                SavedVariant.share_token == token,
+                SavedVariant.is_shared == True,
+            )
+            .options(selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task))
+        )
+        item = query.scalar_one_or_none()
+        if not item:
+            raise HTTPException(status_code=404, detail="Shared variant not found or access revoked")
+        
         return _to_dto(item)
 
 

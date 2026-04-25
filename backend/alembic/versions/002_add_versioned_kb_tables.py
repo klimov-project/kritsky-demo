@@ -151,9 +151,41 @@ def upgrade() -> None:
             sa.UniqueConstraint('order_item_id', 'variant_index', 'task_slot', 'slot_order', name='uq_order_item_task_slot'),
         )
         op.create_index('ix_order_item_tasks_order_item_id', 'order_item_tasks', ['order_item_id'])
+ 
+    # --- variant_folders ---
+    if 'variant_folders' not in existing_tables:
+        op.create_table(
+            'variant_folders',
+            sa.Column('id', sa.Integer(), primary_key=True),
+            sa.Column('user_id', sa.Integer(), sa.ForeignKey('users.id', ondelete='CASCADE'), nullable=False),
+            sa.Column('name', sa.String(255), nullable=False),
+            sa.Column('createdAt', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        )
+        op.create_index('ix_variant_folders_user_id', 'variant_folders', ['user_id'])
+
+    # --- add columns to saved_variants ---
+    def add_col_if_missing(table_name, column_name, column_type, *args, **kwargs):
+        columns = [c['name'] for c in inspector.get_columns(table_name)]
+        if column_name not in columns:
+            op.add_column(table_name, sa.Column(column_name, column_type, *args, **kwargs))
+
+    add_col_if_missing('saved_variants', 'share_token', sa.String(64), unique=True, nullable=True)
+    add_col_if_missing('saved_variants', 'is_shared', sa.Boolean(), server_default='false', nullable=False)
+
+    # --- saved_variant_folders ---
+    if 'saved_variant_folders' not in existing_tables:
+        op.create_table(
+            'saved_variant_folders',
+            sa.Column('variant_id', sa.Integer(), sa.ForeignKey('saved_variants.id', ondelete='CASCADE'), primary_key=True),
+            sa.Column('folder_id', sa.Integer(), sa.ForeignKey('variant_folders.id', ondelete='CASCADE'), primary_key=True),
+        )
 
 
 def downgrade() -> None:
+    op.drop_table('saved_variant_folders')
+    op.drop_table('variant_folders')
+    op.drop_column('saved_variants', 'is_shared')
+    op.drop_column('saved_variants', 'share_token')
     op.drop_table('order_item_tasks')
     op.drop_table('saved_variant_tasks')
     op.drop_table('kb_excerpt_exclusions')

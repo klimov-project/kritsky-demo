@@ -17,6 +17,8 @@ from sqlalchemy import (
     Index,
     Numeric,
     JSON,
+    Table,
+    Column,
 )
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -205,6 +207,24 @@ class FavoriteBook(Base, BaseMixin, CreatedAtMixin):
     )
 
 
+saved_variant_folders = Table(
+    "saved_variant_folders",
+    Base.metadata,
+    Column("variant_id", ForeignKey("saved_variants.id", ondelete="CASCADE"), primary_key=True),
+    Column("folder_id", ForeignKey("variant_folders.id", ondelete="CASCADE"), primary_key=True),
+)
+
+
+class VariantFolder(Base, BaseMixin, CreatedAtMixin):
+    __tablename__ = "variant_folders"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    user: Mapped["User"] = relationship("User")
+    variants: Mapped[List["SavedVariant"]] = relationship("SavedVariant", secondary=saved_variant_folders, back_populates="folders")
+
+
 class SavedVariant(Base, BaseMixin, CreatedAtMixin, UpdatedAtMixin):
     __tablename__ = "saved_variants"
 
@@ -212,7 +232,11 @@ class SavedVariant(Base, BaseMixin, CreatedAtMixin, UpdatedAtMixin):
     variant_payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
     settings_payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
 
+    share_token: Mapped[Optional[str]] = mapped_column(String(64), unique=True, nullable=True)
+    is_shared: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false", default=False)
+
     user: Mapped["User"] = relationship("User", back_populates="saved_variants")
+    folders: Mapped[List["VariantFolder"]] = relationship("VariantFolder", secondary=saved_variant_folders, back_populates="variants")
     exports: Mapped[List["VariantExport"]] = relationship("VariantExport", back_populates="saved_variant", cascade="all, delete-orphan")
     tasks: Mapped[List["SavedVariantTask"]] = relationship("SavedVariantTask", back_populates="saved_variant", cascade="all, delete-orphan")
 
