@@ -14,7 +14,31 @@ from db.src.base import Base
 from db.src.connect import engine
 
 
-app = FastAPI(title="Kritsky API")
+from contextlib import asynccontextmanager
+import asyncio
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    warm_knowledge_base_cache_from_db()
+    warm_runtime_variant_payload_cache()
+    
+    # Start background variant pool refill
+    from api.src.variants.router import _refill_variant_pool_loop_v2
+    pool_task = asyncio.create_task(_refill_variant_pool_loop_v2())
+    
+    yield
+    
+    # Shutdown
+    pool_task.cancel()
+    try:
+        await pool_task
+    except asyncio.CancelledError:
+        pass
+
+
+app = FastAPI(title="Kritsky API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,12 +47,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def on_startup() -> None:
-    warm_knowledge_base_cache_from_db()
-    warm_runtime_variant_payload_cache()
 
 
 @app.get("/health")

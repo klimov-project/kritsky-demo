@@ -9,6 +9,11 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
+import asyncio
+from collections import deque
+import logging
+_logger = logging.getLogger(__name__)
+_logger.setLevel(logging.INFO)
 
 from api.src.auth.utils import AuthenticatedUser, get_current_user
 from api.src.cache.knowledge_base_cache import (
@@ -30,10 +35,6 @@ from api.src.variants.randomizer_v2 import (
 from db.src.connect import ainit_session, init_session
 from db.src.models import KnowledgeBaseState, SavedVariant, SavedVariantTask, Subscription, User, VariantExport, VariantFolder
 
-import logging
-_logger = logging.getLogger(__name__)
-
-
 router = APIRouter(prefix="/api/variants", tags=["variants"])
 SUBSCRIPTION_DAILY_EXPORT_LIMIT = 3
 
@@ -45,10 +46,9 @@ _next_kb_cache_db_sync_monotonic = 0.0
 _in_memory_kb_payload: dict[str, Any] | None = None
 _in_memory_kb_updated_at: datetime | None = None
 
-_cached_pregenerated_variant = None
-_cached_pregenerated_variant_v2 = None
-_cached_pregenerated_variant_at = None
-_cached_pregenerated_variant_v2_at = None
+_VARIANT_POOL_SIZE = 10
+_variant_pool_v2: deque = deque(maxlen=_VARIANT_POOL_SIZE)
+_variant_pool_refill_task: asyncio.Task | None = None
 
 
 class SavedVariantPayload(BaseModel):
@@ -252,9 +252,11 @@ def warm_runtime_variant_payload_cache() -> None:
     except Exception:
         return
     try:
-        _generate_pregenerated_variant()
-        _generate_pregenerated_variant_v2()
-    except Exception:
+        # Pre-fill the pool with at least one variant at startup
+        response = _generate_pregenerated_variant_v2()
+        _variant_pool_v2.append(response)
+    except Exception as e:
+        _logger.error(f"Failed to warm variant cache: {e}")
         return
 
 
@@ -517,23 +519,57 @@ def _generate_pregenerated_variant_v2() -> dict[str, Any]:
     return response
 
 
-@router.get("/runtime/pregenerated", response_model=RuntimeVariantResponse)
-def get_runtime_pregenerated_variant() -> RuntimeVariantResponse:
-    """Return the cached pregenerated variant. Never triggers generation.
+async def _refill_variant_pool_loop_v2():
+    """Background task to keep the variant pool full."""
+    while True:
+        try:
+            if len(_variant_pool_v2) < _VARIANT_POOL_SIZE:
+                # Run CPU-bound generation in a thread
+                response = await asyncio.to_thread(_generate_pregenerated_variant_v2)
+                _variant_pool_v2.append(response)
+                _logger.info(f"Refilled variant pool. Current size: {len(_variant_pool_v2)}")
+            else:
+                await asyncio.sleep(5) # Pool is full, check less often
+        except Exception as e:
+            _logger.error(f"Error in variant pool refill: {e}")
+            await asyncio.sleep(10)
+        await asyncio.sleep(0.5)
 
-    Generation happens only at Docker startup or via GET /runtime/pregenerated/generate.
-    """
-    if _cached_pregenerated_variant is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=(
-                "Pregenerated variant is not ready yet. "
-                "Trigger generation via GET /api/variants/runtime/pregenerated/generate."
-            ),
+
+@router.get("/runtime/pregenerated", response_model=RuntimeVariantResponse)
+async def get_runtime_pregenerated_variant() -> RuntimeVariantResponse:
+    """Return a variant from the pool or generate one if empty."""
+    # We use V2 pool by default for the main endpoint if possible
+    if _variant_pool_v2:
+        response = _variant_pool_v2.popleft()
+        return RuntimeVariantResponse(
+            variant=response["variant"],
+            evaluation=response["evaluation"],
         )
+    
+    # Fallback to direct generation if pool is empty
+    response = await asyncio.to_thread(_generate_pregenerated_variant_v2)
     return RuntimeVariantResponse(
-        variant=_cached_pregenerated_variant["variant"],
-        evaluation=_cached_pregenerated_variant["evaluation"],
+        variant=response["variant"],
+        evaluation=response["evaluation"],
+    )
+
+
+@router.get("/runtime/pregenerated/v2", response_model=RuntimeVariantResponse)
+async def get_runtime_pregenerated_variant_v2() -> RuntimeVariantResponse:
+    """Return a variant from the V2 pool."""
+    if _variant_pool_v2:
+        response = _variant_pool_v2.popleft()
+        return RuntimeVariantResponse(
+            variant=response["variant"],
+            evaluation=response["evaluation"],
+        )
+    
+    # Fallback
+    response = await asyncio.to_thread(_generate_pregenerated_variant_v2)
+    return RuntimeVariantResponse(
+        variant=response["variant"],
+        evaluation=response["evaluation"],
     )
 
 
