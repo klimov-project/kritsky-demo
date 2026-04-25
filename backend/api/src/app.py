@@ -9,7 +9,7 @@ from api.src.knowledge_base.utils import warm_knowledge_base_cache_from_db
 from api.src.shop.router import router as shop_router
 from api.src.variants.router import router as variants_router
 from api.src.variants.folders_router import router as folder_router
-from api.src.variants.utils import warm_runtime_variant_payload_cache
+from api.src.variants.router import warm_runtime_variant_payload_cache
 from db.src.base import Base
 from db.src.connect import engine
 

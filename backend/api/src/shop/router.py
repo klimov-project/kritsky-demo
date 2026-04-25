@@ -28,6 +28,7 @@ from core.src.repos import (
     DbPaymentsRepo,
     DbUsersRepo,
 )
+from api.src.variants.router import _load_v2_knowledge_base_payload
 
 from api.src.auth.utils import AuthenticatedAdmin, AuthenticatedUser, get_current_admin, get_current_user
 
@@ -221,8 +222,7 @@ async def checkout(payload: CheckoutPayload, auth: AuthenticatedUser = Depends(g
         if delivery_type == "with_delivery" and not (payload.deliveryAddress or "").strip():
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Delivery address is required")
 
-        knowledge_base_state = await session.get(KnowledgeBaseState, 1)
-        knowledge_base_payload = knowledge_base_state.payload if knowledge_base_state and isinstance(knowledge_base_state.payload, dict) else {"works": []}
+        knowledge_base_payload = _load_v2_knowledge_base_payload()
 
         subtotal_amount = sum((item.book.price if item.book else Decimal("0.00")) * item.quantity for item in cart_items if item.book is not None)
         delivery_amount = _delivery_cost(delivery_type)

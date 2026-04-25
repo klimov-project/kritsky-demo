@@ -22,7 +22,7 @@ from db.src.models import (
     FavoriteBook,
     CartItem,
 )
-from api.src.variants.randomizer import generate_variant_runtime
+from api.src.variants.randomizer_v2 import generate_variant_runtime2
 from .schemas import (
     ShopBook,
     FavoriteBookResponse,
@@ -576,7 +576,7 @@ def _generate_full_variant_collection_payload(knowledge_base_payload: dict[str, 
     for pack_index in range(quantity):
         variants = []
         for variant_index in range(variants_count):
-            result = generate_variant_runtime(knowledge_base_payload, {})
+            result = generate_variant_runtime2(knowledge_base_payload, {})
             variant = result["variant"]
             variant["id"] = f"full-variant-{pack_index}-{variant_index}"
             variant["index"] = variant_index + 1
