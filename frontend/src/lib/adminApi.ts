@@ -25,10 +25,10 @@ interface AdminPaymentsListResponse {
 
 interface AdminOrdersListResponse {
     items: AdminOrder[];
-    total: int;
-    page: int;
-    pageSize: int;
-    totalPages: int;
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
 }
 
 export const getAdminDashboard = async (): Promise<AdminDashboardStats> => {

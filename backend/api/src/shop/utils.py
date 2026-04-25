@@ -22,7 +22,7 @@ from db.src.models import (
     FavoriteBook,
     CartItem,
 )
-from api.src.variants.randomizer_v2 import generate_variant_runtime2
+from api.src.variants.randomizer import generate_variant_runtime2
 from .schemas import (
     ShopBook,
     FavoriteBookResponse,

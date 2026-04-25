@@ -912,19 +912,19 @@ export default function TestPage() {
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
-                                                {variant.task8Options.slice(0, TASK8_MAX_OPTIONS).map((option, index) => {
+                                                {(variant.task8Options || []).slice(0, TASK8_MAX_OPTIONS).map((option, index) => {
                                                     return (
                                                         <div key={`${option.id}-${index}`}>
                                                             {index + 1}. {option.term}
                                                         </div>
                                                     );
                                                 })}
-                                                {!variant.task8Options.length && <div className="opacity-60">Варианты пока не сформированы.</div>}
+                                                {!(variant.task8Options || []).length && <div className="opacity-60">Варианты пока не сформированы.</div>}
                                             </div>
                                             <div className="text-sm opacity-60">Ответ: ____________________</div>
                                             {checkedAnswers.has('task8') && (
                                                 <div className="text-xs opacity-80">
-                                                    Ответ: {getTask8CorrectOptionNumbers(variant.task8Options.slice(0, TASK8_MAX_OPTIONS)).join(', ') || '—'}
+                                                    Ответ: {getTask8CorrectOptionNumbers((variant.task8Options || []).slice(0, TASK8_MAX_OPTIONS)).join(', ') || '—'}
                                                 </div>
                                             )}
                                         </div>

@@ -21,7 +21,7 @@ from api.src.cache.knowledge_base_cache import (
     set_cached_knowledge_base_payload,
 )
 from api.src.knowledge_base.router import _get_or_create_state, _normalize_payload
-from api.src.variants.randomizer_v2 import (
+from api.src.variants.randomizer import (
     generate_variant_runtime2,
     refresh_task_runtime2,
     refresh_block_runtime2,
@@ -42,7 +42,7 @@ _in_memory_kb_payload: dict[str, Any] | None = None
 _in_memory_kb_updated_at: datetime | None = None
 
 _VARIANT_POOL_SIZE = 10
-_variant_pool_v2: deque = deque(maxlen=_VARIANT_POOL_SIZE)
+_variant_pool: deque = deque(maxlen=_VARIANT_POOL_SIZE)
 _variant_pool_refill_task: asyncio.Task | None = None
 
 
@@ -146,8 +146,8 @@ def warm_runtime_variant_payload_cache() -> None:
         return
     try:
         # Pre-fill the pool with at least one variant at startup
-        response = _generate_pregenerated_variant_v2()
-        _variant_pool_v2.append(response)
+        response = _generate_pregenerated_variant()
+        _variant_pool.append(response)
     except Exception as e:
         _logger.error(f"Failed to warm variant cache: {e}")
         return
@@ -163,31 +163,31 @@ def _timestamps_equal(left: datetime | None, right: datetime | None) -> bool:
     return _normalize_payload(cached_payload)
 
 
-_in_memory_kb_payload_v2: dict[str, Any] | None = None
-_in_memory_kb_v2_updated_at: float = 0.0
+_in_memory_kb_payload: dict[str, Any] | None = None
+_in_memory_kb_updated_at: float = 0.0
 
 
-def _load_v2_knowledge_base_payload() -> dict[str, Any]:
-    global _in_memory_kb_payload_v2, _in_memory_kb_v2_updated_at
+def _load_knowledge_base_payload() -> dict[str, Any]:
+    global _in_memory_kb_payload, _in_memory_kb_updated_at
     
     now = time.monotonic()
-    if _in_memory_kb_payload_v2 is not None and now - _in_memory_kb_v2_updated_at < 60:
-        return _in_memory_kb_payload_v2
+    if _in_memory_kb_payload is not None and now - _in_memory_kb_updated_at < 60:
+        return _in_memory_kb_payload
         
     from db.src.connect import init_session
     from api.src.knowledge_base.builder import build_kb_payload_from_tables
     
     with init_session() as session:
-        _in_memory_kb_payload_v2 = build_kb_payload_from_tables(session)
-        _in_memory_kb_v2_updated_at = now
+        _in_memory_kb_payload = build_kb_payload_from_tables(session)
+        _in_memory_kb_updated_at = now
         
-    return _in_memory_kb_payload_v2
+    return _in_memory_kb_payload
 
 
 @router.post("/runtime/generate", response_model=RuntimeVariantResponse)
 def runtime_generate_variant(payload: RuntimeGeneratePayload) -> RuntimeVariantResponse:
     try:
-        response = generate_variant_runtime2(_load_v2_knowledge_base_payload(), payload.model_dump())
+        response = generate_variant_runtime2(_load_knowledge_base_payload(), payload.model_dump())
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
@@ -204,7 +204,7 @@ def runtime_generate_variant(payload: RuntimeGeneratePayload) -> RuntimeVariantR
 @router.post("/runtime/refresh-block", response_model=RuntimeVariantResponse)
 def runtime_refresh_block(payload: RuntimeRefreshBlockPayload) -> RuntimeVariantResponse:
     try:
-        response = refresh_block_runtime2(_load_v2_knowledge_base_payload(), payload.model_dump())
+        response = refresh_block_runtime2(_load_knowledge_base_payload(), payload.model_dump())
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
@@ -221,7 +221,7 @@ def runtime_refresh_block(payload: RuntimeRefreshBlockPayload) -> RuntimeVariant
 @router.post("/runtime/refresh-task", response_model=RuntimeVariantResponse)
 def runtime_refresh_task(payload: RuntimeRefreshTaskPayload) -> RuntimeVariantResponse:
     try:
-        response = refresh_task_runtime2(_load_v2_knowledge_base_payload(), payload.model_dump())
+        response = refresh_task_runtime2(_load_knowledge_base_payload(), payload.model_dump())
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
@@ -237,34 +237,16 @@ def runtime_refresh_task(payload: RuntimeRefreshTaskPayload) -> RuntimeVariantRe
 
 
 
-@router.post("/runtime/generate-block-v2")
-def runtime_generate_block_v2(payload: dict[str, Any]) -> dict[str, Any]:
-    """
-    Автономная генерация отдельного блока (block1, block2 или block3) V2.
-    """
-    try:
-        response = generate_block_standalone2(_load_v2_knowledge_base_payload(), payload)
-        return response
-    except Exception as error:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate standalone block: {error}",
-        ) from error
+
 
 
 
 
 def _generate_pregenerated_variant() -> dict[str, Any]:
-    return _generate_pregenerated_variant_v2()
-
-
-def _generate_pregenerated_variant_v2() -> dict[str, Any]:
     """
-    Генерирует и кэширует эталонный вариант ЕГЭ (V2).
+    Генерирует и кэширует эталонный вариант ЕГЭ.
     """
-    global _cached_pregenerated_variant_v2, _cached_pregenerated_variant_v2_at
-
-    kb_payload = _load_v2_knowledge_base_payload()
+    kb_payload = _load_knowledge_base_payload()
 
     works = [w for w in (kb_payload.get("works") or []) if isinstance(w, dict)]
     poets = [p for p in (kb_payload.get("poets") or []) if isinstance(p, dict)]
@@ -284,20 +266,18 @@ def _generate_pregenerated_variant_v2() -> dict[str, Any]:
     }
 
     response = generate_variant_runtime2(kb_payload, payload)
-    _cached_pregenerated_variant_v2 = response
-    _cached_pregenerated_variant_v2_at = datetime.now(timezone.utc)
     return response
 
 
-async def _refill_variant_pool_loop_v2():
+async def _refill_variant_pool_loop():
     """Background task to keep the variant pool full."""
     while True:
         try:
-            if len(_variant_pool_v2) < _VARIANT_POOL_SIZE:
+            if len(_variant_pool) < _VARIANT_POOL_SIZE:
                 # Run CPU-bound generation in a thread
-                response = await asyncio.to_thread(_generate_pregenerated_variant_v2)
-                _variant_pool_v2.append(response)
-                _logger.info(f"Refilled variant pool. Current size: {len(_variant_pool_v2)}")
+                response = await asyncio.to_thread(_generate_pregenerated_variant)
+                _variant_pool.append(response)
+                _logger.info(f"Refilled variant pool. Current size: {len(_variant_pool)}")
             else:
                 await asyncio.sleep(5) # Pool is full, check less often
         except Exception as e:
@@ -309,38 +289,22 @@ async def _refill_variant_pool_loop_v2():
 @router.get("/runtime/pregenerated", response_model=RuntimeVariantResponse)
 async def get_runtime_pregenerated_variant() -> RuntimeVariantResponse:
     """Return a variant from the pool or generate one if empty."""
-    # We use V2 pool by default for the main endpoint if possible
-    if _variant_pool_v2:
-        response = _variant_pool_v2.popleft()
+    if _variant_pool:
+        response = _variant_pool.popleft()
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
         )
     
     # Fallback to direct generation if pool is empty
-    response = await asyncio.to_thread(_generate_pregenerated_variant_v2)
+    response = await asyncio.to_thread(_generate_pregenerated_variant)
     return RuntimeVariantResponse(
         variant=response["variant"],
         evaluation=response["evaluation"],
     )
 
 
-@router.get("/runtime/pregenerated/v2", response_model=RuntimeVariantResponse)
-async def get_runtime_pregenerated_variant_v2() -> RuntimeVariantResponse:
-    """Return a variant from the V2 pool."""
-    if _variant_pool_v2:
-        response = _variant_pool_v2.popleft()
-        return RuntimeVariantResponse(
-            variant=response["variant"],
-            evaluation=response["evaluation"],
-        )
-    
-    # Fallback
-    response = await asyncio.to_thread(_generate_pregenerated_variant_v2)
-    return RuntimeVariantResponse(
-        variant=response["variant"],
-        evaluation=response["evaluation"],
-    )
+
 
 
 @router.get("/runtime/pregenerated/generate", response_model=RuntimeVariantResponse)
