@@ -20,6 +20,10 @@ class AdminUserResponse(BaseModel):
 
 class AdminUsersListResponse(BaseModel):
     items: list[AdminUserResponse]
+    total: int
+    page: int
+    pageSize: int
+    totalPages: int
 
 
 class AdminPaymentResponse(BaseModel):
@@ -34,6 +38,10 @@ class AdminPaymentResponse(BaseModel):
 
 class AdminPaymentsListResponse(BaseModel):
     items: list[AdminPaymentResponse]
+    total: int
+    page: int
+    pageSize: int
+    totalPages: int
 
 
 class AdminOrderResponse(BaseModel):
@@ -47,6 +55,10 @@ class AdminOrderResponse(BaseModel):
 
 class AdminOrdersListResponse(BaseModel):
     items: list[AdminOrderResponse]
+    total: int
+    page: int
+    pageSize: int
+    totalPages: int
 
 
 class AdminDashboardResponse(BaseModel):

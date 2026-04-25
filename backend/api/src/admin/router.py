@@ -85,26 +85,38 @@ async def get_dashboard(_: AuthenticatedAdmin = Depends(get_current_admin)) -> A
 
 
 @router.get("/users", response_model=AdminUsersListResponse)
-async def list_users(_: AuthenticatedAdmin = Depends(get_current_admin)) -> AdminUsersListResponse:
+async def list_users(
+    page: int = 1,
+    page_size: int = 25,
+    q: str | None = None,
+    _: AuthenticatedAdmin = Depends(get_current_admin)
+) -> AdminUsersListResponse:
     """
-    Получение списка всех пользователей с их краткой статистикой.
-    Рассчитывает количество генераций и скачиваний за текущую неделю.
-    
-    Args:
-        _: Проверка прав администратора.
-        
-    Returns:
-        AdminUsersListResponse: Список пользователей с агрегированной статистикой.
+    Получение списка пользователей с пагинацией и поиском.
     """
     now = datetime.now(timezone.utc)
     week_start = now - timedelta(days=7)
+    limit = max(1, min(page_size, 100))
+    offset = (max(1, page) - 1) * limit
 
     async with ainit_session() as session:
-        week_start = now - timedelta(days=7)
-        results = await DbUsersRepo().alist_with_stats(session, week_start)
+        total = await DbUsersRepo().acount(session, search=q)
+        results = await DbUsersRepo().alist_with_stats(
+            session, 
+            week_start, 
+            limit=limit, 
+            offset=offset, 
+            search=q
+        )
 
         if not results:
-            return AdminUsersListResponse(items=[])
+            return AdminUsersListResponse(
+                items=[],
+                total=total,
+                page=page,
+                pageSize=limit,
+                totalPages=(total + limit - 1) // limit if total > 0 else 0
+            )
 
         payload = []
         for r in results:
@@ -125,7 +137,13 @@ async def list_users(_: AuthenticatedAdmin = Depends(get_current_admin)) -> Admi
                 )
             )
 
-        return AdminUsersListResponse(items=payload)
+        return AdminUsersListResponse(
+            items=payload,
+            total=total,
+            page=page,
+            pageSize=limit,
+            totalPages=(total + limit - 1) // limit
+        )
 
 
 @router.get("/users/{user_id}", response_model=AdminUserDetailResponse)
@@ -277,9 +295,16 @@ async def admin_set_download_credits(user_id: int, request: AdminDownloadCredits
 
 
 @router.get("/payments", response_model=AdminPaymentsListResponse)
-async def list_payments(_: AuthenticatedAdmin = Depends(get_current_admin)) -> AdminPaymentsListResponse:
+async def list_payments(
+    page: int = 1,
+    page_size: int = 25,
+    _: AuthenticatedAdmin = Depends(get_current_admin)
+) -> AdminPaymentsListResponse:
+    limit = max(1, min(page_size, 100))
+    offset = (max(1, page) - 1) * limit
     async with ainit_session() as session:
-        payments = await DbPaymentsRepo().alist_with_user(session)
+        total = await DbPaymentsRepo().acount(session)
+        payments = await DbPaymentsRepo().alist_with_user(session, limit=limit, offset=offset)
 
         payload = []
         for payment in payments:
@@ -295,13 +320,26 @@ async def list_payments(_: AuthenticatedAdmin = Depends(get_current_admin)) -> A
                 )
             )
 
-        return AdminPaymentsListResponse(items=payload)
+        return AdminPaymentsListResponse(
+            items=payload,
+            total=total,
+            page=page,
+            pageSize=limit,
+            totalPages=(total + limit - 1) // limit if total > 0 else 0
+        )
 
 
 @router.get("/orders", response_model=AdminOrdersListResponse)
-async def list_orders(_: AuthenticatedAdmin = Depends(get_current_admin)) -> AdminOrdersListResponse:
+async def list_orders(
+    page: int = 1,
+    page_size: int = 25,
+    _: AuthenticatedAdmin = Depends(get_current_admin)
+) -> AdminOrdersListResponse:
+    limit = max(1, min(page_size, 100))
+    offset = (max(1, page) - 1) * limit
     async with ainit_session() as session:
-        orders = await DbOrdersRepo().alist_with_relations(session)
+        total = await DbOrdersRepo().acount(session)
+        orders = await DbOrdersRepo().alist_with_relations(session, limit=limit, offset=offset)
 
         payload = []
         for order in orders:
@@ -317,7 +355,13 @@ async def list_orders(_: AuthenticatedAdmin = Depends(get_current_admin)) -> Adm
                 )
             )
 
-        return AdminOrdersListResponse(items=payload)
+        return AdminOrdersListResponse(
+            items=payload,
+            total=total,
+            page=page,
+            pageSize=limit,
+            totalPages=(total + limit - 1) // limit if total > 0 else 0
+        )
 
 
 @router.get("/variants/{variant_id}", response_model=SavedVariantResponse)

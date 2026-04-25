@@ -95,13 +95,21 @@ class DbOrdersRepo(DbMixin, AbcDBRepository):
         return query.scalar_one_or_none()
 
 
-    async def alist_with_relations(self, session: AsyncSession) -> List[Order]:
-        query = await session.execute(
+    async def alist_with_relations(
+        self, 
+        session: AsyncSession,
+        limit: int = 50,
+        offset: int = 0
+    ) -> List[Order]:
+        query = (
             select(Order)
             .options(selectinload(Order.user), selectinload(Order.items))
             .order_by(Order.id.desc())
+            .limit(limit)
+            .offset(offset)
         )
-        return list(query.scalars().all())
+        result = await session.execute(query)
+        return list(result.scalars().all())
 
     async def adelete(self, id: int, session: AsyncSession) -> bool:
         return (await self._adelete(id, session)) is not None

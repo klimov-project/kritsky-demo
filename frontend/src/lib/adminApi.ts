@@ -9,33 +9,56 @@ import type {
 
 interface AdminUsersListResponse {
     items: AdminUser[];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
 }
 
 interface AdminPaymentsListResponse {
     items: AdminPayment[];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
 }
 
 interface AdminOrdersListResponse {
     items: AdminOrder[];
+    total: int;
+    page: int;
+    pageSize: int;
+    totalPages: int;
 }
 
 export const getAdminDashboard = async (): Promise<AdminDashboardStats> => {
     return requestJsonAuth<AdminDashboardStats>('/api/admin/dashboard');
 };
 
-export const listAdminUsers = async (): Promise<AdminUser[]> => {
-    const response = await requestJsonAuth<AdminUsersListResponse>('/api/admin/users');
-    return response.items;
+export const listAdminUsers = async (page = 1, pageSize = 25, q = ''): Promise<AdminUsersListResponse> => {
+    const query = new URLSearchParams({ 
+        page: page.toString(), 
+        page_size: pageSize.toString() 
+    });
+    if (q) query.append('q', q);
+    
+    return requestJsonAuth<AdminUsersListResponse>(`/api/admin/users?${query.toString()}`);
 };
 
-export const listAdminPayments = async (): Promise<AdminPayment[]> => {
-    const response = await requestJsonAuth<AdminPaymentsListResponse>('/api/admin/payments');
-    return response.items;
+export const listAdminPayments = async (page = 1, pageSize = 25): Promise<AdminPaymentsListResponse> => {
+    const query = new URLSearchParams({ 
+        page: page.toString(), 
+        page_size: pageSize.toString() 
+    });
+    return requestJsonAuth<AdminPaymentsListResponse>(`/api/admin/payments?${query.toString()}`);
 };
 
-export const listAdminOrders = async (): Promise<AdminOrder[]> => {
-    const response = await requestJsonAuth<AdminOrdersListResponse>('/api/admin/orders');
-    return response.items;
+export const listAdminOrders = async (page = 1, pageSize = 25): Promise<AdminOrdersListResponse> => {
+    const query = new URLSearchParams({ 
+        page: page.toString(), 
+        page_size: pageSize.toString() 
+    });
+    return requestJsonAuth<AdminOrdersListResponse>(`/api/admin/orders?${query.toString()}`);
 };
 
 export const getAdminUser = async (userId: number): Promise<AdminUserDetail> => {

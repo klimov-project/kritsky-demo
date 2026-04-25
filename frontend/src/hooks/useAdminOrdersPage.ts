@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { loadAdminOrders } from '@/lib/api/adminOrders';
 import type { AdminOrder } from '@/types/admin';
-import { paginateAdminOrders } from '@/utils/adminOrders';
 
 export const useAdminOrdersPage = () => {
     const [orders, setOrders] = useState<AdminOrder[]>([]);
     const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -17,9 +17,10 @@ export const useAdminOrdersPage = () => {
             setIsLoading(true);
             setError('');
             try {
-                const response = await loadAdminOrders();
+                const response = await loadAdminOrders(page);
                 if (!cancelled) {
-                    setOrders(response.orders);
+                    setOrders(response.items);
+                    setTotalPages(response.totalPages);
                 }
             } catch (errorValue) {
                 if (!cancelled) {
@@ -36,12 +37,10 @@ export const useAdminOrdersPage = () => {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [page]);
 
-    const { totalPages, currentPage, pageData } = useMemo(
-        () => paginateAdminOrders(orders, page),
-        [orders, page],
-    );
+    const pageData = orders;
+    const currentPage = page;
 
     return {
         isLoading,

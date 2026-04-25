@@ -78,13 +78,21 @@ class DbPaymentsRepo(DbMixin, AbcDBRepository):
         return list(query.scalars().all())
 
 
-    async def alist_with_user(self, session: AsyncSession) -> List[Payment]:
-        query = await session.execute(
+    async def alist_with_user(
+        self, 
+        session: AsyncSession,
+        limit: int = 50,
+        offset: int = 0
+    ) -> List[Payment]:
+        query = (
             select(Payment)
             .options(selectinload(Payment.user))
             .order_by(Payment.id.desc())
+            .limit(limit)
+            .offset(offset)
         )
-        return list(query.scalars().all())
+        result = await session.execute(query)
+        return list(result.scalars().all())
 
     async def adelete(self, id: int, session: AsyncSession) -> bool:
         return (await self._adelete(id, session)) is not None
