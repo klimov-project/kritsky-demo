@@ -9,7 +9,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.engine.reflection import Inspector
+
 
 
 revision: str = '001'
@@ -20,7 +20,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     conn = op.get_bind()
-    inspector = Inspector.from_engine(conn.engine)
+    inspector = sa.inspect(conn)
     existing_tables = inspector.get_table_names()
     
     if 'users' not in existing_tables:

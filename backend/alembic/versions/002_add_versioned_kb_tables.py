@@ -9,7 +9,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.engine.reflection import Inspector
+
 
 
 revision: str = '002'
@@ -20,7 +20,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     conn = op.get_bind()
-    inspector = Inspector.from_engine(conn.engine)
+    inspector = sa.inspect(conn)
     existing_tables = inspector.get_table_names()
 
     # --- kb_authors ---
@@ -188,7 +188,7 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     conn = op.get_bind()
-    inspector = Inspector.from_engine(conn.engine)
+    inspector = sa.inspect(conn)
     
     op.drop_table('saved_variant_folders')
     op.drop_table('variant_folders')
