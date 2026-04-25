@@ -159,6 +159,9 @@ def upgrade() -> None:
             sa.Column('id', sa.Integer(), primary_key=True),
             sa.Column('user_id', sa.Integer(), sa.ForeignKey('users.id', ondelete='CASCADE'), nullable=False),
             sa.Column('name', sa.String(255), nullable=False),
+            sa.Column('share_token', sa.String(64), unique=True, nullable=True),
+            sa.Column('is_shared', sa.Boolean(), server_default='false', nullable=False),
+            sa.Column('position', sa.Integer(), server_default='0', nullable=False),
             sa.Column('createdAt', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         )
         op.create_index('ix_variant_folders_user_id', 'variant_folders', ['user_id'])

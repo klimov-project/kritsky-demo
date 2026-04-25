@@ -220,6 +220,9 @@ class VariantFolder(Base, BaseMixin, CreatedAtMixin):
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    share_token: Mapped[Optional[str]] = mapped_column(String(64), unique=True, nullable=True)
+    is_shared: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false", default=False)
+    position: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0", default=0)
 
     user: Mapped["User"] = relationship("User")
     variants: Mapped[List["SavedVariant"]] = relationship("SavedVariant", secondary=saved_variant_folders, back_populates="folders")
