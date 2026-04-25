@@ -171,6 +171,7 @@ def upgrade() -> None:
 
     add_col_if_missing('saved_variants', 'share_token', sa.String(64), unique=True, nullable=True)
     add_col_if_missing('saved_variants', 'is_shared', sa.Boolean(), server_default='false', nullable=False)
+    add_col_if_missing('saved_variants', 'position', sa.Integer(), server_default='0', nullable=False)
 
     # --- saved_variant_folders ---
     if 'saved_variant_folders' not in existing_tables:

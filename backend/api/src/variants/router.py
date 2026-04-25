@@ -5,7 +5,7 @@ import time
 from datetime import date, datetime, timezone
 from typing import Any, Dict, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
@@ -59,6 +59,7 @@ class SavedVariantPayload(BaseModel):
 
 class UpdateSavedVariantPayload(BaseModel):
     folderIds: list[int] = Field(default_factory=list)
+    position: int | None = None
 
 
 class SavedVariantResponse(BaseModel):
@@ -71,6 +72,7 @@ class SavedVariantResponse(BaseModel):
     folderIds: list[int] = Field(default_factory=list)
     shareToken: str | None = None
     isShared: bool = False
+    position: int = 0
 
 
 class SavedVariantListResponse(BaseModel):
@@ -214,6 +216,7 @@ def _to_dto(item: SavedVariant) -> SavedVariantResponse:
         folderIds=[f.id for f in item.folders] if hasattr(item, "folders") and item.folders else [],
         shareToken=item.share_token,
         isShared=item.is_shared,
+        position=item.position,
     )
 
 
@@ -587,6 +590,7 @@ def force_generate_pregenerated_variant_v2() -> RuntimeVariantResponse:
 @router.get("", response_model=SavedVariantListResponse)
 async def list_saved_variants(
     folder_id: int | None = None,
+    variant_ids: list[int] | None = Query(None),
     auth: AuthenticatedUser = Depends(get_current_user)
 ) -> SavedVariantListResponse:
     async with ainit_session() as session:
@@ -594,13 +598,16 @@ async def list_saved_variants(
         if folder_id is not None:
             stmt = stmt.where(SavedVariant.folders.any(VariantFolder.id == folder_id))
         
+        if variant_ids:
+            stmt = stmt.where(SavedVariant.id.in_(variant_ids))
+        
         query = await session.execute(
             stmt
             .options(
                 selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task),
                 selectinload(SavedVariant.folders)
             )
-            .order_by(SavedVariant.id.desc())
+            .order_by(SavedVariant.position.asc(), SavedVariant.id.desc())
         )
         items = query.scalars().all()
         return SavedVariantListResponse(items=[_to_dto(item) for item in items])
@@ -699,6 +706,9 @@ async def update_saved_variant(
                 )
                 folders = folder_query.scalars().all()
                 item.folders = list(folders)
+        
+        if payload.position is not None:
+            item.position = payload.position
             
         await session.commit()
         await session.refresh(item)

@@ -14,6 +14,7 @@ class SavedVariantPayload(BaseModel):
 
 class UpdateSavedVariantPayload(BaseModel):
     folderIds: list[int] = Field(default_factory=list)
+    position: int | None = None
 
 
 class SavedVariantResponse(BaseModel):
@@ -26,6 +27,7 @@ class SavedVariantResponse(BaseModel):
     folderIds: list[int] = Field(default_factory=list)
     shareToken: str | None = None
     isShared: bool = False
+    position: int = 0
 
 
 class SavedVariantListResponse(BaseModel):

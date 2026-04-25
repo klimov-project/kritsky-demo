@@ -234,6 +234,7 @@ class SavedVariant(Base, BaseMixin, CreatedAtMixin, UpdatedAtMixin):
 
     share_token: Mapped[Optional[str]] = mapped_column(String(64), unique=True, nullable=True)
     is_shared: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false", default=False)
+    position: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0", default=0)
 
     user: Mapped["User"] = relationship("User", back_populates="saved_variants")
     folders: Mapped[List["VariantFolder"]] = relationship("VariantFolder", secondary=saved_variant_folders, back_populates="variants")
