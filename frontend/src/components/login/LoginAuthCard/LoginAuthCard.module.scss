@@ -1,0 +1,266 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 170px;
+    padding-inline: 20px;
+}
+
+.backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(51, 51, 51, 0.8);
+}
+
+.modal {
+    position: relative;
+    z-index: 1;
+    width: min(505px, calc(100vw - 40px));
+    min-height: 523px;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.16);
+}
+
+.modalRegister {
+    min-height: 770px;
+}
+
+.inner {
+    padding: 50px;
+}
+
+.closeButton {
+    position: absolute;
+    top: -34px;
+    right: -24px;
+    color: #fff;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    transition: opacity 0.2s ease;
+}
+
+.closeButton:hover {
+    opacity: 0.75;
+}
+
+.title {
+    margin: 0 0 24px;
+    font-size: 40px;
+    line-height: 1;
+    font-weight: 400;
+    color: #333;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.label {
+    color: #828282;
+    font-size: 14px;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.input {
+    height: 50px;
+    border-radius: 10px;
+    border: 1px solid #cfcfcf;
+    padding: 0 25px;
+    font-size: 16px;
+    color: #333;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.input::placeholder {
+    color: #cfcfcf;
+}
+
+.input:focus {
+    border-color: #bdbdbd;
+}
+
+.error {
+    margin: 0;
+    color: #bd5343;
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.button {
+    height: 50px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.buttonSecondary {
+    margin-top: 3px;
+    background: #f6f6f6;
+    color: #333;
+}
+
+.buttonPrimary {
+    background: #333;
+    color: #fff;
+}
+
+.consents {
+    margin-top: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.consentRow {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    column-gap: 10px;
+    align-items: start;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.15;
+}
+
+.consentRow input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.checkVisual {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid #cfcfcf;
+    background: #f6f6f6;
+    position: relative;
+    margin-top: 1px;
+}
+
+.checkVisual::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #333;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.consentRow input:not(:checked) + .checkVisual::after {
+    opacity: 0;
+}
+
+.switchBlock {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.switchBlockWithLine {
+    margin-top: 14px;
+    padding-top: 20px;
+    border-top: 1px solid #cfcfcf;
+}
+
+.switchButton {
+    border: none;
+    background: transparent;
+    color: #828282;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.switchButton:hover {
+    opacity: 0.75;
+}
+
+@media (max-width: 1024px) {
+    .overlay {
+        padding-top: 70px;
+    }
+
+    .modal {
+        width: min(350px, calc(100vw - 40px));
+        min-height: 439px;
+    }
+
+    .modalRegister {
+        min-height: 707px;
+    }
+
+    .inner {
+        padding: 30px 20px;
+    }
+
+    .title {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .form {
+        gap: 10px;
+    }
+
+    .buttonSecondary {
+        margin-top: 6px;
+    }
+
+    .consents {
+        margin-top: 5px;
+        gap: 8px;
+    }
+
+    .consentRow {
+        font-size: 14px;
+        line-height: 1.15;
+    }
+
+    .switchBlock {
+        margin-top: 14px;
+    }
+
+    .switchBlockWithLine {
+        margin-top: 10px;
+    }
+
+    .closeButton {
+        top: -30px;
+        right: 0;
+    }
+}

@@ -1,0 +1,148 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 170px;
+    padding-inline: 20px;
+}
+
+.backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(51, 51, 51, 0.8);
+}
+
+.modal {
+    position: relative;
+    z-index: 1;
+    width: min(505px, calc(100vw - 40px));
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.16);
+}
+
+.inner {
+    padding: 50px;
+}
+
+.closeButton {
+    position: absolute;
+    top: -34px;
+    right: -24px;
+    color: #fff;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    transition: opacity 0.2s ease;
+}
+
+.closeButton:hover {
+    opacity: 0.75;
+}
+
+.title {
+    margin: 0 0 24px;
+    font-size: 40px;
+    line-height: 1;
+    font-weight: 400;
+    color: #333;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.label {
+    color: #828282;
+    font-size: 14px;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.input {
+    height: 50px;
+    border-radius: 10px;
+    border: 1px solid #cfcfcf;
+    padding: 0 25px;
+    font-size: 16px;
+    color: #333;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.input::placeholder {
+    color: #cfcfcf;
+}
+
+.input:focus {
+    border-color: #bdbdbd;
+}
+
+.error {
+    margin: 0;
+    color: #bd5343;
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.submitButton {
+    margin-top: 8px;
+    height: 50px;
+    border-radius: 10px;
+    border: none;
+    background: #333;
+    color: #fff;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.submitButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+@media (max-width: 1024px) {
+    .overlay {
+        padding-top: 70px;
+    }
+
+    .modal {
+        width: min(350px, calc(100vw - 40px));
+    }
+
+    .inner {
+        padding: 30px 20px;
+    }
+
+    .title {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .closeButton {
+        top: -30px;
+        right: 0;
+    }
+}

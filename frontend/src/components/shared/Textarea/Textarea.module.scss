@@ -1,0 +1,141 @@
+.textareaWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.label {
+    font-family: var(--font-pt-serif);
+    font-size: 16px;
+    font-weight: 700;
+    color: #474345;
+
+    @media (max-width: 768px) {
+        font-size: 14px;
+    }
+}
+
+.textarea {
+    font-family: var(--font-pt-serif);
+    font-size: 20px;
+    font-weight: 700;
+    color: #474345;
+    background-color: #FFFFFF;
+    border: 3px solid #A2A3A5;
+    border-radius: 12px;
+    padding: 14px 20px;
+    min-height: 120px;
+    text-align: left;
+    outline: none;
+    resize: vertical;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &::placeholder {
+        color: #474345;
+        opacity: 0.6;
+        font-weight: 700;
+    }
+
+    @media (max-width: 1024px) {
+        font-size: 18px;
+    }
+
+    @media (max-width: 768px) {
+        font-size: 16px;
+        border-width: 2px;
+        border-radius: 10px;
+        padding: 12px 16px;
+        min-height: 110px;
+    }
+
+    @media (max-width: 480px) {
+        font-size: 15px;
+        border-radius: 8px;
+        padding: 10px 14px;
+        min-height: 100px;
+    }
+}
+
+.textarea--small {
+    width: 100%;
+    max-width: 240px;
+
+    @media (max-width: 768px) {
+        max-width: 200px;
+    }
+
+    @media (max-width: 480px) {
+        max-width: 100%;
+    }
+}
+
+.textarea--medium {
+    width: 100%;
+    max-width: 365px;
+
+    @media (max-width: 768px) {
+        max-width: 320px;
+    }
+
+    @media (max-width: 480px) {
+        max-width: 100%;
+    }
+}
+
+.textarea--full {
+    width: 100%;
+    max-width: 100%;
+}
+
+.textarea--regular {
+    border-color: #A2A3A5;
+
+    &:hover {
+        border-color: #8B8C8E;
+        box-shadow: 0 2px 8px rgba(162, 163, 165, 0.15);
+    }
+
+    &:focus {
+        border-color: #474345;
+        box-shadow: 0 4px 12px rgba(71, 67, 69, 0.2);
+    }
+}
+
+.textarea--error {
+    border-color: #D84848;
+    background-color: #FEF5F5;
+}
+
+.textarea--success {
+    border-color: #5F9B7D;
+    background-color: #F5FAF7;
+}
+
+.textarea--warning {
+    border-color: #D8A548;
+    background-color: #FFFBF5;
+}
+
+.helperText {
+    font-family: var(--font-pt-serif);
+    font-size: 14px;
+    font-weight: 400;
+    margin-left: 4px;
+}
+
+.helperText--regular {
+    color: #6B6768;
+}
+
+.helperText--error {
+    color: #D84848;
+}
+
+.helperText--success {
+    color: #5F9B7D;
+}
+
+.helperText--warning {
+    color: #D8A548;
+}

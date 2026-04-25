@@ -1,0 +1,144 @@
+.footer {
+    padding: clamp(56px, 8vh, 72px) 0 24px;
+    color: var(--home-color-text-main);
+}
+
+.desktopTop {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+}
+
+.links {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 14px;
+    line-height: 1.2;
+
+    a {
+        transition: opacity 0.2s ease;
+    }
+
+    a:hover {
+        opacity: 0.7;
+    }
+}
+
+.companyInfo {
+    justify-self: end;
+    text-align: right;
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.socials {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.socialLink {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--home-color-text-main);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease;
+}
+
+.socialLink:hover {
+    opacity: 0.75;
+}
+
+.desktopBottom {
+    margin-top: 52px;
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.mobileTop,
+.mobileBottom {
+    display: none;
+}
+
+@media (max-width: 1024px) {
+    .footer {
+        padding: 72px 0 24px;
+    }
+
+    .desktopTop,
+    .desktopBottom {
+        display: none;
+    }
+
+    .mobileTop {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        align-items: start;
+    }
+
+    .mobileTop .links {
+        font-size: 14px;
+        line-height: 1.45;
+        gap: 4px;
+    }
+
+    .mobileTop .companyInfo {
+        font-size: 13px;
+        line-height: 1.45;
+    }
+
+    .mobileBottom {
+        margin-top: 18px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+    }
+
+    .mobileCopyright {
+        font-size: 13px;
+        line-height: 1.2;
+    }
+
+    .mobileBottom .socialLink {
+        width: 34px;
+        height: 34px;
+    }
+}
+
+@media (max-width: 640px) {
+    .footer {
+        padding-top: 58px;
+    }
+
+    .mobileTop {
+        gap: 14px;
+    }
+
+    .mobileTop .links {
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .mobileTop .companyInfo {
+        font-size: 12px;
+        line-height: 1.35;
+    }
+
+    .mobileBottom {
+        margin-top: 16px;
+    }
+
+    .mobileCopyright {
+        font-size: 12px;
+    }
+}

@@ -1,0 +1,45 @@
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.iconButton {
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 5px;
+    background: #f6f6f6;
+    color: #333333;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    &:hover:not(:disabled) {
+        background: #ececec;
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        color: #bdbdbd;
+    }
+}
+
+.iconButtonActive {
+    color: #bd5343;
+}
+
+@media (min-width: 768px) {
+    .actions {
+        width: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        flex-wrap: nowrap;
+        transform: translateX(-58px);
+        margin-right: -40px;
+    }
+}

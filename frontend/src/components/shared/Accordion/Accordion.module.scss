@@ -1,0 +1,129 @@
+.accordionItem {
+    border: 1px solid #E6E7E7;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: #FFFFFF;
+
+    &:hover:not(.disabled) {
+        border-color: #D1D2D2;
+        box-shadow: 0 2px 8px rgba(34, 30, 32, 0.08);
+    }
+
+    &.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background-color: #F5F5F5;
+    }
+
+    @media (max-width: 768px) {
+        border-radius: 10px;
+        margin-bottom: 6px;
+    }
+
+    @media (max-width: 480px) {
+        border-radius: 8px;
+    }
+}
+
+.accordionHeader {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-pt-serif);
+    font-size: 18px;
+    font-weight: 700;
+    color: #221E20;
+    text-align: left;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 16px;
+
+    &:hover:not(:disabled) {
+        background-color: rgba(34, 30, 32, 0.03);
+    }
+
+    &:focus-visible {
+        outline: 2px solid #221E20;
+        outline-offset: -2px;
+    }
+
+    &.active {
+        background-color: rgba(34, 30, 32, 0.05);
+        border-bottom: 1px solid #E6E7E7;
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+    }
+
+    @media (max-width: 768px) {
+        padding: 14px 16px;
+        font-size: 16px;
+        gap: 12px;
+    }
+
+    @media (max-width: 480px) {
+        padding: 12px 14px;
+        font-size: 15px;
+    }
+}
+
+.accordionTitle {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.accordionIcon {
+    flex-shrink: 0;
+    color: #221E20;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &.rotated {
+        transform: rotate(180deg);
+    }
+
+    @media (max-width: 768px) {
+        width: 18px;
+        height: 18px;
+    }
+
+    @media (max-width: 480px) {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+.accordionContent {
+    overflow: hidden;
+    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.accordionContentInner {
+    padding: 20px;
+    font-family: var(--font-pt-serif);
+    font-size: 16px;
+    font-weight: 400;
+    color: #474345;
+    line-height: 1.6;
+
+    @media (max-width: 768px) {
+        padding: 16px;
+        font-size: 15px;
+    }
+
+    @media (max-width: 480px) {
+        padding: 14px;
+        font-size: 14px;
+    }
+}
+
+.accordionGroup {
+    display: flex;
+    flex-direction: column;
+}

@@ -1,0 +1,181 @@
+.dockRoot {
+    position: fixed;
+    inset-inline: 0;
+    z-index: 40;
+    padding-inline: 16px;
+}
+
+.dockInner {
+    margin: 0 auto;
+    width: 100%;
+    max-width: 954px;
+}
+
+.desktopDock {
+    display: none;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid #cfcfcf;
+    padding: 20px;
+}
+
+.desktopTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 14px;
+}
+
+.caption {
+    min-width: 0;
+}
+
+.captionTitle {
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 24px;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.captionQuota {
+    margin-top: 6px;
+    color: #bdbdbd;
+    font-family: var(--font-pt-serif);
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+.captionStatus {
+    margin-top: 4px;
+    color: #828282;
+    font-family: var(--font-pt-serif);
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.desktopActions {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.mobileDock {
+    border-radius: 10px 10px 0 0;
+    background: #ffffff;
+    border: 1px solid #cfcfcf;
+    border-bottom: none;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.07);
+}
+
+.mobileHead {
+    padding: 14px 16px 10px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.mobileHeadMeta {
+    min-width: 0;
+}
+
+.mobileTitle {
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 18px;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.mobileQuota {
+    margin-top: 6px;
+    color: #bdbdbd;
+    font-family: var(--font-pt-serif);
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+.mobileTopButtons {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.toggleButton {
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 5px;
+    background: #f2f2f2;
+    color: #333333;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.mobileBody {
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    border-top: 1px solid #efefef;
+    padding: 10px 16px 14px;
+}
+
+.mobileBodyClosed {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-top: none;
+}
+
+.mobileBodyOpen {
+    max-height: 32rem;
+    opacity: 1;
+}
+
+.mobileStatus {
+    margin-bottom: 8px;
+    color: #828282;
+    font-family: var(--font-pt-serif);
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.mobileActions {
+    border-top: 1px solid #efefef;
+    padding: 10px 16px 14px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.topIconButton {
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 5px;
+    background: #f2f2f2;
+    color: #333333;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    &:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+}
+
+@media (min-width: 768px) {
+    .desktopDock {
+        display: block;
+    }
+
+    .mobileDock {
+        display: none;
+    }
+}
