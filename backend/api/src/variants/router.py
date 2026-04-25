@@ -372,6 +372,23 @@ def runtime_generate_block_v2(payload: dict[str, Any]) -> dict[str, Any]:
         ) from error
 
 
+@router.post("/runtime/refresh-block-v2", response_model=RuntimeVariantResponse)
+def runtime_refresh_block_v2(payload: RuntimeRefreshBlockPayload) -> RuntimeVariantResponse:
+    try:
+        response = refresh_block_runtime2(_load_knowledge_base_payload(), payload.model_dump())
+        return RuntimeVariantResponse(
+            variant=response["variant"],
+            evaluation=response["evaluation"],
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
+    except Exception as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to refresh block v2: {error}",
+        ) from error
+
+
 @router.post("/runtime/refresh-task-v2", response_model=RuntimeVariantResponse)
 def runtime_refresh_task_v2(payload: RuntimeRefreshTaskPayload) -> RuntimeVariantResponse:
     try:
