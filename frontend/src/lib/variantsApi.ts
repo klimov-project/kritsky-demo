@@ -195,3 +195,61 @@ export const refreshRuntimeVariantTask = async (
     });
     return normalizeNbspDeep(response) as RuntimeVariantResponseDto;
 };
+
+// --- V2 Endpoints (SQL-backed) ---
+
+export const generateRuntimeVariantV2 = async (
+    payload: RuntimeVariantRequestPayload & { useSelected: boolean },
+): Promise<RuntimeVariantResponseDto> => {
+    const response = await requestJson<RuntimeVariantResponseDto>('/api/variants/runtime/generate-v2', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+    return normalizeNbspDeep(response) as RuntimeVariantResponseDto;
+};
+
+export const getPregeneratedVariantV2 = async (): Promise<RuntimeVariantResponseDto> => {
+    const response = await requestJson<RuntimeVariantResponseDto>('/api/variants/runtime/pregenerated-v2');
+    return normalizeNbspDeep(response) as RuntimeVariantResponseDto;
+};
+
+export const refreshRuntimeVariantBlockV2 = async (
+    payload: RuntimeVariantRequestPayload & {
+        block: RuntimeVariantBlockKey;
+        variant: GeneratedVariant;
+        pinnedBlock3Tasks?: Record<string, unknown>;
+        replaceConflictingPoem?: boolean;
+    },
+): Promise<RuntimeVariantResponseDto> => {
+    const response = await requestJson<RuntimeVariantResponseDto>('/api/variants/runtime/refresh-block-v2', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+    return normalizeNbspDeep(response) as RuntimeVariantResponseDto;
+};
+
+export const refreshRuntimeVariantTaskV2 = async (
+    payload: Pick<RuntimeVariantRequestPayload, 'selectedThemeId' | 'selectedBlock3AuthorId' | 'task1Filters'> & {
+        taskKey: RuntimeVariantTaskKey;
+        variant: GeneratedVariant;
+        task2Action?: 'full' | 'reroll' | 'properties' | 'character' | 'property';
+        task2PairIndex?: number;
+        excludedTaskIds?: string[];
+    },
+): Promise<RuntimeVariantResponseDto> => {
+    const response = await requestJson<RuntimeVariantResponseDto>('/api/variants/runtime/refresh-task-v2', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+    return normalizeNbspDeep(response) as RuntimeVariantResponseDto;
+};
+

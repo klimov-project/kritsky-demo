@@ -37,11 +37,11 @@ import {
     getTask8CorrectOptionNumbers,
 } from '@/utils/newTest';
 import { getExcerptChapters, getTextColumnsCount } from '@/utils/newTestPage';
-import { useNewTestPage } from '@/hooks/useNewTestPage';
+import { useNewTestPageV2 } from '@/hooks/useNewTestPageV2';
 import styles from './NewTestPage.module.scss';
 
 export default function TestPage() {
-    const page = useNewTestPage();
+    const page = useNewTestPageV2();
 
     const {
         user, isAuthenticated, isAdmin, isPro,
@@ -200,7 +200,7 @@ export default function TestPage() {
 
                                 <div className={`${styles.topGrid} no-print`}>
                                     <div className={styles.leftCards}>
-                                        <div className={`${styles.leftCard} ${styles.leftCardMain}`}>Вариант 1</div>
+                                        <div className={`${styles.leftCard} ${styles.leftCardMain}`}>Вариант 1 (V2)</div>
                                         <div className={`${styles.leftCard} ${styles.leftCardSub}`}>Часть 1</div>
                                     </div>
 

@@ -628,6 +628,14 @@ async def create_saved_variant(
         except Exception:
             _logger.exception("Failed to link tasks for saved_variant %d", item.id)
 
+        # Re-query with tasks loaded to avoid lazy-load issues in _to_dto
+        query = await session.execute(
+            select(SavedVariant)
+            .where(SavedVariant.id == item.id)
+            .options(selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task))
+        )
+        item = query.scalar_one()
+
         return _to_dto(item)
 
 
