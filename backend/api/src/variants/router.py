@@ -550,7 +550,7 @@ async def list_saved_variants(
             .order_by(SavedVariant.position.asc(), SavedVariant.id.desc())
         )
         items = query.scalars().all()
-        return SavedVariantListResponse(items=[_to_dto(item) for item in items])
+        return SavedVariantListResponse(items=[variant_to_dto(item) for item in items])
 
 
 @router.get("/{variant_id}", response_model=SavedVariantResponse)
