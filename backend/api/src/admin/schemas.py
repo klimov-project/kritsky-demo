@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
+from decimal import Decimal
 
 
 class AdminUserResponse(BaseModel):
@@ -25,7 +26,7 @@ class AdminPaymentResponse(BaseModel):
     id: str
     userId: int
     userName: str
-    amount: float
+    amount: Decimal
     status: str
     date: str
     method: str
@@ -39,7 +40,7 @@ class AdminOrderResponse(BaseModel):
     id: str
     userName: str
     items: str
-    total: float
+    total: Decimal
     status: str
     date: str
 
@@ -53,7 +54,7 @@ class AdminDashboardResponse(BaseModel):
     usersCount: int
     generatedVariantsCount: int
     downloadedVariantsCount: int
-    totalEarned: float
+    totalEarned: Decimal
     ordersCount: int
     paymentsCount: int
 
@@ -70,7 +71,7 @@ class AdminUserOrderItemResponse(BaseModel):
     title: str
     category: str | None
     quantity: int
-    unitPrice: float
+    unitPrice: Decimal
     collectionConfig: dict | None
     downloadPackConfig: dict | None
 
@@ -79,7 +80,7 @@ class AdminUserOrderResponse(BaseModel):
     id: int
     date: str
     status: str
-    totalAmount: float
+    totalAmount: Decimal
     items: list[AdminUserOrderItemResponse]
 
 

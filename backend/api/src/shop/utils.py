@@ -4,7 +4,8 @@ import random
 import re
 import uuid
 from datetime import datetime
-from typing import Any, TypeVar
+from decimal import Decimal
+from typing import Any, TypeVar, Optional, List, Dict
 
 from fastapi import HTTPException, status
 from sqlalchemy import delete, func, select
@@ -591,8 +592,8 @@ def _normalize_delivery_type(value: str) -> str:
     return "without_delivery"
 
 
-def _delivery_cost(delivery_type: str) -> float:
-    return 390.0 if _normalize_delivery_type(delivery_type) == "with_delivery" else 0.0
+def _delivery_cost(delivery_type: str) -> Decimal:
+    return Decimal("390.00") if _normalize_delivery_type(delivery_type) == "with_delivery" else Decimal("0.00")
 
 
 def _map_fulfillment_from_raw(value: str | None) -> str:
@@ -608,7 +609,7 @@ def _book_to_dto(book: Book) -> ShopBook:
         title=book.title,
         description=book.description,
         author=book.author,
-        price=float(book.price),
+        price=book.price,
         category=book.category.value,
         fulfillment=_map_fulfillment(book.fulfillment_type),
         format=book.format,
@@ -636,7 +637,7 @@ def _cart_item_to_dto(item: CartItem) -> CartItemResponse:
     if item.book is None:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Cart book relation is missing")
     book_dto = _book_to_dto(item.book)
-    line_total = float(item.book.price) * item.quantity
+    line_total = item.book.price * item.quantity
     return CartItemResponse(id=item.id, bookId=item.book_id, quantity=item.quantity, lineTotal=line_total, book=book_dto)
 
 
@@ -678,9 +679,9 @@ def _order_item_to_purchase_dto(item: OrderItem, include_payload: bool = True) -
         category=(item.category or ProductCategoryEnum.BOOKS.value),
         fulfillment=_map_fulfillment_from_raw(item.fulfillment_type),
         purchasedAt=item.order.createdAt,
-        price=float(item.unit_price),
+        price=item.unit_price,
         quantity=item.quantity,
-        total=float(item.line_total),
+        total=item.line_total,
         coverUrl=item.cover_name,
         digitalFileName=digital_file_name,
         bookId=item.book_id,

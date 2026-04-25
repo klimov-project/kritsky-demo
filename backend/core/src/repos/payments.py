@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Optional, List, Iterable
+from decimal import Decimal
 
 from sqlalchemy import select, delete as sa_delete, update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,14 +22,14 @@ class DbPaymentsRepo(DbMixin, AbcDBRepository):
         result = await session.execute(select(func.count(self.model.id)))
         return result.scalar_one() or 0
 
-    async def get_total_earned(self, session: AsyncSession) -> float:
+    async def get_total_earned(self, session: AsyncSession) -> Decimal:
         from sqlalchemy import func
         result = await session.execute(
             select(func.coalesce(func.sum(Payment.amount), 0)).where(
                 func.lower(func.coalesce(Payment.paymentStatus, "")) == "success"
             )
         )
-        return float(result.scalar_one() or 0)
+        return Decimal(str(result.scalar_one() or "0"))
 
     async def aget(self, id: int, session: AsyncSession) -> Optional[Payment]:
         result = await session.execute(select(Payment).where(Payment.id == id))

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from typing import Optional
+from decimal import Decimal
 
 from aiohttp import ClientSession, BasicAuth
 from yookassa import Configuration, Payment, Settings, Webhook
@@ -91,7 +92,7 @@ class YooKassaClient(AbcPaymentClient):
 
     async def create_payment_link(
         self,
-        amount: float,
+        amount: Decimal,
         description: str,
         transaction_id: str,
         email: str,
@@ -162,7 +163,7 @@ class YooKassaClient(AbcPaymentClient):
 
     async def create_recurring_payment(
         self,
-        amount: float,
+        amount: Decimal,
         description: str,
         payment_method_id: str,
         idempotence_key: Optional[str] = None,

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Any
+from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
@@ -27,7 +28,7 @@ class ShopBook(BaseModel):
     title: str
     description: str | None = None
     author: str
-    price: float
+    price: Decimal
     category: str
     fulfillment: str
     format: str | None = None
@@ -55,7 +56,7 @@ class ShopBookPayload(BaseModel):
     title: str
     description: str | None = None
     author: str
-    price: float = 0
+    price: Decimal = 0
     category: str = "books"
     fulfillment: str = "PHYSICAL"
     format: str | None = None
@@ -95,14 +96,14 @@ class CartItemResponse(BaseModel):
     id: int
     bookId: int
     quantity: int
-    lineTotal: float
+    lineTotal: Decimal
     book: ShopBook
 
 
 class CartResponse(BaseModel):
     items: list[CartItemResponse]
     itemsCount: int
-    totalAmount: float
+    totalAmount: Decimal
 
 
 class CheckoutPayload(BaseModel):
@@ -117,8 +118,8 @@ class CheckoutResponse(BaseModel):
     orderId: int
     paymentId: str
     status: str
-    totalAmount: float
-    deliveryAmount: float
+    totalAmount: Decimal
+    deliveryAmount: Decimal
 
 
 class PurchasedItemResponse(BaseModel):
@@ -130,9 +131,9 @@ class PurchasedItemResponse(BaseModel):
     category: str
     fulfillment: str
     purchasedAt: datetime
-    price: float
+    price: Decimal
     quantity: int
-    total: float
+    total: Decimal
     coverUrl: str | None = None
     digitalFileName: str | None = None
     bookId: int | None = None
@@ -149,7 +150,7 @@ class PaymentHistoryItemResponse(BaseModel):
     id: int
     paymentId: str | None = None
     orderId: int | None = None
-    amount: float
+    amount: Decimal
     status: str | None = None
     method: str | None = None
     kind: str

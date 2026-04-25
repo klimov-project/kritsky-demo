@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func, select
@@ -180,7 +181,7 @@ async def get_user_detail(user_id: int, _: AuthenticatedAdmin = Depends(get_curr
                     title=item.title or "",
                     category=item.category,
                     quantity=item.quantity or 1,
-                    unitPrice=float(item.unit_price or 0),
+                    unitPrice=item.unit_price or Decimal("0.00"),
                     collectionConfig=col_config,
                     downloadPackConfig=dl_config,
                 ))
@@ -188,7 +189,7 @@ async def get_user_detail(user_id: int, _: AuthenticatedAdmin = Depends(get_curr
                 id=order.id,
                 date=_format_created_at(order, "%Y-%m-%d %H:%M"),
                 status=order.status or "",
-                totalAmount=float(order.total_amount or 0),
+                totalAmount=order.total_amount or Decimal("0.00"),
                 items=items_payload,
             ))
 
@@ -287,7 +288,7 @@ async def list_payments(_: AuthenticatedAdmin = Depends(get_current_admin)) -> A
                     id=payment.paymentId or f"pay_{payment.id}",
                     userId=payment.userId,
                     userName=_display_user_name(payment.user, payment.userId),
-                    amount=float(payment.amount or 0),
+                    amount=payment.amount or Decimal("0.00"),
                     status=_normalize_payment_status(payment.paymentStatus),
                     date=_format_created_at(payment, "%Y-%m-%d %H:%M"),
                     method=(payment.method or "Mock").strip() or "Mock",
@@ -310,7 +311,7 @@ async def list_orders(_: AuthenticatedAdmin = Depends(get_current_admin)) -> Adm
                     id=f"ord_{order.id}",
                     userName=_display_user_name(order.user, order.user_id),
                     items=order_items,
-                    total=float(order.total_amount or 0),
+                    total=order.total_amount or Decimal("0.00"),
                     status=_normalize_order_status(order.status),
                     date=_format_created_at(order, "%Y-%m-%d"),
                 )

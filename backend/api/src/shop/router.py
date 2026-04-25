@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import delete, func, select
@@ -171,7 +172,11 @@ async def get_cart(auth: AuthenticatedUser = Depends(get_current_user)) -> CartR
     async with ainit_session() as session:
         cart_items = await DbCartRepo().aget_user_cart_models(auth.user.id, session)
         items = [_cart_item_to_dto(item) for item in cart_items]
-        return CartResponse(items=items, itemsCount=sum(item.quantity for item in items), totalAmount=sum(item.lineTotal for item in items))
+        return CartResponse(
+            items=items,
+            itemsCount=sum(item.quantity for item in items),
+            totalAmount=sum(item.lineTotal for item in items)
+        )
 
 
 @router.post("/cart", response_model=CartResponse)
@@ -219,7 +224,7 @@ async def checkout(payload: CheckoutPayload, auth: AuthenticatedUser = Depends(g
         knowledge_base_state = await session.get(KnowledgeBaseState, 1)
         knowledge_base_payload = knowledge_base_state.payload if knowledge_base_state and isinstance(knowledge_base_state.payload, dict) else {"works": []}
 
-        subtotal_amount = sum(float(item.book.price) * item.quantity for item in cart_items if item.book is None is False)
+        subtotal_amount = sum((item.book.price if item.book else Decimal("0.00")) * item.quantity for item in cart_items if item.book is not None)
         delivery_amount = _delivery_cost(delivery_type)
         total_amount = subtotal_amount + delivery_amount
 
@@ -228,7 +233,7 @@ async def checkout(payload: CheckoutPayload, auth: AuthenticatedUser = Depends(g
 
         for item in cart_items:
             if item.book is None: continue
-            unit_price = float(item.book.price); line_total = unit_price * item.quantity
+            unit_price = item.book.price; line_total = unit_price * item.quantity
             order_item_payload = None
             if item.book.category == ProductCategoryEnum.COLLECTIONS:
                 collection_config = item.book.collection_config if isinstance(item.book.collection_config, dict) else None
@@ -281,7 +286,7 @@ async def list_purchases(auth: AuthenticatedUser = Depends(get_current_user)) ->
 async def list_payment_history(auth: AuthenticatedUser = Depends(get_current_user)) -> PaymentHistoryListResponse:
     async with ainit_session() as session:
         payments = await DbPaymentsRepo().aget_user_payment_history(auth.user.id, session)
-        return PaymentHistoryListResponse(items=[PaymentHistoryItemResponse(id=payment.id, paymentId=payment.paymentId, orderId=payment.order_id, amount=float(payment.amount or 0), status=payment.paymentStatus, method=payment.method, kind=_resolve_payment_kind(payment), createdAt=payment.createdAt or datetime.utcnow()) for payment in payments])
+        return PaymentHistoryListResponse(items=[PaymentHistoryItemResponse(id=payment.id, paymentId=payment.paymentId, orderId=payment.order_id, amount=payment.amount or Decimal("0.00"), status=payment.paymentStatus, method=payment.method, kind=_resolve_payment_kind(payment), createdAt=payment.createdAt or datetime.utcnow()) for payment in payments])
 
 
 @router.get("/purchases/{purchase_id}", response_model=PurchasedItemResponse)

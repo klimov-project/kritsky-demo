@@ -2,6 +2,7 @@ import io
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Iterable, List, Optional
+from decimal import Decimal
 from email.message import EmailMessage
 
 from pydantic import BaseModel
@@ -154,7 +155,7 @@ class AbcPaymentClient(ABC):
     @abstractmethod
     async def create_payment_link(
         self,
-        amount: float,
+        amount: Decimal,
         description: str,
         transaction_id: str,
         email: str,
@@ -182,7 +183,7 @@ class AbcPaymentClient(ABC):
     @abstractmethod
     async def create_recurring_payment(
         self,
-        amount: float,
+        amount: Decimal,
         description: str,
         payment_method_id: str,
         idempotence_key: Optional[str] = None,
