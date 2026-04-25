@@ -28,54 +28,6 @@ _cached_pregenerated_variant: dict[str, Any] | None = None
 _cached_pregenerated_variant_at: datetime | None = None
 
 
-def _reset_daily_downloads_if_needed(user: User) -> None:
-    today = date.today()
-    if user.last_download_date != today:
-        user.daily_downloads_count = 0
-        user.last_download_date = today
-
-
-async def _has_active_subscription(user: User, session) -> bool:
-    if user.isPro:
-        return True
-
-    now = datetime.now(timezone.utc)
-    result = await session.execute(
-        select(func.max(Subscription.dateOfExpire)).where(Subscription.userId == user.id)
-    )
-    expires_at = result.scalar_one_or_none()
-    if expires_at is not None and expires_at.tzinfo is None:
-        expires_at = expires_at.replace(tzinfo=timezone.utc)
-    return bool(expires_at and expires_at >= now)
-
-
-async def _get_export_quota(user: User, session) -> ExportQuotaResponse:
-    _ = session
-    has_active_subscription = True
-    daily_limit = 999_999
-    daily_used = 0
-    daily_remaining = daily_limit
-    paid_remaining = max(0, int((user.paid_download_credits if user else 0) or 0))
-
-    return ExportQuotaResponse(
-        hasActiveSubscription=has_active_subscription,
-        dailyFreeLimit=daily_limit,
-        dailyFreeUsed=daily_used,
-        dailyFreeRemaining=daily_remaining,
-        paidDownloadsRemaining=paid_remaining,
-    )
-
-
-def _to_dto(item: SavedVariant) -> SavedVariantResponse:
-    return SavedVariantResponse(
-        id=item.id,
-        userId=item.user_id,
-        createdAt=item.createdAt,
-        updatedAt=item.updatedAt,
-        variant=item.variant_payload or {},
-        settings=item.settings_payload or {},
-    )
-
 
 def _to_utc(value: datetime | None) -> datetime | None:
     if value is None:

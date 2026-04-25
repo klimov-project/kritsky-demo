@@ -251,6 +251,7 @@ class VariantExport(Base, BaseMixin, CreatedAtMixin):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     saved_variant_id: Mapped[Optional[int]] = mapped_column(ForeignKey("saved_variants.id", ondelete="SET NULL"), nullable=True, index=True)
     action: Mapped[str] = mapped_column(String(32), nullable=False)
+    content_type: Mapped[str] = mapped_column(String(32), nullable=False, server_default="full", default="full")
 
     user: Mapped["User"] = relationship("User", back_populates="variant_exports")
     saved_variant: Mapped[Optional["SavedVariant"]] = relationship("SavedVariant", back_populates="exports")

@@ -175,6 +175,7 @@ def upgrade() -> None:
     add_col_if_missing('saved_variants', 'share_token', sa.String(64), unique=True, nullable=True)
     add_col_if_missing('saved_variants', 'is_shared', sa.Boolean(), server_default='false', nullable=False)
     add_col_if_missing('saved_variants', 'position', sa.Integer(), server_default='0', nullable=False)
+    add_col_if_missing('variant_exports', 'content_type', sa.String(length=32), server_default='full', nullable=False)
 
     # --- saved_variant_folders ---
     if 'saved_variant_folders' not in existing_tables:
@@ -186,10 +187,25 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    conn = op.get_bind()
+    inspector = Inspector.from_engine(conn.engine)
+    
     op.drop_table('saved_variant_folders')
     op.drop_table('variant_folders')
-    op.drop_column('saved_variants', 'is_shared')
-    op.drop_column('saved_variants', 'share_token')
+    
+    # Safely drop columns
+    columns_sv = [c['name'] for c in inspector.get_columns('saved_variants')]
+    if 'is_shared' in columns_sv:
+        op.drop_column('saved_variants', 'is_shared')
+    if 'share_token' in columns_sv:
+        op.drop_column('saved_variants', 'share_token')
+    if 'position' in columns_sv:
+        op.drop_column('saved_variants', 'position')
+
+    columns_ve = [c['name'] for c in inspector.get_columns('variant_exports')]
+    if 'content_type' in columns_ve:
+        op.drop_column('variant_exports', 'content_type')
+
     op.drop_table('order_item_tasks')
     op.drop_table('saved_variant_tasks')
     op.drop_table('kb_excerpt_exclusions')

@@ -51,173 +51,77 @@ _variant_pool_v2: deque = deque(maxlen=_VARIANT_POOL_SIZE)
 _variant_pool_refill_task: asyncio.Task | None = None
 
 
-class SavedVariantPayload(BaseModel):
-    variant: dict[str, Any] = Field(default_factory=dict)
-    settings: dict[str, Any] = Field(default_factory=dict)
-    folderIds: list[int] = Field(default_factory=list)
+from .schemas import (
+    SavedVariantPayload,
+    UpdateSavedVariantPayload,
+    SavedVariantResponse,
+    SavedVariantListResponse,
+    ExportQuotaResponse,
+    ConsumeExportRequest,
+    ConsumeExportResponse,
+    RuntimeTask1FiltersPayload,
+    RuntimeGeneratePayload,
+    RuntimeRefreshBlockPayload,
+    RuntimeRefreshTaskPayload,
+    RuntimeVariantResponse,
+)
+from .converters import variant_to_dto
 
 
-class UpdateSavedVariantPayload(BaseModel):
-    folderIds: list[int] = Field(default_factory=list)
-    position: int | None = None
-
-
-class SavedVariantResponse(BaseModel):
-    id: int
-    userId: int | None = None
-    createdAt: datetime
-    updatedAt: datetime
-    variant: dict[str, Any]
-    settings: dict[str, Any]
-    folderIds: list[int] = Field(default_factory=list)
-    shareToken: str | None = None
-    isShared: bool = False
-    position: int = 0
-
-
-class SavedVariantListResponse(BaseModel):
-    items: list[SavedVariantResponse]
-
-
-class ExportQuotaResponse(BaseModel):
-    hasActiveSubscription: bool
-    dailyFreeLimit: int
-    dailyFreeUsed: int
-    dailyFreeRemaining: int
-    paidDownloadsRemaining: int
-
-
-class ConsumeExportRequest(BaseModel):
-    savedVariantId: int | None = None
-    action: str = "download"
-
-
-class ConsumeExportResponse(BaseModel):
-    quota: ExportQuotaResponse
-    source: str
-
-
-class RuntimeTask1FiltersPayload(BaseModel):
-    includeWorkQuestions: bool = True
-    includeTermQuestions: bool = True
-
-
-class RuntimeGeneratePayload(BaseModel):
-    useSelected: bool = True
-    selectedWorkId: str = ""
-    selectedExcerptId: str = ""
-    selectedPoetId: str = ""
-    selectedPoemId: str = ""
-    selectedThemeId: str = ""
-    selectedBlock3AuthorId: str = ""
-    task1Filters: RuntimeTask1FiltersPayload = Field(default_factory=RuntimeTask1FiltersPayload)
-    block11RodPreference: dict[str, str] | None = None
-
-
-class RuntimeRefreshBlockPayload(BaseModel):
-    variant: dict[str, Any] = Field(default_factory=dict)
-    block: Literal["block1", "block2", "block3"]
-    selectedWorkId: str = ""
-    selectedExcerptId: str = ""
-    selectedPoetId: str = ""
-    selectedPoemId: str = ""
-    selectedThemeId: str = ""
-    selectedBlock3AuthorId: str = ""
-    task1Filters: RuntimeTask1FiltersPayload = Field(default_factory=RuntimeTask1FiltersPayload)
-    block11RodPreference: dict[str, str] | None = None
-
-
-class RuntimeRefreshTaskPayload(BaseModel):
-    variant: dict[str, Any] = Field(default_factory=dict)
-    taskKey: Literal[
-        "task1",
-        "task2",
-        "task3",
-        "task4_1",
-        "task4_2",
-        "task5",
-        "task6",
-        "task7",
-        "task8",
-        "task9_1",
-        "task9_2",
-        "task10",
-        "task11_1",
-        "task11_2",
-        "task11_3",
-        "task11_4",
-        "task11_5",
-    ]
-    selectedThemeId: str = ""
-    selectedBlock3AuthorId: str = ""
-    task1Filters: RuntimeTask1FiltersPayload = Field(default_factory=RuntimeTask1FiltersPayload)
-    task2Action: Literal["full", "reroll", "properties", "character", "property"] = "full"
-    task2PairIndex: int | None = None
-    excludedTaskIds: list[str] = Field(default_factory=list)
-
-
-class RuntimeVariantResponse(BaseModel):
-    variant: dict[str, Any]
-    evaluation: dict[str, Any]
-
-
-def _reset_daily_downloads_if_needed(user: User) -> None:
-    today = date.today()
-    if user.last_download_date != today:
-        user.daily_downloads_count = 0
-        user.last_download_date = today
-
-
-async def _has_active_subscription(user: User, session) -> bool:
-    if user.isPro:
-        return True
-
-    now = datetime.now(timezone.utc)
-    result = await session.execute(
-        select(func.max(Subscription.dateOfExpire)).where(Subscription.userId == user.id)
-    )
-    expires_at = result.scalar_one_or_none()
-    if expires_at is not None and expires_at.tzinfo is None:
-        expires_at = expires_at.replace(tzinfo=timezone.utc)
-    return bool(expires_at and expires_at >= now)
 
 
 async def _get_export_quota(user: User, session) -> ExportQuotaResponse:
-    _ = session
-    has_active_subscription = True
-    daily_limit = 999_999
-    daily_used = 0
-    daily_remaining = daily_limit
+    from datetime import datetime, time, timezone
+    now = datetime.now(timezone.utc)
+    today_start = datetime.combine(now.date(), time.min).replace(tzinfo=timezone.utc)
+
+    # Count today's exports
+    query = await session.execute(
+        select(VariantExport.content_type)
+        .where(
+            VariantExport.user_id == user.id,
+            VariantExport.createdAt >= today_start
+        )
+    )
+    exports = query.scalars().all()
+
+    excerpts_used = 0
+    poems_used = 0
+    for ct in exports:
+        if ct == "full":
+            excerpts_used += 1
+            poems_used += 1
+        elif ct == "excerpt":
+            excerpts_used += 1
+        elif ct == "poem":
+            poems_used += 1
+
+    has_active_subscription = bool(user.isPro) # Simplified for now, we have Subscription checks elsewhere
+    
+    daily_excerpts_limit = 3
+    daily_poems_limit = 3
+    
     paid_remaining = max(0, int((user.paid_download_credits if user else 0) or 0))
+
+    excerpts_rem = max(0, daily_excerpts_limit - excerpts_used)
+    poems_rem = max(0, daily_poems_limit - poems_used)
 
     return ExportQuotaResponse(
         hasActiveSubscription=has_active_subscription,
-        dailyFreeLimit=daily_limit,
-        dailyFreeUsed=daily_used,
-        dailyFreeRemaining=daily_remaining,
+        dailyExcerptsLimit=daily_excerpts_limit,
+        dailyExcerptsUsed=excerpts_used,
+        dailyExcerptsRemaining=excerpts_rem,
+        dailyPoemsLimit=daily_poems_limit,
+        dailyPoemsUsed=poems_used,
+        dailyPoemsRemaining=poems_rem,
         paidDownloadsRemaining=paid_remaining,
+        # Legacy fields
+        dailyFreeLimit=daily_excerpts_limit,
+        dailyFreeUsed=max(excerpts_used, poems_used),
+        dailyFreeRemaining=min(excerpts_rem, poems_rem),
     )
 
 
-def _to_dto(item: SavedVariant) -> SavedVariantResponse:
-    variant_payload = item.variant_payload or {}
-    
-    if hasattr(item, "tasks") and item.tasks:
-        from api.src.variants.task_links import rebuild_variant_from_links
-        variant_payload = rebuild_variant_from_links(item.tasks, variant_payload)
-
-    return SavedVariantResponse(
-        id=item.id,
-        userId=item.user_id,
-        createdAt=item.createdAt,
-        updatedAt=item.updatedAt,
-        variant=variant_payload,
-        settings=item.settings_payload or {},
-        folderIds=[f.id for f in item.folders] if hasattr(item, "folders") and item.folders else [],
-        shareToken=item.share_token,
-        isShared=item.is_shared,
-        position=item.position,
-    )
 
 
 def _to_utc(value: datetime | None) -> datetime | None:
@@ -663,7 +567,7 @@ async def get_saved_variant(variant_id: int, auth: AuthenticatedUser = Depends(g
         item = query.scalar_one_or_none()
         if item is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Saved variant not found")
-        return _to_dto(item)
+        return variant_to_dto(item)
 
 
 @router.post("", response_model=SavedVariantResponse)
@@ -710,7 +614,7 @@ async def create_saved_variant(
         )
         item = query.scalar_one()
 
-        return _to_dto(item)
+        return variant_to_dto(item)
 
 
 @router.patch("/{variant_id}", response_model=SavedVariantResponse)
@@ -759,7 +663,7 @@ async def update_saved_variant(
             )
         )
         item = query.scalar_one()
-        return _to_dto(item)
+        return variant_to_dto(item)
 
 
 @router.post("/{variant_id}/share", response_model=SavedVariantResponse)
@@ -790,7 +694,7 @@ async def share_variant(variant_id: int, auth: AuthenticatedUser = Depends(get_c
             .options(selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task))
         )
         item = query.scalar_one()
-        return _to_dto(item)
+        return variant_to_dto(item)
 
 
 @router.delete("/{variant_id}/share", response_model=SavedVariantResponse)
@@ -817,7 +721,7 @@ async def unshare_variant(variant_id: int, auth: AuthenticatedUser = Depends(get
             .options(selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task))
         )
         item = query.scalar_one()
-        return _to_dto(item)
+        return variant_to_dto(item)
 
 
 @router.get("/shared/{token}", response_model=SavedVariantResponse)
@@ -838,7 +742,7 @@ async def get_shared_variant(token: str, auth: AuthenticatedUser = Depends(get_c
         if not item:
             raise HTTPException(status_code=404, detail="Shared variant not found or access revoked")
         
-        return _to_dto(item)
+        return variant_to_dto(item)
 
 
 @router.delete("/{variant_id}")
@@ -902,11 +806,26 @@ async def consume_export_quota(
         source = "free"
 
         action = (payload.action if payload and payload.action in ("download", "print") else "download")
+        content_type = (payload.contentType if payload and payload.contentType in ("full", "excerpt", "poem") else "full")
         variant_id = payload.savedVariantId if payload else None
+        
+        # Check if user has quota left (for free users)
+        if not user.isPro and quota.paidDownloadsRemaining <= 0:
+            if content_type == "full":
+                if quota.dailyExcerptsRemaining <= 0 or quota.dailyPoemsRemaining <= 0:
+                    raise HTTPException(status_code=403, detail="Daily free limit reached for full variants")
+            elif content_type == "excerpt":
+                if quota.dailyExcerptsRemaining <= 0:
+                    raise HTTPException(status_code=403, detail="Daily free limit reached for excerpts")
+            elif content_type == "poem":
+                if quota.dailyPoemsRemaining <= 0:
+                    raise HTTPException(status_code=403, detail="Daily free limit reached for poems")
+
         export_record = VariantExport(
             user_id=user.id,
             saved_variant_id=variant_id,
             action=action,
+            content_type=content_type,
         )
         session.add(export_record)
         user.downloadsTotal = (user.downloadsTotal or 0) + 1
