@@ -141,7 +141,7 @@ def _db_state_is_newer(db_updated_at: datetime | None, cached_updated_at: dateti
 
 def warm_runtime_variant_payload_cache() -> None:
     try:
-        _load_v2_knowledge_base_payload()
+        _load_knowledge_base_payload()
     except Exception:
         return
     try:

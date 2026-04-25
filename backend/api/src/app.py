@@ -25,8 +25,8 @@ async def lifespan(app: FastAPI):
     warm_runtime_variant_payload_cache()
     
     # Start background variant pool refill
-    from api.src.variants.router import _refill_variant_pool_loop_v2
-    pool_task = asyncio.create_task(_refill_variant_pool_loop_v2())
+    from api.src.variants.router import _refill_variant_pool_loop
+    pool_task = asyncio.create_task(_refill_variant_pool_loop())
     
     yield
     
