@@ -22,8 +22,13 @@
 
 # Магия деплоя
 
-1. Дамп базы данных в корень https://drive.google.com/drive/folders/1zptY0zP1IHEk8dPDdYM9_j_tPOJawwOt?usp=sharing
-2. `docker compose exec -T db pg_restore -U postgres -d kritsky --clean --no-owner < kritsky-backup.dump`
+1. Дамп базы данных в корень https://drive.google.com/file/d/1g-secxgZ5Ow0OWKTZ8SGkipEKXL25NQL/view?usp=sharing
+2. `docker compose exec -T db pg_restore -U postgres -d kritsky --clean --if-exists --no-owner < kritsky-backup.dump`
 3. .env файл https://drive.google.com/file/d/1NhDKbxH0wf47v7SZCDyT3TXTbX3joGjo/view?usp=sharing
 4. Дёрнуть ручку http://localhost:8000/docs#/ -> /api/variants/runtime/pregenerated/generate
 5. Должен работать функционал http://localhost:3000/new_test (http://localhost:8000/api/knowledge-base)
+
+Миграции лучше не трогать, но вдруг поможет:
+
+1. откат - 001 версия: `docker compose exec backend uv run alembic downgrade -1`
+2. заново - 002: `docker compose exec backend uv run alembic upgrade head`
