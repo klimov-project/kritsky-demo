@@ -10,7 +10,7 @@ from api.src.auth.utils import AuthenticatedAdmin, get_current_admin
 from db.src.connect import ainit_session
 from db.src.models import Book, Order, OrderItem, Payment, SavedVariant, Subscription, User, VariantExport
 from api.src.variants.schemas import SavedVariantResponse, SavedVariantPayload
-from api.src.variants.utils import _to_dto
+from api.src.variants.converters import variant_to_dto
 from core.src.repos import DbUsersRepo, DbOrdersRepo, DbPaymentsRepo
 
 from .schemas import (
@@ -328,7 +328,7 @@ async def admin_get_saved_variant(variant_id: int, _: AuthenticatedAdmin = Depen
         item = query.scalar_one_or_none()
         if item is None:
             raise HTTPException(status_code=404, detail="Saved variant not found")
-        return _to_dto(item)
+        return variant_to_dto(item)
 
 
 @router.put("/variants/{variant_id}", response_model=SavedVariantResponse)
@@ -350,4 +350,4 @@ async def admin_update_saved_variant(
         
         await session.commit()
         await session.refresh(item)
-        return _to_dto(item)
+        return variant_to_dto(item)

@@ -36,15 +36,23 @@ class SavedVariantListResponse(BaseModel):
 
 class ExportQuotaResponse(BaseModel):
     hasActiveSubscription: bool
-    dailyFreeLimit: int
-    dailyFreeUsed: int
-    dailyFreeRemaining: int
+    dailyExcerptsLimit: int
+    dailyExcerptsUsed: int
+    dailyExcerptsRemaining: int
+    dailyPoemsLimit: int
+    dailyPoemsUsed: int
+    dailyPoemsRemaining: int
     paidDownloadsRemaining: int
+    # Legacy fields for backward compatibility
+    dailyFreeLimit: int = 3
+    dailyFreeUsed: int = 0
+    dailyFreeRemaining: int = 3
 
 
 class ConsumeExportRequest(BaseModel):
     savedVariantId: int | None = None
     action: str = "download"
+    contentType: str = "full"
 
 
 class ConsumeExportResponse(BaseModel):

@@ -230,4 +230,8 @@ def rebuild_variant_from_links(
 
         variant[slot] = task_data
 
+    # Ensure task8Options is at least an empty list if task8 is present
+    if "task8" in variant and "task8Options" not in variant:
+        variant["task8Options"] = []
+
     return variant

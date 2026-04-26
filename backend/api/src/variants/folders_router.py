@@ -160,7 +160,7 @@ async def get_shared_folder(token: str, auth: AuthenticatedUser = Depends(get_cu
             raise HTTPException(status_code=404, detail="Shared folder not found or link is inactive")
 
         # Now get all variants for this folder
-        from api.src.variants.router import _to_dto as variant_to_dto
+        from api.src.variants.converters import variant_to_dto
         
         variant_query = await session.execute(
             select(SavedVariant)
