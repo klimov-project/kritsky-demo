@@ -22,11 +22,6 @@ from api.src.cache.knowledge_base_cache import (
 )
 from api.src.knowledge_base.router import _get_or_create_state, _normalize_payload
 from api.src.variants.randomizer import (
-    generate_variant_runtime,
-    refresh_block_runtime,
-    refresh_task_runtime,
-)
-from api.src.variants.randomizer_v2 import (
     generate_variant_runtime2,
     refresh_task_runtime2,
     refresh_block_runtime2,
@@ -47,7 +42,7 @@ _in_memory_kb_payload: dict[str, Any] | None = None
 _in_memory_kb_updated_at: datetime | None = None
 
 _VARIANT_POOL_SIZE = 10
-_variant_pool_v2: deque = deque(maxlen=_VARIANT_POOL_SIZE)
+_variant_pool: deque = deque(maxlen=_VARIANT_POOL_SIZE)
 _variant_pool_refill_task: asyncio.Task | None = None
 
 
@@ -144,12 +139,6 @@ def _db_state_is_newer(db_updated_at: datetime | None, cached_updated_at: dateti
     return db_utc > cached_utc
 
 
-def _timestamps_equal(left: datetime | None, right: datetime | None) -> bool:
-    left_utc = _to_utc(left)
-    right_utc = _to_utc(right)
-    return left_utc == right_utc
-
-
 def warm_runtime_variant_payload_cache() -> None:
     try:
         _load_knowledge_base_payload()
@@ -157,93 +146,48 @@ def warm_runtime_variant_payload_cache() -> None:
         return
     try:
         # Pre-fill the pool with at least one variant at startup
-        response = _generate_pregenerated_variant_v2()
-        _variant_pool_v2.append(response)
+        response = _generate_pregenerated_variant()
+        _variant_pool.append(response)
     except Exception as e:
         _logger.error(f"Failed to warm variant cache: {e}")
         return
 
 
-def _load_knowledge_base_payload() -> dict[str, Any]:
-    """
-    Загрузка данных базы знаний с использованием слоистого кэширования.
-    Проверяет Redis, затем локальную память, и при необходимости синхронизируется с БД.
-    
-    Returns:
-        dict: Нормализованные данные базы знаний.
-    """
-    global _next_kb_cache_db_sync_monotonic
-    global _in_memory_kb_payload, _in_memory_kb_updated_at
+def _timestamps_equal(left: datetime | None, right: datetime | None) -> bool:
+    left_utc = _to_utc(left)
+    right_utc = _to_utc(right)
+    return left_utc == right_utc
 
-    cached_payload, cached_updated_at = get_cached_knowledge_base_payload()
-    now_monotonic = time.monotonic()
-    should_sync_with_db = now_monotonic >= _next_kb_cache_db_sync_monotonic
-
-    if cached_payload is not None:
-        if _in_memory_kb_payload is not None and _timestamps_equal(cached_updated_at, _in_memory_kb_updated_at):
-            _next_kb_cache_db_sync_monotonic = now_monotonic + KB_CACHE_DB_SYNC_INTERVAL_SECONDS
-            return _in_memory_kb_payload
-
-        normalized_payload = _normalize_payload(cached_payload)
-        _in_memory_kb_payload = normalized_payload
-        _in_memory_kb_updated_at = cached_updated_at
-        _next_kb_cache_db_sync_monotonic = now_monotonic + KB_CACHE_DB_SYNC_INTERVAL_SECONDS
-        return normalized_payload
-
-    if _in_memory_kb_payload is not None and not should_sync_with_db:
-        return _in_memory_kb_payload
-
-    with init_session() as session:
-        state = session.get(KnowledgeBaseState, 1)
-
-    if state is None:
-        state = _get_or_create_state()
-
-    if (
-        _in_memory_kb_payload is not None
-        and not _db_state_is_newer(state.updatedAt, _in_memory_kb_updated_at)
-    ):
-        _next_kb_cache_db_sync_monotonic = now_monotonic + KB_CACHE_DB_SYNC_INTERVAL_SECONDS
-        return _in_memory_kb_payload
-
-    normalized_payload = _normalize_payload(state.payload)
-    _in_memory_kb_payload = normalized_payload
-    _in_memory_kb_updated_at = state.updatedAt
-
-    if cached_payload is None or _db_state_is_newer(state.updatedAt, cached_updated_at):
-        set_cached_knowledge_base_payload(normalized_payload, state.updatedAt)
-        _next_kb_cache_db_sync_monotonic = now_monotonic + KB_CACHE_DB_SYNC_INTERVAL_SECONDS
-        return normalized_payload
 
     _next_kb_cache_db_sync_monotonic = now_monotonic + KB_CACHE_DB_SYNC_INTERVAL_SECONDS
     return _normalize_payload(cached_payload)
 
 
-_in_memory_kb_payload_v2: dict[str, Any] | None = None
-_in_memory_kb_v2_updated_at: float = 0.0
+_in_memory_kb_payload: dict[str, Any] | None = None
+_in_memory_kb_updated_at: float = 0.0
 
 
-def _load_v2_knowledge_base_payload() -> dict[str, Any]:
-    global _in_memory_kb_payload_v2, _in_memory_kb_v2_updated_at
+def _load_knowledge_base_payload() -> dict[str, Any]:
+    global _in_memory_kb_payload, _in_memory_kb_updated_at
     
     now = time.monotonic()
-    if _in_memory_kb_payload_v2 is not None and now - _in_memory_kb_v2_updated_at < 60:
-        return _in_memory_kb_payload_v2
+    if _in_memory_kb_payload is not None and now - _in_memory_kb_updated_at < 60:
+        return _in_memory_kb_payload
         
     from db.src.connect import init_session
     from api.src.knowledge_base.builder import build_kb_payload_from_tables
     
     with init_session() as session:
-        _in_memory_kb_payload_v2 = build_kb_payload_from_tables(session)
-        _in_memory_kb_v2_updated_at = now
+        _in_memory_kb_payload = build_kb_payload_from_tables(session)
+        _in_memory_kb_updated_at = now
         
-    return _in_memory_kb_payload_v2
+    return _in_memory_kb_payload
 
 
 @router.post("/runtime/generate", response_model=RuntimeVariantResponse)
 def runtime_generate_variant(payload: RuntimeGeneratePayload) -> RuntimeVariantResponse:
     try:
-        response = generate_variant_runtime(_load_knowledge_base_payload(), payload.model_dump())
+        response = generate_variant_runtime2(_load_knowledge_base_payload(), payload.model_dump())
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
@@ -260,7 +204,7 @@ def runtime_generate_variant(payload: RuntimeGeneratePayload) -> RuntimeVariantR
 @router.post("/runtime/refresh-block", response_model=RuntimeVariantResponse)
 def runtime_refresh_block(payload: RuntimeRefreshBlockPayload) -> RuntimeVariantResponse:
     try:
-        response = refresh_block_runtime(_load_knowledge_base_payload(), payload.model_dump())
+        response = refresh_block_runtime2(_load_knowledge_base_payload(), payload.model_dump())
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
@@ -277,7 +221,7 @@ def runtime_refresh_block(payload: RuntimeRefreshBlockPayload) -> RuntimeVariant
 @router.post("/runtime/refresh-task", response_model=RuntimeVariantResponse)
 def runtime_refresh_task(payload: RuntimeRefreshTaskPayload) -> RuntimeVariantResponse:
     try:
-        response = refresh_task_runtime(_load_knowledge_base_payload(), payload.model_dump())
+        response = refresh_task_runtime2(_load_knowledge_base_payload(), payload.model_dump())
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
@@ -291,82 +235,17 @@ def runtime_refresh_task(payload: RuntimeRefreshTaskPayload) -> RuntimeVariantRe
         ) from error
 
 
-@router.post("/runtime/generate-v2", response_model=RuntimeVariantResponse)
-def runtime_generate_variant_v2(payload: RuntimeGeneratePayload) -> RuntimeVariantResponse:
-    try:
-        response = generate_variant_runtime2(_load_v2_knowledge_base_payload(), payload.model_dump())
-        return RuntimeVariantResponse(
-            variant=response["variant"],
-            evaluation=response["evaluation"],
-        )
-    except ValueError as error:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
-    except Exception as error:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate variant v2: {error}",
-        ) from error
 
 
-@router.post("/runtime/generate-block-v2")
-def runtime_generate_block_v2(payload: dict[str, Any]) -> dict[str, Any]:
-    """
-    Автономная генерация отдельного блока (block1, block2 или block3) V2.
-    """
-    try:
-        response = generate_block_standalone2(_load_v2_knowledge_base_payload(), payload)
-        return response
-    except Exception as error:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate standalone block: {error}",
-        ) from error
 
 
-@router.post("/runtime/refresh-block-v2", response_model=RuntimeVariantResponse)
-def runtime_refresh_block_v2(payload: RuntimeRefreshBlockPayload) -> RuntimeVariantResponse:
-    try:
-        response = refresh_block_runtime2(_load_v2_knowledge_base_payload(), payload.model_dump())
-        return RuntimeVariantResponse(
-            variant=response["variant"],
-            evaluation=response["evaluation"],
-        )
-    except ValueError as error:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
-    except Exception as error:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to refresh block v2: {error}",
-        ) from error
 
-
-@router.post("/runtime/refresh-task-v2", response_model=RuntimeVariantResponse)
-def runtime_refresh_task_v2(payload: RuntimeRefreshTaskPayload) -> RuntimeVariantResponse:
-    try:
-        response = refresh_task_runtime2(_load_v2_knowledge_base_payload(), payload.model_dump())
-        return RuntimeVariantResponse(
-            variant=response["variant"],
-            evaluation=response["evaluation"],
-        )
-    except ValueError as error:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
-    except Exception as error:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to refresh task v2: {error}",
-        ) from error
 
 
 def _generate_pregenerated_variant() -> dict[str, Any]:
     """
     Генерирует и кэширует эталонный вариант ЕГЭ.
-    Используется для быстрого старта приложения или ручного обновления кэша.
-    
-    Returns:
-        dict: Сгенерированный вариант с оценкой.
     """
-    global _cached_pregenerated_variant, _cached_pregenerated_variant_at
-
     kb_payload = _load_knowledge_base_payload()
 
     works = [w for w in (kb_payload.get("works") or []) if isinstance(w, dict)]
@@ -386,52 +265,19 @@ def _generate_pregenerated_variant() -> dict[str, Any]:
         "task1Filters": {"includeWorkQuestions": True, "includeTermQuestions": True},
     }
 
-    response = generate_variant_runtime(kb_payload, payload)
-    _cached_pregenerated_variant = response
-    _cached_pregenerated_variant_at = datetime.now(timezone.utc)
-    return response
-
-
-def _generate_pregenerated_variant_v2() -> dict[str, Any]:
-    """
-    Генерирует и кэширует эталонный вариант ЕГЭ (V2).
-    """
-    global _cached_pregenerated_variant_v2, _cached_pregenerated_variant_v2_at
-
-    kb_payload = _load_v2_knowledge_base_payload()
-
-    works = [w for w in (kb_payload.get("works") or []) if isinstance(w, dict)]
-    poets = [p for p in (kb_payload.get("poets") or []) if isinstance(p, dict)]
-
-    first_work_id = str((works[0].get("id") or "")) if works else ""
-    first_poet_id = str((poets[0].get("id") or "")) if poets else ""
-
-    payload = {
-        "useSelected": True,
-        "selectedWorkId": first_work_id,
-        "selectedExcerptId": "",
-        "selectedPoetId": first_poet_id,
-        "selectedPoemId": "",
-        "selectedThemeId": "",
-        "selectedBlock3AuthorId": "",
-        "task1Filters": {"includeWorkQuestions": True, "includeTermQuestions": True},
-    }
-
     response = generate_variant_runtime2(kb_payload, payload)
-    _cached_pregenerated_variant_v2 = response
-    _cached_pregenerated_variant_v2_at = datetime.now(timezone.utc)
     return response
 
 
-async def _refill_variant_pool_loop_v2():
+async def _refill_variant_pool_loop():
     """Background task to keep the variant pool full."""
     while True:
         try:
-            if len(_variant_pool_v2) < _VARIANT_POOL_SIZE:
+            if len(_variant_pool) < _VARIANT_POOL_SIZE:
                 # Run CPU-bound generation in a thread
-                response = await asyncio.to_thread(_generate_pregenerated_variant_v2)
-                _variant_pool_v2.append(response)
-                _logger.info(f"Refilled variant pool. Current size: {len(_variant_pool_v2)}")
+                response = await asyncio.to_thread(_generate_pregenerated_variant)
+                _variant_pool.append(response)
+                _logger.info(f"Refilled variant pool. Current size: {len(_variant_pool)}")
             else:
                 await asyncio.sleep(5) # Pool is full, check less often
         except Exception as e:
@@ -443,38 +289,22 @@ async def _refill_variant_pool_loop_v2():
 @router.get("/runtime/pregenerated", response_model=RuntimeVariantResponse)
 async def get_runtime_pregenerated_variant() -> RuntimeVariantResponse:
     """Return a variant from the pool or generate one if empty."""
-    # We use V2 pool by default for the main endpoint if possible
-    if _variant_pool_v2:
-        response = _variant_pool_v2.popleft()
+    if _variant_pool:
+        response = _variant_pool.popleft()
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
         )
     
     # Fallback to direct generation if pool is empty
-    response = await asyncio.to_thread(_generate_pregenerated_variant_v2)
+    response = await asyncio.to_thread(_generate_pregenerated_variant)
     return RuntimeVariantResponse(
         variant=response["variant"],
         evaluation=response["evaluation"],
     )
 
 
-@router.get("/runtime/pregenerated/v2", response_model=RuntimeVariantResponse)
-async def get_runtime_pregenerated_variant_v2() -> RuntimeVariantResponse:
-    """Return a variant from the V2 pool."""
-    if _variant_pool_v2:
-        response = _variant_pool_v2.popleft()
-        return RuntimeVariantResponse(
-            variant=response["variant"],
-            evaluation=response["evaluation"],
-        )
-    
-    # Fallback
-    response = await asyncio.to_thread(_generate_pregenerated_variant_v2)
-    return RuntimeVariantResponse(
-        variant=response["variant"],
-        evaluation=response["evaluation"],
-    )
+
 
 
 @router.get("/runtime/pregenerated/generate", response_model=RuntimeVariantResponse)
@@ -496,35 +326,6 @@ def force_generate_pregenerated_variant() -> RuntimeVariantResponse:
         ) from error
 
 
-@router.get("/runtime/pregenerated-v2", response_model=RuntimeVariantResponse)
-def get_runtime_pregenerated_variant_v2() -> RuntimeVariantResponse:
-    if _cached_pregenerated_variant_v2 is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=(
-                "Pregenerated V2 variant is not ready yet. "
-                "Trigger generation via GET /api/variants/runtime/pregenerated-v2/generate."
-            ),
-        )
-    return RuntimeVariantResponse(
-        variant=_cached_pregenerated_variant_v2["variant"],
-        evaluation=_cached_pregenerated_variant_v2["evaluation"],
-    )
-
-
-@router.get("/runtime/pregenerated-v2/generate", response_model=RuntimeVariantResponse)
-def force_generate_pregenerated_variant_v2() -> RuntimeVariantResponse:
-    try:
-        response = _generate_pregenerated_variant_v2()
-        return RuntimeVariantResponse(
-            variant=response["variant"],
-            evaluation=response["evaluation"],
-        )
-    except Exception as error:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to force generate pregenerated V2 variant: {error}",
-        ) from error
 
 
 @router.get("", response_model=SavedVariantListResponse)

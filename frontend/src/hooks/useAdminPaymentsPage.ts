@@ -6,13 +6,13 @@ import {
     buildAdminPaymentStatCards,
     calculateAdminPaymentsPeriodIncome,
     EMPTY_ADMIN_DASHBOARD_STATS,
-    paginateAdminPayments,
 } from '@/utils/adminPayments';
 
 export const useAdminPaymentsPage = () => {
     const [payments, setPayments] = useState<AdminPayment[]>([]);
     const [dashboard, setDashboard] = useState<AdminDashboardStats>(EMPTY_ADMIN_DASHBOARD_STATS);
     const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -24,10 +24,11 @@ export const useAdminPaymentsPage = () => {
             setError('');
 
             try {
-                const response = await loadAdminPaymentsData();
+                const response = await loadAdminPaymentsData(page);
                 if (!cancelled) {
                     setPayments(response.payments);
                     setDashboard(response.dashboard);
+                    setTotalPages(response.totalPages);
                 }
             } catch (errorValue) {
                 if (!cancelled) {
@@ -44,12 +45,10 @@ export const useAdminPaymentsPage = () => {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [page]);
 
-    const { totalPages, currentPage, pageData } = useMemo(
-        () => paginateAdminPayments(payments, page),
-        [payments, page],
-    );
+    const pageData = payments;
+    const currentPage = page;
 
     const periodIncome = useMemo(() => calculateAdminPaymentsPeriodIncome(payments), [payments]);
 

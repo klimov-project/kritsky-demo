@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
+from decimal import Decimal
 
 from pydantic import Field, EmailStr
 
@@ -138,7 +139,7 @@ class BookSchema(BaseSchema):
     pages: Optional[int]
     format: Optional[str]
     isbn: Optional[str]
-    price: float
+    price: Decimal
     tags: Optional[List[str]] = []
     category: str = Field("books", description="Категория товара")
     fulfillment_type: str = Field("physical", description="Тип товара: digital/physical")
@@ -157,7 +158,7 @@ class BookSchema(BaseSchema):
         pages: Optional[int] = None
         format: Optional[str] = None
         isbn: Optional[str] = None
-        price: float = 0
+        price: Decimal = 0
         tags: Optional[List[str]] = []
         category: str = "books"
         fulfillment_type: str = "physical"
@@ -175,7 +176,7 @@ class BookSchema(BaseSchema):
         pages: Optional[int] = None
         format: Optional[str] = None
         isbn: Optional[str] = None
-        price: float = 0
+        price: Decimal = 0
         tags: Optional[List[str]] = []
         category: str = "books"
         fulfillment_type: str = "physical"
@@ -191,7 +192,7 @@ class BookSchema(BaseSchema):
         pages: Optional[int] = None
         format: Optional[str] = None
         isbn: Optional[str] = None
-        price: Optional[float] = None
+        price: Optional[Decimal] = None
         tags: Optional[List[str]] = None
         category: Optional[str] = None
         fulfillment_type: Optional[str] = None
@@ -207,7 +208,7 @@ class BookSchema(BaseSchema):
         pages: Optional[int] = None
         format: Optional[str] = None
         isbn: Optional[str] = None
-        price: Optional[float] = None
+        price: Optional[Decimal] = None
         tags: Optional[List[str]] = None
         category: Optional[str] = None
         fulfillment_type: Optional[str] = None
@@ -267,8 +268,8 @@ class OrderItemSchema(BaseSchema):
     fulfillment_type: Optional[str]
     cover_name: Optional[str]
     quantity: int
-    unit_price: float
-    line_total: float
+    unit_price: Decimal
+    line_total: Decimal
     payload: Optional[dict]
 
     class Creation(BaseSchema.Creation):
@@ -280,8 +281,8 @@ class OrderItemSchema(BaseSchema):
         fulfillment_type: Optional[str]
         cover_name: Optional[str]
         quantity: int
-        unit_price: float
-        line_total: float
+        unit_price: Decimal
+        line_total: Decimal
         payload: Optional[dict]
 
     class PayloadCreate(BaseSchema.PayloadCreate):
@@ -304,9 +305,9 @@ class OrderSchema(BaseSchema):
     delivery_address: Optional[str]
     recipient_name: Optional[str]
     recipient_phone: Optional[str]
-    subtotal_amount: float
-    delivery_amount: float
-    total_amount: float
+    subtotal_amount: Decimal
+    delivery_amount: Decimal
+    total_amount: Decimal
     items: List[OrderItemSchema] = []
 
     class Creation(BaseSchema.Creation):
@@ -318,9 +319,9 @@ class OrderSchema(BaseSchema):
         delivery_address: Optional[str] = None
         recipient_name: Optional[str] = None
         recipient_phone: Optional[str] = None
-        subtotal_amount: float = 0
-        delivery_amount: float = 0
-        total_amount: float = 0
+        subtotal_amount: Decimal = 0
+        delivery_amount: Decimal = 0
+        total_amount: Decimal = 0
 
     class PayloadCreate(BaseSchema.PayloadCreate):
         pass
@@ -333,9 +334,9 @@ class OrderSchema(BaseSchema):
         delivery_address: Optional[str] = None
         recipient_name: Optional[str] = None
         recipient_phone: Optional[str] = None
-        subtotal_amount: Optional[float] = None
-        delivery_amount: Optional[float] = None
-        total_amount: Optional[float] = None
+        subtotal_amount: Optional[Decimal] = None
+        delivery_amount: Optional[Decimal] = None
+        total_amount: Optional[Decimal] = None
 
     class PayloadUpdate(BaseSchema.PayloadUpdate):
         pass
@@ -348,7 +349,7 @@ class PaymentSchema(BaseSchema):
     paymentLink: Optional[str]
     paymentStatus: Optional[str]
     order_id: Optional[int]
-    amount: float
+    amount: Decimal
     method: Optional[str]
 
     class Creation(BaseSchema.Creation):
@@ -357,7 +358,7 @@ class PaymentSchema(BaseSchema):
         paymentLink: Optional[str] = None
         paymentStatus: Optional[str] = None
         order_id: Optional[int] = None
-        amount: float = 0
+        amount: Decimal = 0
         method: Optional[str] = None
 
     class PayloadCreate(BaseSchema.PayloadCreate):
@@ -368,7 +369,7 @@ class PaymentSchema(BaseSchema):
         paymentLink: Optional[str] = None
         paymentStatus: Optional[str] = None
         order_id: Optional[int] = None
-        amount: Optional[float] = None
+        amount: Optional[Decimal] = None
         method: Optional[str] = None
 
     class PayloadUpdate(BaseSchema.PayloadUpdate):

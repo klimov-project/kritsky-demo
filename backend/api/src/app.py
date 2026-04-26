@@ -9,7 +9,7 @@ from api.src.knowledge_base.utils import warm_knowledge_base_cache_from_db
 from api.src.shop.router import router as shop_router
 from api.src.variants.router import router as variants_router
 from api.src.variants.folders_router import router as folder_router
-from api.src.variants.utils import warm_runtime_variant_payload_cache
+from api.src.variants.router import warm_runtime_variant_payload_cache
 from db.src.base import Base
 from db.src.connect import engine
 
@@ -25,8 +25,8 @@ async def lifespan(app: FastAPI):
     warm_runtime_variant_payload_cache()
     
     # Start background variant pool refill
-    from api.src.variants.router import _refill_variant_pool_loop_v2
-    pool_task = asyncio.create_task(_refill_variant_pool_loop_v2())
+    from api.src.variants.router import _refill_variant_pool_loop
+    pool_task = asyncio.create_task(_refill_variant_pool_loop())
     
     yield
     

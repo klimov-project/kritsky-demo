@@ -1,5 +1,6 @@
 from datetime import datetime, date
 import uuid
+from decimal import Decimal
 from sqlalchemy import func
 
 from typing import Any, Optional, List
@@ -120,7 +121,7 @@ class Book(Base, BaseMixin, CreatedAtMixin, UpdatedAtMixin):
     pages: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     format: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
     isbn: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
-    price: Mapped[float] = mapped_column(Numeric(10, 2), default=0)
+    price: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0)
     tags: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), nullable=True)
     category: Mapped[ProductCategoryEnum] = mapped_column(
         SAEnum(ProductCategoryEnum, name="product_category_enum"),
@@ -273,9 +274,9 @@ class Order(Base, BaseMixin, CreatedAtMixin, UpdatedAtMixin):
     delivery_address: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     recipient_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     recipient_phone: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    subtotal_amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False, server_default="0", default=0)
-    delivery_amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False, server_default="0", default=0)
-    total_amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False, server_default="0", default=0)
+    subtotal_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, server_default="0", default=0)
+    delivery_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, server_default="0", default=0)
+    total_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, server_default="0", default=0)
 
     user: Mapped["User"] = relationship("User", back_populates="orders")
     items: Mapped[List["OrderItem"]] = relationship(
@@ -295,8 +296,8 @@ class OrderItem(Base, BaseMixin, CreatedAtMixin):
     fulfillment_type: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
     cover_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1", default=1)
-    unit_price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False, server_default="0", default=0)
-    line_total: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False, server_default="0", default=0)
+    unit_price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, server_default="0", default=0)
+    line_total: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, server_default="0", default=0)
     payload: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
 
     order: Mapped["Order"] = relationship("Order", back_populates="items")
@@ -377,7 +378,7 @@ class Payment(Base, BaseMixin, CreatedAtMixin, UpdatedAtMixin):
     paymentLink: Mapped[Optional[str]] = mapped_column("paymentLink", Text)
     paymentStatus: Mapped[Optional[str]] = mapped_column("paymentStatus", String(64))
     order_id: Mapped[Optional[int]] = mapped_column(ForeignKey("orders.id", ondelete="SET NULL"), nullable=True, index=True)
-    amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False, server_default="0", default=0)
+    amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, server_default="0", default=0)
     method: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
 
     user: Mapped["User"] = relationship(back_populates="payments", lazy="joined")

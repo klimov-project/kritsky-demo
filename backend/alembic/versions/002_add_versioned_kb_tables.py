@@ -185,11 +185,22 @@ def upgrade() -> None:
             sa.Column('folder_id', sa.Integer(), sa.ForeignKey('variant_folders.id', ondelete='CASCADE'), primary_key=True),
         )
 
+    # --- kb_settings ---
+    if 'kb_settings' not in existing_tables:
+        op.create_table(
+            'kb_settings',
+            sa.Column('key', sa.String(255), primary_key=True),
+            sa.Column('payload', sa.JSON(), nullable=False, server_default='{}'),
+            sa.Column('createdAt', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+            sa.Column('updatedAt', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        )
+
 
 def downgrade() -> None:
     conn = op.get_bind()
     inspector = sa.inspect(conn)
     
+    op.drop_table('kb_settings')
     op.drop_table('saved_variant_folders')
     op.drop_table('variant_folders')
     

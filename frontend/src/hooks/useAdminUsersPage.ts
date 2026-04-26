@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { loadAdminUsers } from '@/lib/api/adminUsers';
 import type { AdminUser } from '@/types/admin';
 import type { AdminUsersStatusFilter } from '@/types/ui/adminUsers';
-import { filterAdminUsers, paginateItems } from '@/utils/adminUsers';
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 75, 100];
 const DEFAULT_PAGE_SIZE = 25;
@@ -16,19 +15,20 @@ export const useAdminUsersPage = () => {
     const [generatedMin, setGeneratedMin] = useState('');
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+    const [totalPages, setTotalPages] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
 
     useEffect(() => {
         let cancelled = false;
-
         const load = async () => {
             setIsLoading(true);
             setError('');
             try {
-                const response = await loadAdminUsers();
+                const response = await loadAdminUsers(page, pageSize, search);
                 if (!cancelled) {
-                    setUsers(response.users);
+                    setUsers(response.items);
+                    setTotalPages(response.totalPages);
                 }
             } catch (errorValue) {
                 if (!cancelled) {
@@ -45,22 +45,10 @@ export const useAdminUsersPage = () => {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [page, pageSize, search]);
 
-    const filteredUsers = useMemo(
-        () =>
-            filterAdminUsers(users, {
-                search,
-                statusFilter,
-                generatedMin,
-            }),
-        [generatedMin, search, statusFilter, users],
-    );
-
-    const { totalPages, currentPage, pageData } = useMemo(
-        () => paginateItems(filteredUsers, page, pageSize),
-        [filteredUsers, page, pageSize],
-    );
+    const pageData = users;
+    const currentPage = page;
 
     const handleSearchChange = (value: string) => {
         setSearch(value);

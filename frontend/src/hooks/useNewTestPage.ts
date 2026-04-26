@@ -287,6 +287,10 @@ export function useNewTestPage() {
     }, [poets]);
 
     const applyVariant = (nextVariant: GeneratedVariant) => {
+        console.log('[useNewTestPage] applyVariant:', nextVariant);
+        if (nextVariant && !nextVariant.task8Options) {
+            console.error('[useNewTestPage] CRITICAL: task8Options is MISSING in variant!', nextVariant);
+        }
         setVariant(nextVariant);
         setAnimationKey((prev) => prev + 1);
         setSelectedWorkId(nextVariant.work.id);
@@ -326,6 +330,7 @@ export function useNewTestPage() {
             try {
                 const response = await getPregeneratedVariant();
                 if (!cancelled) {
+                    console.log('[useNewTestPage] Received pregenerated variant:', response.variant);
                     applyVariant(response.variant);
                 }
             } catch (error) {
@@ -744,6 +749,7 @@ export function useNewTestPage() {
                     ...buildRuntimeRequestPayload(),
                     useSelected,
                 });
+                console.log('[useNewTestPage] generateRuntimeVariant response:', response.variant);
                 const withPins = variantRef.current
                     ? restorePinnedTasksFrom(weeklyPinsRef.current, variantRef.current, response.variant)
                     : response.variant;

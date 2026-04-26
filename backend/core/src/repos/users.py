@@ -637,22 +637,50 @@ class DbUsersRepo(DbMixin, AbcDBRepository):
         session: AsyncSession,
         *,
         is_pro: Optional[bool] = None,
+        search: Optional[str] = None
     ) -> int:
-        """Подсчитать количество пользователей."""
+        """Подсчитать количество пользователей с учетом фильтров."""
         query = select(func.count(User.id))
         if is_pro is not None:
             query = query.where(User.isPro == is_pro)
         
+        if search:
+            search_pattern = f"%{search}%"
+            query = query.where(
+                (User.email.ilike(search_pattern)) |
+                (User.name.ilike(search_pattern)) |
+                (User.phone.ilike(search_pattern))
+            )
+            
         result = await session.execute(query)
         return result.scalar_one()
 
 
 
 
-    async def alist_with_stats(self, session: AsyncSession, week_start: datetime) -> List[dict]:
+    async def alist_with_stats(
+        self, 
+        session: AsyncSession, 
+        week_start: datetime,
+        limit: int = 50,
+        offset: int = 0,
+        search: Optional[str] = None
+    ) -> List[dict]:
         from db.src.models import Subscription, SavedVariant, VariantExport
         
-        users = (await session.execute(select(User).order_by(User.id.desc()))).scalars().all()
+        user_query = select(User).order_by(User.id.desc())
+        
+        if search:
+            search_pattern = f"%{search}%"
+            user_query = user_query.where(
+                (User.email.ilike(search_pattern)) |
+                (User.name.ilike(search_pattern)) |
+                (User.phone.ilike(search_pattern))
+            )
+            
+        user_query = user_query.limit(limit).offset(offset)
+        users = (await session.execute(user_query)).scalars().all()
+        
         if not users:
             return []
             
