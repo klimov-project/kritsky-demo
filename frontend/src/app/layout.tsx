@@ -23,7 +23,7 @@ export default function RootLayout({
         <html lang="ru">
             <body className="text-[#221E20] antialiased">
                 <AuthProvider>
-                    <CopyProtection />
+                    {/* <CopyProtection /> */}
                     {children}
                     <Suspense fallback={null}>
                         <GlobalModals />
