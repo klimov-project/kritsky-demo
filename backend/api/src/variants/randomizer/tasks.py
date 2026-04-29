@@ -8,6 +8,7 @@ from .constants import (
     TASK8_MAX_OPTIONS,
     TASK8_MIN_CORRECT_OPTIONS,
     TASK8_MAX_CORRECT_OPTIONS,
+    SERVICE_TAGS,
 )
 from .tokens import (
     _extract_term_tokens,
@@ -148,9 +149,16 @@ def _build_runtime_task2(work: dict[str, Any], question: dict[str, Any] | None, 
         
     extra_option = _shuffle(list(potential_props))[0]
     
+    options = []
+    for p in pairs:
+        options.append(p["properties"][0])
+    options.append(extra_option)
+    options = _shuffle(options)
+    
     next_q = copy.deepcopy(question)
     next_q["pairs"] = pairs
     next_q["extraOption"] = extra_option
+    next_q["options"] = options
     return next_q
 
 # --- Two-Gap Helpers ---
@@ -187,6 +195,11 @@ def _build_runtime_two_gap_candidates(entries: list[dict[str, Any]], runtime_key
             # Check for compatibility tag collisions within the pair
             second_tags = set(_extract_custom_internal_tags(second))
             if first_tags & second_tags: continue
+            
+            # Prevent SERVICE_TAGS repetition within the pair
+            first_service = {t for t in _get_tags(first) if t in SERVICE_TAGS}
+            second_service = {t for t in _get_tags(second) if t in SERVICE_TAGS}
+            if first_service & second_service: continue
             
             term1 = str(first.get("termId1") or first.get("termId") or "").strip().lower()
             term2 = str(second.get("termId1") or second.get("termId") or "").strip().lower()

@@ -279,8 +279,13 @@ def _check_without_author_rules(variant: dict[str, Any], errors: list[str]):
         tags = _get_tags(q)
         is_wa = any(t in NO_AUTHOR_TAGS for t in tags)
             
-        if is_wa and key not in ["task3", "task6"]:
-            errors.append(f"Теги без автора не допускаются в задании {key}")
+        if is_wa:
+            if key not in ["task3", "task6"]:
+                errors.append(f"Теги без автора не допускаются в задании {key}")
+            else:
+                authors = _extract_author_tokens(q)
+                if not authors:
+                    errors.append(f"В задании {key} с тегом без автора отсутствует явная привязка к автору")
 
 
 def _check_task2_structure_integrity(variant: dict[str, Any], errors: list[str]):
@@ -511,6 +516,10 @@ def _check_task3_integrity(variant: dict[str, Any], errors: list[str]):
     tags = _get_tags(task3)
     has_wa_tag = any(t in NO_AUTHOR_TAGS for t in tags)
     
+    service_tags = [t for t in tags if t in SERVICE_TAGS]
+    if len(service_tags) != len(set(service_tags)):
+        errors.append(f"В задании task3 дублируются сервисные теги: {service_tags}")
+    
     if wa:
         if not part1 or not part2:
             errors.append("Флаг withoutAuthor в task3 разрешен только для составных заданий из двух частей")
@@ -730,6 +739,10 @@ def _check_task6_integrity(variant: dict[str, Any], errors: list[str]):
     wa = task6.get("withoutAuthor") is True
     tags = _get_tags(task6)
     has_wa_tag = any(t in NO_AUTHOR_TAGS for t in tags)
+    
+    service_tags = [t for t in tags if t in SERVICE_TAGS]
+    if len(service_tags) != len(set(service_tags)):
+        errors.append(f"В задании task6 дублируются сервисные теги: {service_tags}")
     
     if wa:
         if not part1 or not part2:
