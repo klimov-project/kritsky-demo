@@ -44,7 +44,13 @@ def get_knowledge_base() -> KnowledgeBaseResponse:
         state = _get_or_create_state()
         normalized_payload = _normalize_payload(state.payload)
         set_cached_knowledge_base_payload(normalized_payload, state.updatedAt)
-        return _to_response(state)
+        return KnowledgeBaseResponse(
+            works=normalized_payload["works"],
+            poets=normalized_payload["poets"],
+            block3=normalized_payload["block3"],
+            settings=normalized_payload["settings"],
+            updatedAt=state.updatedAt,
+        )
     except SQLAlchemyError as error:
         raise HTTPException(status_code=500, detail=f"Failed to load knowledge base: {error}") from error
 

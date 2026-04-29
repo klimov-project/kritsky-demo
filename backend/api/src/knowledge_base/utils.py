@@ -200,19 +200,8 @@ def _get_or_create_state() -> KnowledgeBaseState:
                 if state is None:
                     raise
 
-        normalized_payload = _normalize_payload(state.payload)
-        if normalized_payload != state.payload:
-            state.payload = normalized_payload
-            session.add(state)
-            try:
-                session.commit()
-                session.refresh(state)
-            except IntegrityError:
-                session.rollback()
-                state = session.get(KnowledgeBaseState, 1)
-                if state is None:
-                    raise
-
+        # Pre-load the payload while the session is active
+        _ = state.payload
         return state
 
 
