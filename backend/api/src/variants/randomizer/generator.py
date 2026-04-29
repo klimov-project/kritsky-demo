@@ -41,23 +41,54 @@ def generate_variant_runtime2(kb_payload: dict[str, Any], payload: dict[str, Any
             # Retry randomly if no tasks
             if poem:
                 p_tasks = poem.get("tasks") or {}
-                if not any(p_tasks.get(k) for k in ["task6", "task7", "task8", "task9_1", "task9_2", "task10"]):
+                if not all(p_tasks.get(k) for k in ["task6", "task7", "task8", "task9_1", "task9_2", "task10"]):
                     poet, poem = None, None
     
     if not poet or not poem:
+        excerpt_authors = set(_extract_author_tokens(work)) if work else set()
+        excerpt_themes = set(_extract_theme_tokens(excerpt, "excerpt")) if excerpt else set()
+        
         possible_poets = _shuffle(poets)
+        best_poet, best_poem = None, None
+        min_theme_overlap = 999
+        
         for p_poet in possible_poets:
+            p_authors = set(_extract_author_tokens(p_poet))
+            if p_authors & excerpt_authors:
+                continue
+                
             possible_poems = _shuffle(_filter_active_items(p_poet.get("poems") or []))
             for p_poem in possible_poems:
                 p_tasks = p_poem.get("tasks") or {}
-                if any(p_tasks.get(k) for k in ["task6", "task7", "task8", "task9_1", "task9_2", "task10"]):
+                if not all(p_tasks.get(k) for k in ["task6", "task7", "task8", "task9_1", "task9_2", "task10"]):
+                    continue
+                    
+                p_themes = set(_extract_theme_tokens(p_poem, "poem"))
+                overlap = len(p_themes & excerpt_themes)
+                
+                if overlap == 0:
                     poet, poem = p_poet, p_poem
                     break
+                elif overlap < min_theme_overlap:
+                    min_theme_overlap = overlap
+                    best_poet, best_poem = p_poet, p_poem
             if poet: break
-        
+            
+        if not poet and best_poet:
+            poet, poem = best_poet, best_poem
+            
         if not poet:
-            poet = _pick_random(poets)
-            poem = _pick_random(_filter_active_items(poet.get("poems") or [])) if poet else None
+            valid_poets = []
+            for p in poets:
+                for pm in _filter_active_items(p.get("poems") or []):
+                    pm_tasks = pm.get("tasks") or {}
+                    if all(pm_tasks.get(k) for k in ["task6", "task7", "task8", "task9_1", "task9_2", "task10"]):
+                        valid_poets.append((p, pm))
+            if valid_poets:
+                poet, poem = _pick_random(valid_poets)
+            else:
+                poet = _pick_random(poets)
+                poem = _pick_random(_filter_active_items(poet.get("poems") or [])) if poet else None
 
     if not work or not excerpt or not poet or not poem:
         return {"variant": {}, "evaluation": {"ok": False, "error": "Missing core items"}}
@@ -70,6 +101,7 @@ def generate_variant_runtime2(kb_payload: dict[str, Any], payload: dict[str, Any
     
     excerpt_tasks = excerpt.get("tasks") or {}
     b1_pools = build_block1_pools(work, excerpt_tasks, kb_payload)
+    
     apply_task1_filters(b1_pools, payload.get("task1Filters"))
     
     tasks1 = populate_block1(b1_pools, work, excerpt_tasks, ctx)
@@ -170,6 +202,8 @@ def refresh_task_runtime2(kb_payload: dict[str, Any], payload: dict[str, Any]) -
         variant[task_key] = tasks[task_key]
         if task_key == "task8":
             variant["task8Options"] = tasks.get("task8Options", [])
+            if isinstance(variant["task8"], dict):
+                variant["task8"]["options"] = variant["task8Options"]
             
     elif task_key in BLOCK11_KEYS:
         rod_layout = variant.get("_rodLayout") or []

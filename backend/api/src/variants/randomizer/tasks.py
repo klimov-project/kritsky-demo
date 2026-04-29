@@ -8,6 +8,7 @@ from .constants import (
     TASK8_MAX_OPTIONS,
     TASK8_MIN_CORRECT_OPTIONS,
     TASK8_MAX_CORRECT_OPTIONS,
+    SERVICE_TAGS,
 )
 from .tokens import (
     _extract_term_tokens,
@@ -106,26 +107,27 @@ def _get_prepared_task2_pairs(work: dict[str, Any], question: dict[str, Any], ca
 
 def _pick_task2_pairs_with_single_options(pairs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     if not pairs: return []
-    best_attempt, best_unique_count = [], -1
     for _ in range(TASK2_PAIR_PICK_ATTEMPTS):
         used_options, used_tags, attempt_pairs = set(), set(), []
-        for pair in pairs:
+        shuffled_candidates = _shuffle(copy.deepcopy(pairs))
+        for pair in shuffled_candidates:
             tag = str(pair.get("tag") or "").strip().lower()
             if tag and tag in used_tags: continue
             props = pair.get("properties") or []
             indices = _shuffle(list(range(len(props))))
-            sel_idx = next((i for i in indices if props[i] not in used_options), indices[0] if indices else None)
+            sel_idx = next((i for i in indices if props[i] not in used_options), None)
             if sel_idx is None: continue
             selected = props[sel_idx]
             used_options.add(selected)
             if tag: used_tags.add(tag)
             np = copy.deepcopy(pair)
             np["properties"] = [selected]
+            lookup = _build_property_id_lookup(pair)
+            np["propertyIds"] = [lookup.get(selected, "")]
             attempt_pairs.append(np)
-        uc = len({p.get("properties", [""])[0] for p in attempt_pairs})
-        if uc > best_unique_count: best_attempt, best_unique_count = attempt_pairs, uc
-        if uc == len(attempt_pairs): return attempt_pairs
-    return best_attempt
+            if len(attempt_pairs) == 3:
+                return attempt_pairs
+    return []
 
 def _build_runtime_task2(work: dict[str, Any], question: dict[str, Any] | None, excerpt_tasks: dict[str, Any] | None = None) -> dict[str, Any] | None:
     if not question: return None
@@ -133,9 +135,30 @@ def _build_runtime_task2(work: dict[str, Any], question: dict[str, Any] | None, 
     exclusions = _build_task2_runtime_exclusions(excerpt_tasks)
     prep = _get_prepared_task2_pairs(work, question, category, exclusions)
     pairs = _pick_task2_pairs_with_single_options(prep)
-    if not pairs: return None
+    if len(pairs) < 3: return None
+    
+    used_props = {p["properties"][0] for p in pairs}
+    potential_props = set()
+    for pair in prep:
+        for p in pair.get("properties", []):
+            if p not in used_props:
+                potential_props.add(p)
+                
+    if not potential_props:
+        return None
+        
+    extra_option = _shuffle(list(potential_props))[0]
+    
+    options = []
+    for p in pairs:
+        options.append(p["properties"][0])
+    options.append(extra_option)
+    options = _shuffle(options)
+    
     next_q = copy.deepcopy(question)
     next_q["pairs"] = pairs
+    next_q["extraOption"] = extra_option
+    next_q["options"] = options
     return next_q
 
 # --- Two-Gap Helpers ---
@@ -173,8 +196,18 @@ def _build_runtime_two_gap_candidates(entries: list[dict[str, Any]], runtime_key
             second_tags = set(_extract_custom_internal_tags(second))
             if first_tags & second_tags: continue
             
+            # Prevent SERVICE_TAGS repetition within the pair
+            first_service = {t for t in _get_tags(first) if t in SERVICE_TAGS}
+            second_service = {t for t in _get_tags(second) if t in SERVICE_TAGS}
+            if first_service & second_service: continue
+            
+            term1 = str(first.get("termId1") or first.get("termId") or "").strip().lower()
+            term2 = str(second.get("termId1") or second.get("termId") or "").strip().lower()
+            if term1 and term2 and term1 == term2: continue
+            
             candidate = _build_paired_runtime_two_gap(first, second, runtime_key)
             if _is_two_gap_valid(candidate): pairs.append(candidate)
+            
     with_terms = [p for p in pairs if _extract_term_tokens(p, runtime_key)]
     return with_terms if with_terms else pairs
 
@@ -198,34 +231,64 @@ def _build_task8_options(question: dict[str, Any] | None, ctx: SelectionContext)
     if not question or not isinstance(question.get("options"), list): return []
     options = [o for o in question["options"] if isinstance(o, dict) and o.get("isActive") is not False]
     
-    # Filter out incorrect options that use already used terms
-    def is_option_allowed(o):
-        if o.get("isCorrect"): return True  # Correct ones are always included
-        o_terms = set(_extract_term_tokens(o, "task8-option"))
-        return not (o_terms & ctx.used_term_tokens)
-
     correct = [o for o in options if o.get("isCorrect")]
     incorrect = [o for o in options if not o.get("isCorrect")]
     
-    allowed_incorrect = [o for o in incorrect if is_option_allowed(o)]
-    if not allowed_incorrect: allowed_incorrect = incorrect  # Fallback
-    
     if not correct: return []
     
-    min_c = min(len(correct), TASK8_MIN_CORRECT_OPTIONS)
-    max_c = min(len(correct), TASK8_MAX_CORRECT_OPTIONS)
-    picked_correct = _pick_many_random(correct, random.randint(min_c, max_c))
+    def is_option_allowed(o):
+        o_terms = set(_extract_term_tokens(o, "task8-option"))
+        return not (o_terms & ctx.used_term_tokens)
+        
+    allowed_incorrect = [o for o in incorrect if is_option_allowed(o)]
     
-    min_i = max(0, 5 - len(picked_correct))
-    max_i = min(len(allowed_incorrect), TASK8_MAX_OPTIONS - len(picked_correct))
+    valid_pairs = []
+    for nc in range(2, min(len(correct), 6) + 1):
+        ni = 7 - nc
+        if ni >= 1 and ni <= 5:
+            valid_pairs.append((nc, ni))
+            
+    if not valid_pairs:
+        for nc in range(1, len(correct) + 1):
+            ni = 7 - nc
+            if ni >= 0:
+                valid_pairs.append((nc, ni))
+                
+    if not valid_pairs:
+        all_shuffled = _shuffle(correct + incorrect)
+        return all_shuffled[:7]
+        
+    nc, ni = random.choice(valid_pairs)
+    picked_correct = _pick_many_random(correct, nc)
     
-    if min_i > max_i:
-        picked_incorrect = _pick_many_random(allowed_incorrect, max_i)
-    else:
-        picked_incorrect = _pick_many_random(allowed_incorrect, random.randint(min_i, max_i))
+    picked_incorrect = _pick_many_random(allowed_incorrect, ni)
+    if len(picked_incorrect) < ni:
+        remaining = ni - len(picked_incorrect)
+        used_ids = {str(o.get("id")) for o in picked_incorrect}
+        fallback_incorrect = [o for o in incorrect if str(o.get("id")) not in used_ids]
+        extra_incorrect = _pick_many_random(fallback_incorrect, remaining)
+        picked_incorrect.extend(extra_incorrect)
+        
+    if len(picked_correct) + len(picked_incorrect) < 7:
+        used_c_ids = {str(o.get("id")) for o in picked_correct}
+        fallback_correct = [o for o in correct if str(o.get("id")) not in used_c_ids]
+        extra_correct = _pick_many_random(fallback_correct, 7 - (len(picked_correct) + len(picked_incorrect)))
+        picked_correct.extend(extra_correct)
+        
+    final_options = []
+    for o in picked_correct:
+        oc = copy.deepcopy(o)
+        oc["isCorrect"] = True
+        final_options.append(oc)
+        
+    for o in picked_incorrect:
+        oc = copy.deepcopy(o)
+        if "isCorrect" not in oc:
+            oc["isCorrect"] = False
+        final_options.append(oc)
+        
+    final_options = _shuffle(final_options)
     
-    final_options = _shuffle(picked_correct + picked_incorrect)
-    # Update ctx with chosen terms from options
     for o in final_options:
         for t in _extract_term_tokens(o, "task8-option"):
             ctx.used_term_tokens.add(t)

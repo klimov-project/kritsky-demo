@@ -17,8 +17,16 @@ def debug_data(project_root):
         return json.load(f)
 
 @pytest.fixture(scope="session")
-def kb_payload(debug_data):
-    return debug_data.get("kb_payload")
+def kb_payload(project_root):
+    kb_path = os.path.join(project_root, "clean.json")
+    if not os.path.exists(kb_path):
+        pytest.skip("clean.json not found")
+        
+    with open(kb_path, "r", encoding="utf-8") as f:
+        content = f.read().strip()
+        if content.endswith("(1 row)"):
+            content = content[:-7].strip()
+        return json.loads(content)
 
 @pytest.fixture(scope="session")
 def sample_payload(debug_data):
