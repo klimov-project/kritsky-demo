@@ -1,0 +1,6 @@
+@host_api = http://localhost:8000
+
+### Проверка работы сервера
+GET {{host_api}}/health
+
+ 
