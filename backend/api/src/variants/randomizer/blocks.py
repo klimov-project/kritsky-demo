@@ -71,9 +71,11 @@ def apply_task1_filters(b1_pools: dict[str, list[dict[str, Any]]], task1_filters
 def populate_block1(b1_pools: dict[str, list[dict[str, Any]]], work: dict[str, Any], excerpt_tasks: dict[str, Any], ctx: SelectionContext) -> dict[str, Any]:
     tasks = {}
     tasks["task1"] = _pick_best_from_pool(b1_pools["task1"], "task1", ctx)
+        
     tasks["task2"] = _build_runtime_task2(work, _pick_best_from_pool(b1_pools["task2"], "task2", ctx), excerpt_tasks)
     tasks["task3"] = _pick_random(_build_runtime_two_gap_candidates(b1_pools["task3"], "task3", ctx))
-    if tasks["task3"]: ctx.add_question_tokens(tasks["task3"], "task3")
+    if tasks["task3"]: 
+        ctx.add_question_tokens(tasks["task3"], "task3")
     tasks["task4_1"] = _pick_best_from_pool(b1_pools["task4_1"], "task4_1", ctx)
     tasks["task4_2"] = _pick_best_from_pool(b1_pools["task4_2"], "task4_2", ctx)
     tasks["task5"] = _pick_best_from_pool(b1_pools["task5"], "task5", ctx)
@@ -89,8 +91,11 @@ def populate_block2(poem_pools: dict[str, list[dict[str, Any]]], ctx: SelectionC
     task8_no_conflict = [q for q in task8_pool if not _task8_has_term_conflict(q, ctx)]
     task8_pool_final = task8_no_conflict if task8_no_conflict else task8_pool
     tasks["task8"] = _pick_best_from_pool(task8_pool_final, "task8", ctx)
-    if tasks["task8"]: tasks["task8Options"] = _build_task8_options(tasks["task8"], ctx)
-    
+    if tasks["task8"]:
+        tasks["task8Options"] = _build_task8_options(tasks["task8"], ctx)
+        if isinstance(tasks["task8"], dict):
+            tasks["task8"]["options"] = tasks["task8Options"]
+        
     tasks["task9_1"] = _pick_best_from_pool(poem_pools.get("task9_1") or [], "task9_1", ctx)
     tasks["task9_2"] = _pick_best_from_pool(poem_pools.get("task9_2") or [], "task9_2", ctx)
     tasks["task10"] = _pick_best_from_pool(poem_pools.get("task10") or [], "task10", ctx)
@@ -112,6 +117,9 @@ def populate_block3(block3_payload: dict[str, Any], ctx: SelectionContext, rod_l
             excl_pool = [q for q in pool if _is_exclusive_question(q)]
             if excl_pool:
                 pool = excl_pool
+        else:
+            pool = [q for q in pool if not _is_exclusive_question(q)]
+            
         tasks[key] = _pick_best_from_pool(pool, key, ctx)
         
     tasks["_rodLayout"] = rod_layout

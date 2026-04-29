@@ -35,11 +35,7 @@ SUBSCRIPTION_DAILY_EXPORT_LIMIT = 3
 
 
 from api.config import SETTINGS
-
-KB_CACHE_DB_SYNC_INTERVAL_SECONDS = SETTINGS.KB_CACHE_DB_SYNC_INTERVAL_SECONDS
-_next_kb_cache_db_sync_monotonic = 0.0
-_in_memory_kb_payload: dict[str, Any] | None = None
-_in_memory_kb_updated_at: datetime | None = None
+from .utils import _load_knowledge_base_payload
 
 _VARIANT_POOL_SIZE = 10
 _variant_pool: deque = deque(maxlen=_VARIANT_POOL_SIZE)
@@ -153,35 +149,6 @@ def warm_runtime_variant_payload_cache() -> None:
         return
 
 
-def _timestamps_equal(left: datetime | None, right: datetime | None) -> bool:
-    left_utc = _to_utc(left)
-    right_utc = _to_utc(right)
-    return left_utc == right_utc
-
-
-    _next_kb_cache_db_sync_monotonic = now_monotonic + KB_CACHE_DB_SYNC_INTERVAL_SECONDS
-    return _normalize_payload(cached_payload)
-
-
-_in_memory_kb_payload: dict[str, Any] | None = None
-_in_memory_kb_updated_at: float = 0.0
-
-
-def _load_knowledge_base_payload() -> dict[str, Any]:
-    global _in_memory_kb_payload, _in_memory_kb_updated_at
-    
-    now = time.monotonic()
-    if _in_memory_kb_payload is not None and now - _in_memory_kb_updated_at < 60:
-        return _in_memory_kb_payload
-        
-    from db.src.connect import init_session
-    from api.src.knowledge_base.builder import build_kb_payload_from_tables
-    
-    with init_session() as session:
-        _in_memory_kb_payload = build_kb_payload_from_tables(session)
-        _in_memory_kb_updated_at = now
-        
-    return _in_memory_kb_payload
 
 
 @router.post("/runtime/generate", response_model=RuntimeVariantResponse)
