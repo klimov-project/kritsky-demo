@@ -209,7 +209,10 @@ def _build_runtime_two_gap_candidates(entries: list[dict[str, Any]], runtime_key
             if _is_two_gap_valid(candidate): pairs.append(candidate)
             
     with_terms = [p for p in pairs if _extract_term_tokens(p, runtime_key)]
-    return with_terms if with_terms else pairs
+    final_candidates = with_terms if with_terms else pairs
+    import logging
+    logging.getLogger("randomizer").info(f"[RANDOMIZER POOL] Slot {runtime_key}: {len(final_candidates)} valid candidates formed.")
+    return final_candidates
 
 # --- Task 8 Options ---
 

@@ -1140,8 +1140,6 @@ def _check_internal_duplicates(variant: dict[str, Any], errors: list[str]):
                 if t: raw_theme_ids.append(t.lower())
         if len(raw_theme_ids) != len(set(raw_theme_ids)):
             errors.append(f"Дубликат themeId внутри задания {key}")
-            if key == "task10":
-                print(f"\n[DEBUG TASK10] Duplicate themeIds found: {raw_theme_ids} in {q}")
             
         # 3. Check raw Term IDs
         if key not in ["task3", "task6"]:

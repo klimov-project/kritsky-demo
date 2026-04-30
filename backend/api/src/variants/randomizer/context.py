@@ -84,6 +84,8 @@ def _can_select_question(question: Dict[str, Any], key: str, ctx: SelectionConte
 def _pick_best_from_pool(pool: List[Dict[str, Any]], key: str, ctx: SelectionContext) -> Dict[str, Any] | None:
     if not pool: return None
     filtered = [q for q in pool if _can_select_question(q, key, ctx)]
+    import logging
+    logging.getLogger("randomizer").info(f"[RANDOMIZER POOL] Slot {key}: {len(filtered)} valid candidates from {len(pool)} total.")
     if filtered:
         selected = _pick_random(filtered)
         ctx.add_question_tokens(selected, key)
