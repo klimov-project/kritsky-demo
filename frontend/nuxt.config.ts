@@ -9,7 +9,8 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
-    apiBackendBase: process.env.NUXT_API_BACKEND_BASE || 'http://localhost:8000',
+    apiBackendBase:
+      process.env.NUXT_API_BACKEND_BASE || 'http://localhost:8000',
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api',
     },
@@ -17,13 +18,15 @@ export default defineNuxtConfig({
   nitro: {
     storage: {
       cache: {
-        driver: 'memory'
-      }
-    }
+        driver: 'memory',
+      },
+    },
   },
   vite: {
     optimizeDeps: {
       include: ['@vue/devtools-core', '@vue/devtools-kit'],
     },
   },
+
+  modules: ['@nuxtjs/tailwindcss'],
 });

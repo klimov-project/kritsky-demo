@@ -96,9 +96,10 @@ const history = computed(() => invalidationData.value?.history || []);
                 <div class="font-mono text-xs text-gray-500 mb-1">
                   ID: {{ excerpt.id }}
                 </div>
-                <p class="line-clamp-2 text-gray-700 italic">
-                  "{{ excerpt.text }}"
-                </p>
+                <p
+                  class="line-clamp-2 text-gray-700 italic"
+                  v-html="excerpt.text"
+                ></p>
                 <div class="mt-1 text-xs text-blue-600">
                   Заданий: {{ excerpt.tasks?.customTask1?.length || 0 }} (свои)
                   + {{ work.commonTasks?.task1?.length || 0 }} (общие)
@@ -131,9 +132,10 @@ const history = computed(() => invalidationData.value?.history || []);
                   ID: {{ poem.id }}
                 </div>
                 <p class="font-bold text-gray-800">{{ poem.title }}</p>
-                <p class="line-clamp-2 text-gray-700 italic">
-                  "{{ poem.text }}"
-                </p>
+                <p
+                  class="line-clamp-2 text-gray-700 italic"
+                  v-html="poem.text"
+                ></p>
               </div>
             </div>
           </div>
