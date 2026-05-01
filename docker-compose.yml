@@ -40,7 +40,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     environment:
-      PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      # PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      NUXT_API_BACKEND_BASE: ${NUXT_API_BACKEND_BASE}
+      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE}
     restart: always
     depends_on:
       - backend
