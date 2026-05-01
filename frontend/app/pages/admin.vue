@@ -1,4 +1,7 @@
 <script setup lang="ts">
+const config = useRuntimeConfig();
+const apiBase = config.public.apiBase;
+
 const { data: kb, pending: kbPending, refresh: refreshKb } = await useFetch(
   '/api/knowledge-base',
 );
@@ -21,6 +24,11 @@ const handleInvalidate = async () => {
 };
 
 const history = computed(() => invalidationData.value?.history || []);
+
+// Отладка
+if (import.meta.client) {
+  console.log('API Base:', apiBase);
+}
 </script>
 
 <template>
