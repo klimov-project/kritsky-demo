@@ -1,26 +1,32 @@
 import { calculateTotalVariants } from '../utils/calculate-variants';
 
-// Простейшее in‑memory кеширование
-let cachedCount: number | null = null;
-let cachedHash: string | null = null;
-
 export default defineEventHandler(async (event) => {
-  // Получаем knowledge-base (можно просто импортировать json или сделать fetch)
-  const kb = await $fetch('/api/knowledge-base', {
-    baseURL: 'http://localhost:8000',
-  });
-  const hash = simpleHash(kb); // хеш содержимого
+  // Use the local cached API route to get knowledge-base
+  // This ensures we benefit from the Nitro caching implemented there
+  const kb = await $fetch('/api/knowledge-base');
+  
+  // We can still use a simple in-memory cache here for the count itself 
+  // to avoid re-calculating on every request if kb hasn't changed
+  const storage = useStorage();
+  const cacheKey = 'cache:variants-count';
+  const kbHashKey = 'cache:kb-hash-for-count';
+  
+  const currentKbHash = simpleHash(kb);
+  const cachedHash = await storage.getItem(kbHashKey);
+  const cachedCount = await storage.getItem(cacheKey);
 
-  // Если кеш не актуален – пересчитываем
-  if (cachedHash !== hash || cachedCount === null) {
-    cachedCount = calculateTotalVariants(kb);
-    cachedHash = hash;
+  if (cachedHash === currentKbHash && cachedCount !== null) {
+    return cachedCount;
   }
 
-  return cachedCount;
+  const count = calculateTotalVariants(kb);
+  
+  await storage.setItem(kbHashKey, currentKbHash);
+  await storage.setItem(cacheKey, count);
+
+  return count;
 });
 
-// Простая хеш-функция (можно использовать crypto)
 function simpleHash(obj: any): string {
   const str = JSON.stringify(obj);
   let h = 0;
