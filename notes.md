@@ -49,6 +49,19 @@
 
    ### Возможные ответвления
 
+   #### С очисткой подключений и пересозданием базы
+
+   - Поднять только Postgres
+     `docker compose up -d db`
+   - Закрыть все подключения
+     `docker compose exec -T db psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'kritsky';"`
+   - Дропнуть базы данных по названию "kritsky"
+     `docker compose exec -T db psql -U postgres -c "DROP DATABASE IF EXISTS kritsky;"`
+   - Создать пустую базу с названием "kritsky"
+     `docker compose exec -T db psql -U postgres -c "CREATE DATABASE kritsky;"`
+
+   #### Со схемой и миграциями
+
    - Запустить контейнеры (бэкенд, базу данных, редис) для применения схемы:
      `docker compose up -d db backend`
 
@@ -59,14 +72,14 @@
      docker compose exec backend uv run alembic upgrade head
    ```
 
-3. Залить дамп (с явным указанием compose-файла и env):
+3) Залить дамп (с явным указанием compose-файла и env):
    `docker compose -f docker-compose.yml --env-file .env exec -T db pg_restore -U postgres -d kritsky --clean --if-exists --no-owner --verbose < kritsky-backup.dump`
 
-4. Перезапустить бэкенд:
+4) Перезапустить бэкенд:
    `docker compose restart backend`
 
-5. Очистить кеш Redis (критично, иначе данные останутся старыми):
+5) Очистить кеш Redis (критично, иначе данные останутся старыми):
    `docker compose exec redis redis-cli flushall`
 
-6. Пересобрать и поднять всё финально:
+6) Пересобрать и поднять всё финально:
    `docker compose down && docker compose up -d --build --force-recreate`
