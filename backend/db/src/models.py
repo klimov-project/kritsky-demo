@@ -243,7 +243,6 @@ class SavedVariant(Base, BaseMixin, CreatedAtMixin, UpdatedAtMixin):
     user: Mapped["User"] = relationship("User", back_populates="saved_variants")
     folders: Mapped[List["VariantFolder"]] = relationship("VariantFolder", secondary=saved_variant_folders, back_populates="variants")
     exports: Mapped[List["VariantExport"]] = relationship("VariantExport", back_populates="saved_variant", cascade="all, delete-orphan")
-    tasks: Mapped[List["SavedVariantTask"]] = relationship("SavedVariantTask", back_populates="saved_variant", cascade="all, delete-orphan")
 
 
 class VariantExport(Base, BaseMixin, CreatedAtMixin):
@@ -535,25 +534,6 @@ class KbExcerptExclusion(Base, BaseMixin, CreatedAtMixin):
     )
 
 
-class SavedVariantTask(Base, BaseMixin, CreatedAtMixin):
-    """Связь сохранённого варианта с конкретными версиями заданий."""
-    __tablename__ = "saved_variant_tasks"
-
-    saved_variant_id: Mapped[int] = mapped_column(
-        ForeignKey("saved_variants.id", ondelete="CASCADE"), nullable=False, index=True,
-    )
-    task_id: Mapped[int] = mapped_column(ForeignKey("kb_tasks.id"), nullable=False)
-    task_slot: Mapped[str] = mapped_column(String(30), nullable=False)
-    slot_order: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0", default=0)
-
-    runtime_snapshot: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
-
-    saved_variant: Mapped["SavedVariant"] = relationship("SavedVariant", back_populates="tasks")
-    task: Mapped["KbTask"] = relationship("KbTask", lazy="joined")
-
-    __table_args__ = (
-        UniqueConstraint("saved_variant_id", "task_slot", "slot_order", name="uq_saved_variant_task_slot"),
-    )
 
 
 class OrderItemTask(Base, BaseMixin, CreatedAtMixin):

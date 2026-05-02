@@ -10,10 +10,6 @@ def variant_to_dto(item: SavedVariant) -> SavedVariantResponse:
     from .schemas import SavedVariantResponse
     variant_payload = item.variant_payload or {}
     
-    if hasattr(item, "tasks") and item.tasks:
-        from api.src.variants.task_links import rebuild_variant_from_links
-        variant_payload = rebuild_variant_from_links(item.tasks, variant_payload)
-
     return SavedVariantResponse(
         id=item.id,
         userId=item.user_id,
