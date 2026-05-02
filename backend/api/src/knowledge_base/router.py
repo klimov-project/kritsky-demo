@@ -250,29 +250,15 @@ def refresh_knowledge_base_cache_route() -> KnowledgeBaseCacheMetaResponse:
 def warm_knowledge_base_cache_from_db() -> None:
     try:
         from db.src.connect import init_session
-        from sqlalchemy import select, func
-        from db.src.models import KbTask
-        from .saver import sync_kb_payload_to_tables
+        from .utils import get_merged_kb_payload_from_db
         import logging
         
         state = _get_or_create_state()
-        normalized_payload = _normalize_payload(state.payload)
         
-        # Phase 4 auto-sync: if tables are empty but blob has data, sync them now
-        # This prevents V2 Randomizer from failing on first deploy.
         with init_session() as session:
-            task_count = session.execute(select(func.count(KbTask.id))).scalar() or 0
-            if task_count == 0 and normalized_payload.get("works"):
-                logging.getLogger(__name__).info("KB tables are empty. (Auto-sync disabled)")
-                # try:
-                #     sync_kb_payload_to_tables(normalized_payload, session)
-                #     session.commit()
-                #     logging.getLogger(__name__).info("Automatic KB sync completed.")
-                # except Exception as e:
-                #     session.rollback()
-                #     logging.getLogger(__name__).error(f"Failed to auto-sync KB tables on startup: {e}")
-
-    except SQLAlchemyError:
+            normalized_payload = _normalize_payload(get_merged_kb_payload_from_db(session))
+    except (SQLAlchemyError, Exception) as e:
+        logging.getLogger(__name__).error(f"Failed to warm KB cache: {e}")
         return
 
     set_cached_knowledge_base_payload(normalized_payload, state.updatedAt)
