@@ -262,6 +262,7 @@ async def get_runtime_pregenerated_variant() -> RuntimeVariantResponse:
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
+            pool_sizes=response.get("pool_sizes", {}),
         )
     
     # Fallback to direct generation if pool is empty
@@ -269,6 +270,7 @@ async def get_runtime_pregenerated_variant() -> RuntimeVariantResponse:
     return RuntimeVariantResponse(
         variant=response["variant"],
         evaluation=response["evaluation"],
+        pool_sizes=response.get("pool_sizes", {}),
     )
 
 
@@ -286,6 +288,7 @@ def force_generate_pregenerated_variant() -> RuntimeVariantResponse:
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
+            pool_sizes=response.get("pool_sizes", {}),
         )
     except Exception as error:
         raise HTTPException(

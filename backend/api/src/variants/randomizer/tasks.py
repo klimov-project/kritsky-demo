@@ -295,6 +295,13 @@ def _task8_has_term_conflict(question: dict[str, Any], ctx: SelectionContext) ->
     correct_terms = _task8_correct_terms(question)
     return bool(correct_terms & ctx.used_term_tokens)
 
+import hashlib
+
+def _get_options_hash(options: list[dict[str, Any]]) -> str:
+    ids = sorted([str(o.get("id") or "") for o in options])
+    return hashlib.md5(",".join(ids).encode()).hexdigest()[:8]
+
+
 def _build_task8_options(question: dict[str, Any] | None, ctx: SelectionContext) -> list[dict[str, Any]]:
     if not question or not isinstance(question.get("options"), list): return []
     options = [o for o in question["options"] if isinstance(o, dict) and o.get("isActive") is not False]
@@ -360,7 +367,12 @@ def _build_task8_options(question: dict[str, Any] | None, ctx: SelectionContext)
     for o in final_options:
         for t in _extract_term_tokens(o, "task8-option"):
             ctx.used_term_tokens.add(t)
-            
+
+    # R14 Fix: Include options hash in the task ID to allow rotation of variations
+    if question and "id" in question:
+        opt_hash = _get_options_hash(final_options)
+        question["id"] = f"task8-{question['id']}-{opt_hash}"
+
     return final_options
 
 # --- Rod Layout for Block 3 ---

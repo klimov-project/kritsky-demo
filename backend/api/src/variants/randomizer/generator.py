@@ -1,4 +1,7 @@
 from typing import Any
+import copy
+import hashlib
+import random
 
 from .constants import ALL_TASK_KEYS, BLOCK11_KEYS
 from .tokens import _filter_active_items, _extract_author_tokens, _extract_theme_tokens
@@ -10,6 +13,8 @@ from .tasks import (
     _build_runtime_two_gap_candidates,
     _task8_has_term_conflict,
     _build_task8_options,
+    _is_exclusive_question,
+    _group_pool_by_rod,
 )
 from .validator import evaluate_variant_rules2
 
@@ -18,6 +23,40 @@ def _resolve_by_id(items: list[dict[str, Any]], item_id: str) -> dict[str, Any] 
     for item in items:
         if str(item.get("id") or "") == item_id: return item
     return None
+
+
+def _math_comb(n: int, k: int) -> int:
+    if k < 0 or k > n: return 0
+    if k == 0 or k == n: return 1
+    if k > n // 2: k = n - k
+    num = 1
+    for i in range(k):
+        num = num * (n - i) // (i + 1)
+    return num
+
+
+def _count_task8_variations(q: dict[str, Any]) -> int:
+    if not q or not isinstance(q.get("options"), list): return 0
+    options = [o for o in q["options"] if isinstance(o, dict) and o.get("isActive") is not False]
+    correct = [o for o in options if o.get("isCorrect")]
+    incorrect = [o for o in options if not o.get("isCorrect")]
+    if not correct: return 0
+
+    valid_pairs = []
+    for nc in range(2, min(len(correct), 6) + 1):
+        ni = 7 - nc
+        if 1 <= ni <= 5:
+            valid_pairs.append((nc, ni))
+    if not valid_pairs:
+        for nc in range(1, len(correct) + 1):
+            ni = 7 - nc
+            if ni >= 0:
+                valid_pairs.append((nc, ni))
+
+    total = 0
+    for nc, ni in valid_pairs:
+        total += _math_comb(len(correct), nc) * _math_comb(len(incorrect), ni)
+    return total
 
 
 def _compute_pool_sizes(variant: dict[str, Any], kb_payload: dict[str, Any]) -> dict[str, int]:
@@ -70,12 +109,18 @@ def _compute_pool_sizes(variant: dict[str, Any], kb_payload: dict[str, Any]) -> 
             sizes[key] = sum(1 for q in pool if _can_select_question(q, key, ctx))
         # task6: build pairs
         sizes["task6"] = len(_build_runtime_two_gap_candidates(poem_tasks.get("task6") or [], "task6", ctx))
-        # task8: count questions whose correct terms don't conflict
+        # task8: count total variations (combinations of options) across all valid questions
         task8_pool = poem_tasks.get("task8") or []
-        sizes["task8"] = sum(
-            1 for q in task8_pool
-            if _can_select_question(q, "task8", ctx) and not _task8_has_term_conflict(q, ctx)
-        ) or sum(1 for q in task8_pool if _can_select_question(q, "task8", ctx))
+        t8_total = 0
+        for q in task8_pool:
+            if _can_select_question(q, "task8", ctx) and not _task8_has_term_conflict(q, ctx):
+                t8_total += _count_task8_variations(q)
+        
+        if t8_total == 0:
+            for q in task8_pool:
+                if _can_select_question(q, "task8", ctx):
+                    t8_total += _count_task8_variations(q)
+        sizes["task8"] = t8_total
 
     # --- Block 3 ---
     block3_payload = kb_payload.get("block3") or {}
@@ -217,28 +262,56 @@ def refresh_block_runtime2(kb_payload: dict[str, Any], payload: dict[str, Any]) 
     block2_keys = ["task6", "task7", "task8", "task9_1", "task9_2", "task10"]
     target_keys = block1_keys if block_type == "block1" else block2_keys
     
+    works = _filter_active_items(kb_payload.get("works") or [])
+    poets = _filter_active_items(kb_payload.get("poets") or [])
+
+    v_work, v_excerpt, v_poet, v_poem = variant.get("work"), variant.get("excerpt"), variant.get("poet"), variant.get("poem")
+
+    work = _resolve_by_id(works, payload.get("selectedWorkId")) or v_work
+    excerpt = None
+    if work:
+        excerpt = _resolve_by_id(_filter_active_items(work.get("excerpts") or []), payload.get("selectedExcerptId"))
+        if not excerpt and v_work and str(work.get("id")) == str(v_work.get("id")):
+            excerpt = v_excerpt
+        if not excerpt:
+            excerpt = _pick_random(_filter_active_items(work.get("excerpts") or []))
+
+    poet = _resolve_by_id(poets, payload.get("selectedPoetId")) or v_poet
+    poem = None
+    if poet:
+        poem = _resolve_by_id(_filter_active_items(poet.get("poems") or []), payload.get("selectedPoemId"))
+        if not poem and v_poet and str(poet.get("id")) == str(v_poet.get("id")):
+            poem = v_poem
+        if not poem:
+            poem = _pick_random(_filter_active_items(poet.get("poems") or []))
+
+    if not work or not excerpt or not poet or not poem:
+        return {"error": "Failed to resolve core items for refresh"}
+
     ctx = SelectionContext()
-    ctx.used_author_tokens.update(_extract_author_tokens(variant.get("work")))
-    ctx.used_author_tokens.update(_extract_author_tokens(variant.get("poet")))
-    ctx.used_theme_tokens.update(_extract_theme_tokens(variant.get("excerpt"), "excerpt"))
-    ctx.used_theme_tokens.update(_extract_theme_tokens(variant.get("poem"), "poem"))
+    ctx.used_author_tokens.update(_extract_author_tokens(work))
+    ctx.used_author_tokens.update(_extract_author_tokens(poet))
+    ctx.used_theme_tokens.update(_extract_theme_tokens(excerpt, "excerpt"))
+    ctx.used_theme_tokens.update(_extract_theme_tokens(poem, "poem"))
     
     for key in ALL_TASK_KEYS:
         if key not in target_keys:
             ctx.add_question_tokens(variant.get(key), key)
             
-    work, excerpt, poem = variant.get("work"), variant.get("excerpt"), variant.get("poem")
-    
     if block_type == "block1":
         excerpt_tasks = excerpt.get("tasks") or {}
         b1_pools = build_block1_pools(work, excerpt_tasks, kb_payload)
         apply_task1_filters(b1_pools, payload.get("task1Filters") or variant.get("task1Filters"))
         tasks = populate_block1(b1_pools, work, excerpt_tasks, ctx)
         variant.update(tasks)
+        variant["work"] = work
+        variant["excerpt"] = excerpt
         
     elif block_type == "block2":
         tasks = populate_block2(poem.get("tasks") or {}, ctx)
         variant.update(tasks)
+        variant["poet"] = poet
+        variant["poem"] = poem
         
     return {"variant": variant, "evaluation": evaluate_variant_rules2(variant), "pool_sizes": _compute_pool_sizes(variant, kb_payload)}
 
@@ -339,11 +412,36 @@ def refresh_task_runtime2(kb_payload: dict[str, Any], payload: dict[str, Any]) -
             task8_pool = poem_tasks.get("task8") or []
             task8_no_conflict = [q for q in task8_pool if not _task8_has_term_conflict(q, ctx)]
             task8_pool_final = task8_no_conflict if task8_no_conflict else task8_pool
-            variant["task8"] = _pick_best_from_pool(task8_pool_final, "task8", ctx, excluded_ids)
-            if variant["task8"]:
-                variant["task8Options"] = _build_task8_options(variant["task8"], ctx)
-                if isinstance(variant["task8"], dict):
-                    variant["task8"]["options"] = variant["task8Options"]
+            
+            # R14 Fix: Task 8 has combinatorial variations. We don't exclude the question ID entirely,
+            # but we try to pick a variation (Question+OptionsHash) that isn't in excluded_ids.
+            new_task = None
+            for _ in range(10):
+                # We pass None to _pick_best_from_pool to not exclude question IDs, 
+                # as variations are what matters here.
+                candidate = _pick_best_from_pool(task8_pool_final, "task8", ctx, None)
+                if not candidate: break
+                
+                # Copy to avoid mutating the pool items
+                candidate = copy.deepcopy(candidate)
+                options = _build_task8_options(candidate, ctx)
+                
+                # Check if this specific variation (with its new composite ID) is excluded
+                if str(candidate.get("id") or "") not in excluded_ids:
+                    candidate["options"] = options
+                    variant["task8"] = candidate
+                    variant["task8Options"] = options
+                    new_task = candidate
+                    break
+            
+            if not new_task:
+                # Fallback: if we couldn't find a new variation after 10 tries,
+                # just pick anything (or we could return None to show exhaustion)
+                variant["task8"] = _pick_best_from_pool(task8_pool_final, "task8", ctx, excluded_ids)
+                if variant["task8"]:
+                    variant["task8Options"] = _build_task8_options(variant["task8"], ctx)
+                    if isinstance(variant["task8"], dict):
+                        variant["task8"]["options"] = variant["task8Options"]
 
         elif task_key in ("task9_1", "task9_2", "task10"):
             variant[task_key] = _pick_best_from_pool(poem_tasks.get(task_key) or [], task_key, ctx, excluded_ids)
@@ -358,7 +456,11 @@ def refresh_task_runtime2(kb_payload: dict[str, Any], payload: dict[str, Any]) -
             tasks = populate_block3(kb_payload.get("block3") or {}, ctx, rod_layout)
             variant[task_key] = tasks[task_key]
 
-    return {"variant": variant, "evaluation": evaluate_variant_rules2(variant)}
+    return {
+        "variant": variant,
+        "evaluation": evaluate_variant_rules2(variant),
+        "pool_sizes": _compute_pool_sizes(variant, kb_payload)
+    }
 
 
 def generate_block_standalone2(kb_payload: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
