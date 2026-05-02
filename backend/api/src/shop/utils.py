@@ -51,6 +51,7 @@ from .generation import (
     _build_runtime_task3,
     _build_excerpt_task_pools,
     _is_complete_collection_source,
+    _is_complete_collection_payload,
     _generate_collection_payload as _gen_author_payload,
     _generate_full_variant_collection_payload as _gen_full_payload,
 )
