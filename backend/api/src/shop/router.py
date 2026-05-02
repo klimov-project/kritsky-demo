@@ -252,25 +252,25 @@ async def checkout(payload: CheckoutPayload, auth: AuthenticatedUser = Depends(g
         for item in cart_items: await DbCartRepo().adelete(item.id, session)
         await session.commit()
 
-        # Phase 2: dual-write — link collection variant tasks to kb_tasks (non-fatal)
-        try:
-            from api.src.variants.task_links import link_order_item_tasks
-            result = await session.execute(
-                select(OrderItem).where(OrderItem.order_id == order.id)
-            )
-            saved_order_items = result.scalars().all()
-            for oi in saved_order_items:
-                if not oi.payload or not isinstance(oi.payload, dict):
-                    continue
-                packs = oi.payload.get("packs") or []
-                vi = 0
-                for pack in packs:
-                    for variant in (pack.get("variants") or []):
-                        await link_order_item_tasks(oi.id, vi, variant, session)
-                        vi += 1
-            await session.commit()
-        except Exception:
-            _shop_logger.exception("Failed to link order_item_tasks for order %d", order.id)
+        # Phase 2: dual-write — link collection variant tasks to kb_tasks (Temporarily disabled)
+        # try:
+        #     from api.src.variants.task_links import link_order_item_tasks
+        #     result = await session.execute(
+        #         select(OrderItem).where(OrderItem.order_id == order.id)
+        #     )
+        #     saved_order_items = result.scalars().all()
+        #     for oi in saved_order_items:
+        #         if not oi.payload or not isinstance(oi.payload, dict):
+        #             continue
+        #         packs = oi.payload.get("packs") or []
+        #         vi = 0
+        #         for pack in packs:
+        #             for variant in (pack.get("variants") or []):
+        #                 await link_order_item_tasks(oi.id, vi, variant, session)
+        #                 vi += 1
+        #     await session.commit()
+        # except Exception:
+        #     _shop_logger.exception("Failed to link order_item_tasks for order %d", order.id)
 
         return CheckoutResponse(orderId=order.id, paymentId=payment_id, status="paid", totalAmount=total_amount, deliveryAmount=delivery_amount)
 

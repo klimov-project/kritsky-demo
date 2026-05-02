@@ -83,18 +83,9 @@ def save_knowledge_base(payload: KnowledgeBasePayload) -> KnowledgeBaseResponse:
 
             session.add(state)
             
-            # Phase 4 dual-write:
-            sync_kb_payload_to_tables(normalized_payload, session)
-            try:
-                session.commit()
-            except IntegrityError:
-                session.rollback()
-                state = session.get(KnowledgeBaseState, 1)
-                if state is None:
-                    raise
-                state.payload = normalized_payload
-                session.add(state)
-                session.commit()
+            # Phase 4 dual-write: (Temporarily disabled)
+            # sync_kb_payload_to_tables(normalized_payload, session)
+            session.commit()
 
             session.refresh(state)
             set_cached_knowledge_base_payload(normalized_payload, state.updatedAt)
@@ -253,14 +244,14 @@ def warm_knowledge_base_cache_from_db() -> None:
         with init_session() as session:
             task_count = session.execute(select(func.count(KbTask.id))).scalar() or 0
             if task_count == 0 and normalized_payload.get("works"):
-                logging.getLogger(__name__).info("KB tables are empty. Running automatic initial sync from blob...")
-                try:
-                    sync_kb_payload_to_tables(normalized_payload, session)
-                    session.commit()
-                    logging.getLogger(__name__).info("Automatic KB sync completed.")
-                except Exception as e:
-                    session.rollback()
-                    logging.getLogger(__name__).error(f"Failed to auto-sync KB tables on startup: {e}")
+                logging.getLogger(__name__).info("KB tables are empty. (Auto-sync disabled)")
+                # try:
+                #     sync_kb_payload_to_tables(normalized_payload, session)
+                #     session.commit()
+                #     logging.getLogger(__name__).info("Automatic KB sync completed.")
+                # except Exception as e:
+                #     session.rollback()
+                #     logging.getLogger(__name__).error(f"Failed to auto-sync KB tables on startup: {e}")
 
     except SQLAlchemyError:
         return
