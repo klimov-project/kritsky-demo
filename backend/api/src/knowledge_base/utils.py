@@ -5,7 +5,8 @@ from typing import Any
 from sqlalchemy.exc import IntegrityError
 
 from db.src.connect import init_session
-from db.src.models import KnowledgeBaseState
+from sqlalchemy import select
+from db.src.models import KnowledgeBaseState, KnowledgeBaseSection
 
 from .schemas import KnowledgeBaseResponse
 
@@ -165,15 +166,43 @@ def _normalize_payload(value: Any) -> dict[str, Any]:
     }
 
 
-def _to_response(record: KnowledgeBaseState) -> KnowledgeBaseResponse:
-    normalized_payload = _normalize_payload(record.payload)
+def _to_response(payload: dict[str, Any], updated_at: Any) -> KnowledgeBaseResponse:
+    normalized_payload = _normalize_payload(payload)
     return KnowledgeBaseResponse(
         works=normalized_payload["works"],
         poets=normalized_payload["poets"],
         block3=normalized_payload["block3"],
         settings=normalized_payload["settings"],
-        updatedAt=record.updatedAt,
+        updatedAt=updated_at,
     )
+
+
+def get_merged_kb_payload_from_db(session) -> dict[str, Any]:
+    sections = session.execute(select(KnowledgeBaseSection)).scalars().all()
+    payload = {
+        "works": [],
+        "poets": [],
+        "block3": _empty_block3(),
+        "settings": _default_settings(),
+    }
+    for sec in sections:
+        payload[sec.key] = sec.payload
+    return payload
+
+
+def save_sections_to_db(payload: dict[str, Any], session) -> None:
+    works = payload.get("works", [])
+    poets = payload.get("poets", [])
+    block3 = payload.get("block3", _empty_block3())
+    settings = payload.get("settings", _default_settings())
+    
+    for key, data in [("works", works), ("poets", poets), ("block3", block3), ("settings", settings)]:
+        sec = session.get(KnowledgeBaseSection, key)
+        if not sec:
+            sec = KnowledgeBaseSection(key=key, payload=data)
+            session.add(sec)
+        else:
+            sec.payload = data
 
 
 def _get_or_create_state() -> KnowledgeBaseState:
@@ -182,12 +211,7 @@ def _get_or_create_state() -> KnowledgeBaseState:
         if state is None:
             state = KnowledgeBaseState(
                 id=1,
-                payload={
-                    "works": [],
-                    "poets": [],
-                    "block3": _empty_block3(),
-                    "settings": _default_settings(),
-                },
+                payload={},
             )
             session.add(state)
             try:
@@ -199,9 +223,6 @@ def _get_or_create_state() -> KnowledgeBaseState:
                 state = session.get(KnowledgeBaseState, 1)
                 if state is None:
                     raise
-
-        # Pre-load the payload while the session is active
-        _ = state.payload
         return state
 
 
@@ -210,6 +231,7 @@ def warm_knowledge_base_cache_from_db() -> None:
     Прогрев кэша базы знаний из БД при старте приложения.
     """
     try:
-        _get_or_create_state()
+        from .router import warm_knowledge_base_cache_from_db as router_warmup
+        router_warmup()
     except Exception:
         pass

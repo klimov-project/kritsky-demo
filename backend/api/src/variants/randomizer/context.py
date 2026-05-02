@@ -81,17 +81,29 @@ def _can_select_question(question: Dict[str, Any], key: str, ctx: SelectionConte
     if _has_character_tag(question) and ctx.character_tag_count >= 1: return False
     return True
 
-def _pick_best_from_pool(pool: List[Dict[str, Any]], key: str, ctx: SelectionContext) -> Dict[str, Any] | None:
+def _pick_best_from_pool(pool: List[Dict[str, Any]], key: str, ctx: SelectionContext, excluded_ids: Set[str] | None = None) -> Dict[str, Any] | None:
     if not pool: return None
-    filtered = [q for q in pool if _can_select_question(q, key, ctx)]
+    
+    # R14: Filter out already seen IDs (from excluded_ids)
+    effective_pool = pool
+    if excluded_ids:
+        effective_pool = [q for q in pool if str(q.get("id") or "").lower() not in excluded_ids]
+    
+    if not effective_pool:
+        # If everything is excluded, we might want to reset or return None. 
+        # For now, let's return None so the frontend knows the pool is exhausted.
+        return None
+
+    filtered = [q for q in effective_pool if _can_select_question(q, key, ctx)]
     import logging
-    logging.getLogger("randomizer").info(f"[RANDOMIZER POOL] Slot {key}: {len(filtered)} valid candidates from {len(pool)} total.")
+    logging.getLogger("randomizer").info(f"[RANDOMIZER POOL] Slot {key}: {len(filtered)} valid candidates from {len(effective_pool)} total.")
+    
     if filtered:
         selected = _pick_random(filtered)
         ctx.add_question_tokens(selected, key)
         return selected
     
-    # Fallback: pick one with minimum critical overlaps
+    # Fallback: pick one with minimum critical overlaps from the non-excluded pool
     def score(q):
         tokens = _get_question_tokens(q, key)
         s = 0
@@ -100,7 +112,7 @@ def _pick_best_from_pool(pool: List[Dict[str, Any]], key: str, ctx: SelectionCon
         s += len(tokens["terms"] & ctx.used_term_tokens) * 5
         return s
         
-    scored = sorted(pool, key=score)
+    scored = sorted(effective_pool, key=score)
     selected = scored[0] # Pick the one with least overlap
     ctx.add_question_tokens(selected, key)
     return selected

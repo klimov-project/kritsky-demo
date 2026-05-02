@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from datetime import datetime
 
 from pydantic import AliasChoices, BaseModel, EmailStr, Field, field_validator
 
@@ -43,6 +44,7 @@ class PublicUser(BaseModel):
     isAdmin: bool = False
     isBlocked: bool = False
     paidDownloadCredits: int = 0
+    subscriptionExpiresAt: datetime | None = None
 
 
 class AuthTokens(BaseModel):

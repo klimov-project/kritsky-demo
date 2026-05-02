@@ -16,6 +16,7 @@ _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.INFO)
 
 from api.src.auth.utils import AuthenticatedUser, get_current_user
+from api.src.subscription.dependencies import require_active_subscription
 from api.src.cache.knowledge_base_cache import (
     get_cached_knowledge_base_payload,
     set_cached_knowledge_base_payload,
@@ -28,7 +29,7 @@ from api.src.variants.randomizer import (
     generate_block_standalone2,
 )
 from db.src.connect import ainit_session, init_session
-from db.src.models import KnowledgeBaseState, SavedVariant, SavedVariantTask, Subscription, User, VariantExport, VariantFolder
+from db.src.models import KnowledgeBaseState, SavedVariant, Subscription, User, VariantExport, VariantFolder
 
 router = APIRouter(prefix="/api/variants", tags=["variants"])
 SUBSCRIPTION_DAILY_EXPORT_LIMIT = 3
@@ -152,12 +153,13 @@ def warm_runtime_variant_payload_cache() -> None:
 
 
 @router.post("/runtime/generate", response_model=RuntimeVariantResponse)
-def runtime_generate_variant(payload: RuntimeGeneratePayload) -> RuntimeVariantResponse:
+async def runtime_generate_variant(payload: RuntimeGeneratePayload, _: AuthenticatedUser = Depends(require_active_subscription)) -> RuntimeVariantResponse:
     try:
-        response = generate_variant_runtime2(_load_knowledge_base_payload(), payload.model_dump())
+        response = await asyncio.to_thread(generate_variant_runtime2, _load_knowledge_base_payload(), payload.model_dump())
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
+            pool_sizes=response.get("pool_sizes", {}),
         )
     except ValueError as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
@@ -169,12 +171,13 @@ def runtime_generate_variant(payload: RuntimeGeneratePayload) -> RuntimeVariantR
 
 
 @router.post("/runtime/refresh-block", response_model=RuntimeVariantResponse)
-def runtime_refresh_block(payload: RuntimeRefreshBlockPayload) -> RuntimeVariantResponse:
+async def runtime_refresh_block(payload: RuntimeRefreshBlockPayload, _: AuthenticatedUser = Depends(require_active_subscription)) -> RuntimeVariantResponse:
     try:
-        response = refresh_block_runtime2(_load_knowledge_base_payload(), payload.model_dump())
+        response = await asyncio.to_thread(refresh_block_runtime2, _load_knowledge_base_payload(), payload.model_dump())
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
+            pool_sizes=response.get("pool_sizes", {}),
         )
     except ValueError as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
@@ -186,12 +189,13 @@ def runtime_refresh_block(payload: RuntimeRefreshBlockPayload) -> RuntimeVariant
 
 
 @router.post("/runtime/refresh-task", response_model=RuntimeVariantResponse)
-def runtime_refresh_task(payload: RuntimeRefreshTaskPayload) -> RuntimeVariantResponse:
+async def runtime_refresh_task(payload: RuntimeRefreshTaskPayload, _: AuthenticatedUser = Depends(require_active_subscription)) -> RuntimeVariantResponse:
     try:
-        response = refresh_task_runtime2(_load_knowledge_base_payload(), payload.model_dump())
+        response = await asyncio.to_thread(refresh_task_runtime2, _load_knowledge_base_payload(), payload.model_dump())
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
+            pool_sizes=response.get("pool_sizes", {}),
         )
     except ValueError as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
@@ -200,8 +204,6 @@ def runtime_refresh_task(payload: RuntimeRefreshTaskPayload) -> RuntimeVariantRe
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to refresh task: {error}",
         ) from error
-
-
 
 
 
@@ -261,6 +263,7 @@ async def get_runtime_pregenerated_variant() -> RuntimeVariantResponse:
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
+            pool_sizes=response.get("pool_sizes", {}),
         )
     
     # Fallback to direct generation if pool is empty
@@ -268,6 +271,7 @@ async def get_runtime_pregenerated_variant() -> RuntimeVariantResponse:
     return RuntimeVariantResponse(
         variant=response["variant"],
         evaluation=response["evaluation"],
+        pool_sizes=response.get("pool_sizes", {}),
     )
 
 
@@ -285,6 +289,7 @@ def force_generate_pregenerated_variant() -> RuntimeVariantResponse:
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
+            pool_sizes=response.get("pool_sizes", {}),
         )
     except Exception as error:
         raise HTTPException(
@@ -311,10 +316,7 @@ async def list_saved_variants(
         
         query = await session.execute(
             stmt
-            .options(
-                selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task),
-                selectinload(SavedVariant.folders)
-            )
+            .options(selectinload(SavedVariant.folders))
             .order_by(SavedVariant.position.asc(), SavedVariant.id.desc())
         )
         items = query.scalars().all()
@@ -330,7 +332,7 @@ async def get_saved_variant(variant_id: int, auth: AuthenticatedUser = Depends(g
                 SavedVariant.id == variant_id,
                 SavedVariant.user_id == auth.user.id,
             )
-            .options(selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task))
+            .options(selectinload(SavedVariant.folders))
         )
         item = query.scalar_one_or_none()
         if item is None:
@@ -364,21 +366,12 @@ async def create_saved_variant(
         await session.commit()
         await session.refresh(item)
 
-        # Phase 2: dual-write — link tasks to kb_tasks (non-fatal)
-        try:
-            from api.src.variants.task_links import link_saved_variant_tasks
-            linked = await link_saved_variant_tasks(item.id, payload.variant, session)
-            await session.commit()
-            if linked:
-                _logger.info("Linked %d tasks for saved_variant %d", linked, item.id)
-        except Exception:
-            _logger.exception("Failed to link tasks for saved_variant %d", item.id)
 
         # Re-query with tasks loaded to avoid lazy-load issues in _to_dto
         query = await session.execute(
             select(SavedVariant)
             .where(SavedVariant.id == item.id)
-            .options(selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task))
+            .options(selectinload(SavedVariant.folders))
         )
         item = query.scalar_one()
 
@@ -426,7 +419,6 @@ async def update_saved_variant(
             select(SavedVariant)
             .where(SavedVariant.id == item.id)
             .options(
-                selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task),
                 selectinload(SavedVariant.folders)
             )
         )
@@ -459,7 +451,7 @@ async def share_variant(variant_id: int, auth: AuthenticatedUser = Depends(get_c
         query = await session.execute(
             select(SavedVariant)
             .where(SavedVariant.id == item.id)
-            .options(selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task))
+            .options(selectinload(SavedVariant.folders))
         )
         item = query.scalar_one()
         return variant_to_dto(item)
@@ -486,7 +478,7 @@ async def unshare_variant(variant_id: int, auth: AuthenticatedUser = Depends(get
         query = await session.execute(
             select(SavedVariant)
             .where(SavedVariant.id == item.id)
-            .options(selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task))
+            .options(selectinload(SavedVariant.folders))
         )
         item = query.scalar_one()
         return variant_to_dto(item)
@@ -504,7 +496,7 @@ async def get_shared_variant(token: str, auth: AuthenticatedUser = Depends(get_c
                 SavedVariant.share_token == token,
                 SavedVariant.is_shared == True,
             )
-            .options(selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task))
+            .options(selectinload(SavedVariant.folders))
         )
         item = query.scalar_one_or_none()
         if not item:

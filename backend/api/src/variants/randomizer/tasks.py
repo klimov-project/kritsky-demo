@@ -9,9 +9,11 @@ from .constants import (
     TASK8_MIN_CORRECT_OPTIONS,
     TASK8_MAX_CORRECT_OPTIONS,
     SERVICE_TAGS,
+    NO_AUTHOR_TAGS,
 )
 from .tokens import (
     _extract_term_tokens,
+    _extract_theme_tokens,
     _extract_custom_internal_tags,
     _extract_rod_tokens,
     _extract_author_tokens,
@@ -169,49 +171,112 @@ def _is_two_gap_valid(question: dict[str, Any]) -> bool:
     return len(re.sub(r"\s+", "", f"{answer1}{answer2}")) <= 17
 
 def _build_paired_runtime_two_gap(first: dict[str, Any], second: dict[str, Any], runtime_key: str) -> dict[str, Any]:
+    # Deduplicate tags and filter out "no author" tags
+    tags1 = _get_tags(first)
+    tags2 = _get_tags(second)
+    unique_tags = []
+    seen_tags = set()
+    for t in tags1 + tags2:
+        norm_t = t.lower()
+        if norm_t not in seen_tags and norm_t not in NO_AUTHOR_TAGS:
+            unique_tags.append(t)
+            seen_tags.add(norm_t)
+
+    # Merge author and theme IDs from both parts to ensure proper ctx filtering
+    author_ids = list(set(_extract_author_tokens(first) + _extract_author_tokens(second)))
+    theme_ids = list(set(_extract_theme_tokens(first, "t3") + _extract_theme_tokens(second, "t3")))
+
+    # combined withoutAuthor logic: the pair lacks author mention if both parts lack it.
+    # Note: _is_author_tag/tags extraction is used in candidates builder to decide this.
+    # Here we just propagate the flag for the validator.
+    is_without = bool(first.get("withoutAuthor")) and bool(second.get("withoutAuthor", True))
+
     return {
         "id": f"{runtime_key}-{first.get('id')}-{second.get('id')}",
         "part1": first.get("part1") or "",
         "part2": second.get("part1") or "_____",
         "answer1": first.get("answer1") or "",
         "answer2": second.get("answer1") or "",
-        "termId1": first.get("termId1"),
-        "termId2": second.get("termId1"),
-        "tags": ", ".join(filter(None, [first.get("tags"), second.get("tags")])),
-        "withoutAuthor": bool(first.get("withoutAuthor") or second.get("withoutAuthor")),
+        "termId1": first.get("termId1") or first.get("termId"),
+        "termId2": second.get("termId1") or second.get("termId"),
+        "tags": ", ".join(unique_tags),
+        "withoutAuthor": is_without,
+        "authorIds": author_ids,
+        "themeIds": theme_ids,
+        "workId": first.get("workId") or second.get("workId"),
     }
 
-def _build_runtime_two_gap_candidates(entries: list[dict[str, Any]], runtime_key: str, ctx: SelectionContext) -> list[dict[str, Any]]:
+def _build_runtime_two_gap_candidates(
+    entries: list[dict[str, Any]],
+    runtime_key: str,
+    ctx: SelectionContext,
+    excluded_ids: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Build and rank two-gap pair candidates for task3 / task6.
+
+    R14: ``excluded_ids`` filters out composite-id pairs already seen by the
+    user (from ``cycleHistory`` via the refresh endpoint).
+
+    R10: Result is ordered — pairs with a «термин» tag come first, so repeated
+    refreshes exhaust term-variants before falling back to non-term ones.
+    """
     valid = [e for e in entries if _is_two_gap_valid(e)]
     pairs = []
     for i, first in enumerate(valid):
+        # Условие: Тег безавтора отдельно нигде не может (не может быть первым в паре)
         if first.get("withoutAuthor") or not _can_select_question(first, runtime_key, ctx): continue
         first_tags = set(_extract_custom_internal_tags(first))
+        first_work_id = first.get("workId")
+
         for j, second in enumerate(valid):
             if i == j or not second.get("part1"): continue
-            if second.get("withoutAuthor") and not any(_is_author_tag(t) for t in _get_tags(first)): continue
+
+            # R14 Fix: Don't mix questions from DIFFERENT works.
+            # One part can be generic (no workId), but if both have workId, they must match.
+            second_work_id = second.get("workId")
+            if first_work_id and second_work_id and first_work_id != second_work_id: continue
+
+            # Prevent double author mentions in text (by tags)
+            first_has_author = any(_is_author_tag(t) for t in _get_tags(first))
+            second_has_author = any(_is_author_tag(t) for t in _get_tags(second))
+            if first_has_author and second_has_author: continue
+
+            # Условие: Тег безавтора может идти только после вопроса с тегом автор
+            if second.get("withoutAuthor") and not first_has_author: continue
+
             if not _can_select_question(second, runtime_key, ctx): continue
-            
+
             # Check for compatibility tag collisions within the pair
             second_tags = set(_extract_custom_internal_tags(second))
             if first_tags & second_tags: continue
-            
+
             # Prevent SERVICE_TAGS repetition within the pair
             first_service = {t for t in _get_tags(first) if t in SERVICE_TAGS}
             second_service = {t for t in _get_tags(second) if t in SERVICE_TAGS}
             if first_service & second_service: continue
-            
+
             term1 = str(first.get("termId1") or first.get("termId") or "").strip().lower()
             term2 = str(second.get("termId1") or second.get("termId") or "").strip().lower()
             if term1 and term2 and term1 == term2: continue
-            
+
             candidate = _build_paired_runtime_two_gap(first, second, runtime_key)
-            if _is_two_gap_valid(candidate): pairs.append(candidate)
-            
+            if _is_two_gap_valid(candidate):
+                pairs.append(candidate)
+
+    # R14: exclude already-seen pairs (composite id from cycleHistory)
+    if excluded_ids:
+        pairs = [p for p in pairs if str(p.get("id") or "") not in excluded_ids]
+
+    # R10: term-pairs first, then the rest
     with_terms = [p for p in pairs if _extract_term_tokens(p, runtime_key)]
-    final_candidates = with_terms if with_terms else pairs
+    without_terms = [p for p in pairs if not _extract_term_tokens(p, runtime_key)]
+    final_candidates = with_terms + without_terms if with_terms else pairs
+
     import logging
-    logging.getLogger("randomizer").info(f"[RANDOMIZER POOL] Slot {runtime_key}: {len(final_candidates)} valid candidates formed.")
+    logging.getLogger("randomizer").info(
+        f"[RANDOMIZER POOL] Slot {runtime_key}: {len(final_candidates)} valid candidates"
+        f" ({len(with_terms)} term, {len(without_terms)} non-term)."
+    )
     return final_candidates
 
 # --- Task 8 Options ---
@@ -229,6 +294,13 @@ def _task8_has_term_conflict(question: dict[str, Any], ctx: SelectionContext) ->
     """GAP-1: Check if task8 question's correct answers conflict with already used terms."""
     correct_terms = _task8_correct_terms(question)
     return bool(correct_terms & ctx.used_term_tokens)
+
+import hashlib
+
+def _get_options_hash(options: list[dict[str, Any]]) -> str:
+    ids = sorted([str(o.get("id") or "") for o in options])
+    return hashlib.md5(",".join(ids).encode()).hexdigest()[:8]
+
 
 def _build_task8_options(question: dict[str, Any] | None, ctx: SelectionContext) -> list[dict[str, Any]]:
     if not question or not isinstance(question.get("options"), list): return []
@@ -295,7 +367,12 @@ def _build_task8_options(question: dict[str, Any] | None, ctx: SelectionContext)
     for o in final_options:
         for t in _extract_term_tokens(o, "task8-option"):
             ctx.used_term_tokens.add(t)
-            
+
+    # R14 Fix: Include options hash in the task ID to allow rotation of variations
+    if question and "id" in question:
+        opt_hash = _get_options_hash(final_options)
+        question["id"] = f"task8-{question['id']}-{opt_hash}"
+
     return final_options
 
 # --- Rod Layout for Block 3 ---
