@@ -301,10 +301,10 @@ def refresh_task_runtime2(kb_payload: dict[str, Any], payload: dict[str, Any]) -
         apply_task1_filters(b1_pools, payload.get("task1Filters") or variant.get("task1Filters"))
 
         if task_key == "task1":
-            variant["task1"] = _pick_best_from_pool(b1_pools["task1"], "task1", ctx)
+            variant["task1"] = _pick_best_from_pool(b1_pools["task1"], "task1", ctx, excluded_ids)
 
         elif task_key == "task2":
-            raw = _pick_best_from_pool(b1_pools["task2"], "task2", ctx)
+            raw = _pick_best_from_pool(b1_pools["task2"], "task2", ctx, excluded_ids)
             variant["task2"] = _build_runtime_task2(work, raw, excerpt_tasks)
 
         elif task_key == "task3":
@@ -317,7 +317,7 @@ def refresh_task_runtime2(kb_payload: dict[str, Any], payload: dict[str, Any]) -
             variant["task3"] = new_task
 
         elif task_key in ("task4_1", "task4_2", "task5"):
-            variant[task_key] = _pick_best_from_pool(b1_pools[task_key], task_key, ctx)
+            variant[task_key] = _pick_best_from_pool(b1_pools[task_key], task_key, ctx, excluded_ids)
 
     # --- Block 2 tasks ---
     elif task_key in ("task6", "task7", "task8", "task9_1", "task9_2", "task10"):
@@ -333,20 +333,20 @@ def refresh_task_runtime2(kb_payload: dict[str, Any], payload: dict[str, Any]) -
             variant["task6"] = new_task
 
         elif task_key == "task7":
-            variant["task7"] = _pick_best_from_pool(poem_tasks.get("task7") or [], "task7", ctx)
+            variant["task7"] = _pick_best_from_pool(poem_tasks.get("task7") or [], "task7", ctx, excluded_ids)
 
         elif task_key == "task8":
             task8_pool = poem_tasks.get("task8") or []
             task8_no_conflict = [q for q in task8_pool if not _task8_has_term_conflict(q, ctx)]
             task8_pool_final = task8_no_conflict if task8_no_conflict else task8_pool
-            variant["task8"] = _pick_best_from_pool(task8_pool_final, "task8", ctx)
+            variant["task8"] = _pick_best_from_pool(task8_pool_final, "task8", ctx, excluded_ids)
             if variant["task8"]:
                 variant["task8Options"] = _build_task8_options(variant["task8"], ctx)
                 if isinstance(variant["task8"], dict):
                     variant["task8"]["options"] = variant["task8Options"]
 
         elif task_key in ("task9_1", "task9_2", "task10"):
-            variant[task_key] = _pick_best_from_pool(poem_tasks.get(task_key) or [], task_key, ctx)
+            variant[task_key] = _pick_best_from_pool(poem_tasks.get(task_key) or [], task_key, ctx, excluded_ids)
 
     # --- Block 3 tasks ---
     elif task_key in BLOCK11_KEYS:
