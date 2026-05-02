@@ -158,6 +158,7 @@ def runtime_generate_variant(payload: RuntimeGeneratePayload) -> RuntimeVariantR
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
+            pool_sizes=response.get("pool_sizes", {}),
         )
     except ValueError as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
@@ -175,6 +176,7 @@ def runtime_refresh_block(payload: RuntimeRefreshBlockPayload) -> RuntimeVariant
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
+            pool_sizes=response.get("pool_sizes", {}),
         )
     except ValueError as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
@@ -192,6 +194,7 @@ def runtime_refresh_task(payload: RuntimeRefreshTaskPayload) -> RuntimeVariantRe
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
+            pool_sizes=response.get("pool_sizes", {}),
         )
     except ValueError as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
@@ -200,8 +203,6 @@ def runtime_refresh_task(payload: RuntimeRefreshTaskPayload) -> RuntimeVariantRe
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to refresh task: {error}",
         ) from error
-
-
 
 
 
