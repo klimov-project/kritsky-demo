@@ -9,6 +9,7 @@ from .constants import (
     TASK8_MIN_CORRECT_OPTIONS,
     TASK8_MAX_CORRECT_OPTIONS,
     SERVICE_TAGS,
+    NO_AUTHOR_TAGS,
 )
 from .tokens import (
     _extract_term_tokens,
@@ -169,16 +170,33 @@ def _is_two_gap_valid(question: dict[str, Any]) -> bool:
     return len(re.sub(r"\s+", "", f"{answer1}{answer2}")) <= 17
 
 def _build_paired_runtime_two_gap(first: dict[str, Any], second: dict[str, Any], runtime_key: str) -> dict[str, Any]:
+    # Deduplicate tags while preserving order, and filter out "no author" tags
+    # because the combined task always has author context from the first part.
+    tags1 = [t.strip() for t in (first.get("tags") or "").split(",") if t.strip()]
+    tags2 = [t.strip() for t in (second.get("tags") or "").split(",") if t.strip()]
+    unique_tags = []
+    seen_tags = set()
+    for t in tags1 + tags2:
+        norm_t = t.lower()
+        if norm_t not in seen_tags and norm_t not in NO_AUTHOR_TAGS:
+            unique_tags.append(t)
+            seen_tags.add(norm_t)
+
     return {
         "id": f"{runtime_key}-{first.get('id')}-{second.get('id')}",
         "part1": first.get("part1") or "",
         "part2": second.get("part1") or "_____",
         "answer1": first.get("answer1") or "",
-        "answer2": second.get("answer1") or "",
-        "termId1": first.get("termId1"),
-        "termId2": second.get("termId1"),
-        "tags": ", ".join(filter(None, [first.get("tags"), second.get("tags")])),
-        "withoutAuthor": bool(first.get("withoutAuthor") or second.get("withoutAuthor")),
+        "answer2": second.get("answer1") or "",  # second is a single-gap question; its answer lives in answer1
+        "termId1": first.get("termId1") or first.get("termId"),
+        "termId2": second.get("termId1") or second.get("termId"),
+        "tags": ", ".join(unique_tags),
+        # The combined task names the author in Part 1, so it's not "withoutAuthor".
+        "withoutAuthor": bool(first.get("withoutAuthor")),
+        # Copy metadata for the validator
+        "authorId": first.get("authorId"),
+        "authorIds": first.get("authorIds"),
+        "workId": first.get("workId"),
     }
 
 def _build_runtime_two_gap_candidates(entries: list[dict[str, Any]], runtime_key: str, ctx: SelectionContext) -> list[dict[str, Any]]:
@@ -189,7 +207,13 @@ def _build_runtime_two_gap_candidates(entries: list[dict[str, Any]], runtime_key
         first_tags = set(_extract_custom_internal_tags(first))
         for j, second in enumerate(valid):
             if i == j or not second.get("part1"): continue
-            if second.get("withoutAuthor") and not any(_is_author_tag(t) for t in _get_tags(first)): continue
+            
+            # Prevent double author mentions in text (by tags)
+            first_has_author = any(_is_author_tag(t) for t in _get_tags(first))
+            second_has_author = any(_is_author_tag(t) for t in _get_tags(second))
+            if first_has_author and second_has_author: continue
+            
+            if second.get("withoutAuthor") and not first_has_author: continue
             if not _can_select_question(second, runtime_key, ctx): continue
             
             # Check for compatibility tag collisions within the pair
