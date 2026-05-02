@@ -122,6 +122,7 @@ class RuntimeRefreshTaskPayload(BaseModel):
 class RuntimeVariantResponse(BaseModel):
     variant: dict[str, Any]
     evaluation: dict[str, Any]
+    pool_sizes: dict[str, int] = Field(default_factory=dict)
 
 
 class VariantFolderPayload(BaseModel):

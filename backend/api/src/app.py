@@ -7,6 +7,7 @@ from api.src.auth.router import router as auth_router
 from api.src.knowledge_base.router import router as knowledge_base_router
 from api.src.knowledge_base.utils import warm_knowledge_base_cache_from_db
 from api.src.shop.router import router as shop_router
+from api.src.subscription.router import router as subscription_router
 from api.src.variants.router import router as variants_router
 from api.src.variants.folders_router import router as folder_router
 from api.src.variants.router import warm_runtime_variant_payload_cache
@@ -57,6 +58,7 @@ def health() -> dict[str, str]:
 app.include_router(knowledge_base_router)
 app.include_router(auth_router)
 app.include_router(shop_router)
+app.include_router(subscription_router)
 app.include_router(variants_router)
 app.include_router(folder_router)
 app.include_router(admin_router)

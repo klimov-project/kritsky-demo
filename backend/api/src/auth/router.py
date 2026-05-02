@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 
 from core.src.security import get_password_hash, verify_password
 from db.src.connect import ainit_session
-from db.src.models import User
+from db.src.models import Subscription, User
 
 from .schemas import (
     PublicUser,
@@ -52,7 +55,24 @@ async def get_me(principal: TokenPrincipal = Depends(get_access_principal)) -> P
         return _admin_stub_user()
 
     auth = await get_current_user(principal)
-    return _to_public_user(auth.user)
+    public_user = _to_public_user(auth.user)
+
+    # Fetch latest active subscription expiry
+    now = datetime.now(timezone.utc)
+    async with ainit_session() as session:
+        result = await session.execute(
+            select(Subscription.dateOfExpire)
+            .where(
+                Subscription.userId == auth.user.id,
+                Subscription.dateOfExpire.isnot(None),
+                Subscription.dateOfExpire > now,
+            )
+            .order_by(Subscription.dateOfExpire.desc())
+            .limit(1)
+        )
+        expires_at = result.scalar_one_or_none()
+    public_user.subscriptionExpiresAt = expires_at
+    return public_user
 
 
 @router.post("/register")

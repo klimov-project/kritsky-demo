@@ -41,8 +41,14 @@ def get_knowledge_base() -> KnowledgeBaseResponse:
                 updatedAt=cached_updated_at,
             )
 
+        from db.src.connect import init_session
+        from .utils import get_merged_kb_payload_from_db
         state = _get_or_create_state()
-        normalized_payload = _normalize_payload(state.payload)
+        
+        with init_session() as session:
+            full_payload = get_merged_kb_payload_from_db(session)
+            
+        normalized_payload = _normalize_payload(full_payload)
         set_cached_knowledge_base_payload(normalized_payload, state.updatedAt)
         return KnowledgeBaseResponse(
             works=normalized_payload["works"],
@@ -72,33 +78,25 @@ def save_knowledge_base(payload: KnowledgeBasePayload) -> KnowledgeBaseResponse:
     try:
         from db.src.connect import init_session
         from sqlalchemy.exc import IntegrityError
-        from .saver import sync_kb_payload_to_tables
+        from .utils import save_sections_to_db
+
+        from datetime import datetime, timezone
 
         with init_session() as session:
             state = session.get(KnowledgeBaseState, 1)
             if state is None:
-                state = KnowledgeBaseState(id=1, payload=normalized_payload)
-            else:
-                state.payload = normalized_payload
-
-            session.add(state)
-            
-            # Phase 4 dual-write:
-            sync_kb_payload_to_tables(normalized_payload, session)
-            try:
-                session.commit()
-            except IntegrityError:
-                session.rollback()
-                state = session.get(KnowledgeBaseState, 1)
-                if state is None:
-                    raise
-                state.payload = normalized_payload
+                state = KnowledgeBaseState(id=1, payload={})
                 session.add(state)
-                session.commit()
+            else:
+                state.payload = {}  # Clear to save space
+                state.updatedAt = datetime.now(timezone.utc)
+                
+            save_sections_to_db(normalized_payload, session)
+            session.commit()
 
             session.refresh(state)
             set_cached_knowledge_base_payload(normalized_payload, state.updatedAt)
-            return _to_response(state)
+            return _to_response(normalized_payload, state.updatedAt)
     except SQLAlchemyError as error:
         raise HTTPException(status_code=500, detail=f"Failed to save knowledge base: {error}") from error
 
@@ -117,24 +115,28 @@ def set_weekly_pins(payload: WeeklyPinsPayload) -> dict[str, bool]:
     """
     try:
         from db.src.connect import init_session
-        from db.src.models import KbSetting
+        from db.src.models import KbSetting, KnowledgeBaseSection
+        from datetime import datetime, timezone
 
         with init_session() as session:
             state = session.get(KnowledgeBaseState, 1)
             if state is None:
                 raise HTTPException(status_code=404, detail="Knowledge base not found")
 
+            settings_sec = session.get(KnowledgeBaseSection, "settings")
+            if not settings_sec:
+                from .utils import _default_settings
+                settings_sec = KnowledgeBaseSection(key="settings", payload=_default_settings())
+                session.add(settings_sec)
+
             from typing import Any
-            current_payload: dict[str, Any] = state.payload if isinstance(state.payload, dict) else {}
-            current_settings: dict[str, Any] = current_payload.get("settings", {})
-            if not isinstance(current_settings, dict):
-                current_settings = {}
+            current_settings: dict[str, Any] = settings_sec.payload if isinstance(settings_sec.payload, dict) else {}
 
             current_settings["weeklyPins"] = payload.weeklyPins
-            current_payload["settings"] = current_settings
-            state.payload = current_payload
-
-            session.add(state)
+            settings_sec.payload = current_settings
+            
+            # Force update of state metadata to invalidate caches
+            state.updatedAt = datetime.now(timezone.utc)
             
             # Dual-write to KbSetting
             setting_db = session.get(KbSetting, "weeklyPins")
@@ -145,7 +147,9 @@ def set_weekly_pins(payload: WeeklyPinsPayload) -> dict[str, bool]:
             session.commit()
             session.refresh(state)
 
-            normalized_payload = _normalize_payload(state.payload)
+            from .utils import get_merged_kb_payload_from_db
+            full_payload = get_merged_kb_payload_from_db(session)
+            normalized_payload = _normalize_payload(full_payload)
             set_cached_knowledge_base_payload(normalized_payload, state.updatedAt)
 
             return {"ok": True}
@@ -167,24 +171,28 @@ def set_weekly_variant(payload: WeeklyVariantPayload) -> dict[str, bool]:
     """
     try:
         from db.src.connect import init_session
-        from db.src.models import KbSetting
+        from db.src.models import KbSetting, KnowledgeBaseSection
+        from datetime import datetime, timezone
 
         with init_session() as session:
             state = session.get(KnowledgeBaseState, 1)
             if state is None:
                 raise HTTPException(status_code=404, detail="Knowledge base not found")
 
+            settings_sec = session.get(KnowledgeBaseSection, "settings")
+            if not settings_sec:
+                from .utils import _default_settings
+                settings_sec = KnowledgeBaseSection(key="settings", payload=_default_settings())
+                session.add(settings_sec)
+
             from typing import Any
-            current_payload: dict[str, Any] = state.payload if isinstance(state.payload, dict) else {}
-            current_settings: dict[str, Any] = current_payload.get("settings", {})
-            if not isinstance(current_settings, dict):
-                current_settings = {}
+            current_settings: dict[str, Any] = settings_sec.payload if isinstance(settings_sec.payload, dict) else {}
 
             current_settings["weeklyVariant"] = payload.weeklyVariant
-            current_payload["settings"] = current_settings
-            state.payload = current_payload
-
-            session.add(state)
+            settings_sec.payload = current_settings
+            
+            # Force update of state metadata to invalidate caches
+            state.updatedAt = datetime.now(timezone.utc)
             
             # Dual-write to KbSetting
             setting_db = session.get(KbSetting, "weeklyVariant")
@@ -195,7 +203,9 @@ def set_weekly_variant(payload: WeeklyVariantPayload) -> dict[str, bool]:
             session.commit()
             session.refresh(state)
 
-            normalized_payload = _normalize_payload(state.payload)
+            from .utils import get_merged_kb_payload_from_db
+            full_payload = get_merged_kb_payload_from_db(session)
+            normalized_payload = _normalize_payload(full_payload)
             set_cached_knowledge_base_payload(normalized_payload, state.updatedAt)
 
             return {"ok": True}
@@ -253,14 +263,14 @@ def warm_knowledge_base_cache_from_db() -> None:
         with init_session() as session:
             task_count = session.execute(select(func.count(KbTask.id))).scalar() or 0
             if task_count == 0 and normalized_payload.get("works"):
-                logging.getLogger(__name__).info("KB tables are empty. Running automatic initial sync from blob...")
-                try:
-                    sync_kb_payload_to_tables(normalized_payload, session)
-                    session.commit()
-                    logging.getLogger(__name__).info("Automatic KB sync completed.")
-                except Exception as e:
-                    session.rollback()
-                    logging.getLogger(__name__).error(f"Failed to auto-sync KB tables on startup: {e}")
+                logging.getLogger(__name__).info("KB tables are empty. (Auto-sync disabled)")
+                # try:
+                #     sync_kb_payload_to_tables(normalized_payload, session)
+                #     session.commit()
+                #     logging.getLogger(__name__).info("Automatic KB sync completed.")
+                # except Exception as e:
+                #     session.rollback()
+                #     logging.getLogger(__name__).error(f"Failed to auto-sync KB tables on startup: {e}")
 
     except SQLAlchemyError:
         return

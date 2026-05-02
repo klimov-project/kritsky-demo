@@ -16,7 +16,8 @@ from api.src.variants.schemas import (
 )
 import uuid
 from sqlalchemy.orm import selectinload
-from db.src.models import VariantFolder, SavedVariant, SavedVariantTask
+from db.src.connect import ainit_session
+from db.src.models import VariantFolder, SavedVariant
 
 router = APIRouter(prefix="/api/variant-folders", tags=["variant-folders"])
 
@@ -166,7 +167,6 @@ async def get_shared_folder(token: str, auth: AuthenticatedUser = Depends(get_cu
             select(SavedVariant)
             .where(SavedVariant.folders.any(VariantFolder.id == folder.id))
             .options(
-                selectinload(SavedVariant.tasks).selectinload(SavedVariantTask.task),
                 selectinload(SavedVariant.folders)
             )
             .order_by(SavedVariant.position.asc(), SavedVariant.id.desc())

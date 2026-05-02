@@ -162,17 +162,20 @@ def _load_knowledge_base_payload() -> dict[str, Any]:
     with init_session() as session:
         state = session.get(KnowledgeBaseState, 1)
 
-    if state is None:
-        state = _get_or_create_state()
+        if state is None:
+            state = _get_or_create_state()
 
-    if (
-        _in_memory_kb_payload is not None
-        and not _db_state_is_newer(state.updatedAt, _in_memory_kb_updated_at)
-    ):
-        _next_kb_cache_db_sync_monotonic = now_monotonic + KB_CACHE_DB_SYNC_INTERVAL_SECONDS
-        return _in_memory_kb_payload
+        if (
+            _in_memory_kb_payload is not None
+            and not _db_state_is_newer(state.updatedAt, _in_memory_kb_updated_at)
+        ):
+            _next_kb_cache_db_sync_monotonic = now_monotonic + KB_CACHE_DB_SYNC_INTERVAL_SECONDS
+            return _in_memory_kb_payload
 
-    normalized_payload = _normalize_payload(state.payload)
+        from api.src.knowledge_base.utils import get_merged_kb_payload_from_db
+        full_payload = get_merged_kb_payload_from_db(session)
+
+    normalized_payload = _normalize_payload(full_payload)
     _in_memory_kb_payload = normalized_payload
     _in_memory_kb_updated_at = state.updatedAt
 
