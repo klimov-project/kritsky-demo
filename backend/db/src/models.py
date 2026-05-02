@@ -21,7 +21,7 @@ from sqlalchemy import (
     Table,
     Column,
 )
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, BaseMixin, CreatedAtMixin, UpdatedAtMixin
@@ -419,6 +419,13 @@ class KnowledgeBaseState(Base, BaseMixin, CreatedAtMixin, UpdatedAtMixin):
     __tablename__ = "knowledge_base_state"
 
     payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+
+
+class KnowledgeBaseSection(Base, CreatedAtMixin, UpdatedAtMixin):
+    __tablename__ = "knowledge_base_sections"
+
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
 
 
 class KbSetting(Base, CreatedAtMixin, UpdatedAtMixin):
