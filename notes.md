@@ -52,7 +52,7 @@
    #### С очисткой подключений и пересозданием базы
 
    - Поднять только Postgres
-     `docker compose up -d db`
+     `docker compose up -d backend`
    - Закрыть все подключения
      `docker compose exec -T db psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'kritsky';"`
    - Дропнуть базы данных по названию "kritsky"
@@ -76,7 +76,7 @@
    `docker compose -f docker-compose.yml --env-file .env exec -T db pg_restore -U postgres -d kritsky --clean --if-exists --no-owner --verbose < kritsky-backup.dump`
 
 4) Перезапустить бэкенд:
-   `docker compose up backend`
+   `docker compose down && docker compose up backend`
 
 5) Очистить кеш Redis (критично, иначе данные останутся старыми):
    `docker compose exec redis redis-cli flushall`
