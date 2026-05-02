@@ -144,7 +144,7 @@ export const consumeVariantExportQuota = async (
 export const generateRuntimeVariant = async (
     payload: RuntimeVariantRequestPayload & { useSelected: boolean },
 ): Promise<RuntimeVariantResponseDto> => {
-    const response = await requestJson<RuntimeVariantResponseDto>('/api/variants/runtime/generate', {
+    const response = await requestJsonAuth<RuntimeVariantResponseDto>('/api/variants/runtime/generate', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -186,7 +186,7 @@ export const refreshRuntimeVariantTask = async (
         excludedTaskIds?: string[];
     },
 ): Promise<RuntimeVariantResponseDto> => {
-    const response = await requestJson<RuntimeVariantResponseDto>('/api/variants/runtime/refresh-task', {
+    const response = await requestJsonAuth<RuntimeVariantResponseDto>('/api/variants/runtime/refresh-task', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
