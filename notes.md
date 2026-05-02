@@ -76,7 +76,7 @@
    `docker compose -f docker-compose.yml --env-file .env exec -T db pg_restore -U postgres -d kritsky --clean --if-exists --no-owner --verbose < kritsky-backup.dump`
 
 4) Перезапустить бэкенд:
-   `docker compose restart backend`
+   `docker compose up backend`
 
 5) Очистить кеш Redis (критично, иначе данные останутся старыми):
    `docker compose exec redis redis-cli flushall`
