@@ -16,6 +16,7 @@ _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.INFO)
 
 from api.src.auth.utils import AuthenticatedUser, get_current_user
+from api.src.subscription.dependencies import require_active_subscription
 from api.src.cache.knowledge_base_cache import (
     get_cached_knowledge_base_payload,
     set_cached_knowledge_base_payload,
@@ -152,9 +153,9 @@ def warm_runtime_variant_payload_cache() -> None:
 
 
 @router.post("/runtime/generate", response_model=RuntimeVariantResponse)
-def runtime_generate_variant(payload: RuntimeGeneratePayload) -> RuntimeVariantResponse:
+async def runtime_generate_variant(payload: RuntimeGeneratePayload, _: AuthenticatedUser = Depends(require_active_subscription)) -> RuntimeVariantResponse:
     try:
-        response = generate_variant_runtime2(_load_knowledge_base_payload(), payload.model_dump())
+        response = await asyncio.to_thread(generate_variant_runtime2, _load_knowledge_base_payload(), payload.model_dump())
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
@@ -170,9 +171,9 @@ def runtime_generate_variant(payload: RuntimeGeneratePayload) -> RuntimeVariantR
 
 
 @router.post("/runtime/refresh-block", response_model=RuntimeVariantResponse)
-def runtime_refresh_block(payload: RuntimeRefreshBlockPayload) -> RuntimeVariantResponse:
+async def runtime_refresh_block(payload: RuntimeRefreshBlockPayload, _: AuthenticatedUser = Depends(require_active_subscription)) -> RuntimeVariantResponse:
     try:
-        response = refresh_block_runtime2(_load_knowledge_base_payload(), payload.model_dump())
+        response = await asyncio.to_thread(refresh_block_runtime2, _load_knowledge_base_payload(), payload.model_dump())
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
@@ -188,9 +189,9 @@ def runtime_refresh_block(payload: RuntimeRefreshBlockPayload) -> RuntimeVariant
 
 
 @router.post("/runtime/refresh-task", response_model=RuntimeVariantResponse)
-def runtime_refresh_task(payload: RuntimeRefreshTaskPayload) -> RuntimeVariantResponse:
+async def runtime_refresh_task(payload: RuntimeRefreshTaskPayload, _: AuthenticatedUser = Depends(require_active_subscription)) -> RuntimeVariantResponse:
     try:
-        response = refresh_task_runtime2(_load_knowledge_base_payload(), payload.model_dump())
+        response = await asyncio.to_thread(refresh_task_runtime2, _load_knowledge_base_payload(), payload.model_dump())
         return RuntimeVariantResponse(
             variant=response["variant"],
             evaluation=response["evaluation"],
