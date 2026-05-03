@@ -56,6 +56,10 @@ docker-compose.debug.yml
 *.sql
 *.dump
 
+# Nuxt
+.output
+.nuxt
+
 # System specific files (macOS, Linux, Windows)
 .DS_Store
 .DS_Store?
