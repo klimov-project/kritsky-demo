@@ -15,7 +15,7 @@ export default defineNuxtConfig({
     },
     '/public-variant': {
       prerender: true,
-    }
+    },
   },
 
   runtimeConfig: {
@@ -31,15 +31,16 @@ export default defineNuxtConfig({
   nitro: {
     devProxy: {
       '/api': {
-        target: process.env.NUXT_API_BACKEND_BASE || 'http://localhost:8000/api',
+        target:
+          process.env.NUXT_API_BACKEND_BASE || 'http://localhost:8000/api',
         changeOrigin: true,
       },
     },
     storage: {
       cache: {
-        driver: 'memory'
-      }
-    }
+        driver: 'memory',
+      },
+    },
   },
 
   vite: {
@@ -48,5 +49,5 @@ export default defineNuxtConfig({
     },
   },
 
-  modules: ['@nuxtjs/tailwindcss'],
+  modules: ['@nuxtjs/tailwindcss', 'nuxt-auth-utils'],
 });

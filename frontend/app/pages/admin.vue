@@ -10,7 +10,7 @@ const fetchWithFallback = async (url: string, options = {}) => {
     });
   } catch (error) {
     // При ошибке (особенно во время пререндеринга) возвращаем пустые данные
-    console.warn(`Failed to fetch ${url}:`, error.message);
+    console.warn(`Failed to fetch ${url}:`, error?.message || String(error));
     return null;
   }
 };
@@ -23,32 +23,31 @@ const apiUrl = import.meta.server
 console.log('useFetch `/api/knowledge-base `  ');
 console.log('  apiUrl: ', apiUrl);
 // Для работы с useFetch используем другой подход
-const { data: kb, pending: kbPending, refresh: refreshKb } = await useFetch(
-  apiUrl,
-  {
-    // Не прерываем сборку при ошибке
-    onRequestError({ error }) {
-      console.warn('Knowledge base fetch error:', error.message);
-      // Возвращаем дефолтные данные
-      return { works: [], poets: [] };
-    },
-    onResponseError({ response }) {
-      console.warn('Knowledge base response error:', response.status);
-      return { works: [], poets: [] };
-    },
+const { data: kb, pending: kbPending, refresh: refreshKb } = await useFetch<
+  any
+>(apiUrl, {
+  // Не прерываем сборку при ошибке
+  onRequestError({ error }: any) {
+    console.warn('Knowledge base fetch error:', error?.message);
+    // Возвращаем дефолтные данные
+    return { works: [], poets: [] };
   },
-);
+  onResponseError({ response }: any) {
+    console.warn('Knowledge base response error:', response?.status);
+    return { works: [], poets: [] };
+  },
+});
 
 const {
   data: invalidationData,
   pending: invalidating,
   execute: invalidateCache,
-} = await useFetch('/api/invalidate-cache', {
+} = await useFetch<any>('/api/invalidate-cache', {
   method: 'POST',
   immediate: false,
   watch: false,
-  onRequestError({ error }) {
-    console.warn('Invalidate cache error:', error.message);
+  onRequestError({ error }: any) {
+    console.warn('Invalidate cache error:', error?.message);
   },
 });
 
