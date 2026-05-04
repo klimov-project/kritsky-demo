@@ -52,7 +52,7 @@ const getTaskLabel = (key: string) => {
       v-if="error"
       class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6"
     >
-      Ошибка загрузки варианта. Пожалуйста, попробуйте позже.
+      Ошибка загрузки варианта. Пожалуйста, попробуйте позже. {{ error }}
     </div>
 
     <div v-else-if="pending && !payload" class="text-center py-20">

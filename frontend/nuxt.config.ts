@@ -2,26 +2,46 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   ssr: true,
+
+  // Prerendering configuration
   routeRules: {
     '/': {
       swr: 60,
       prerender: true,
     },
+    '/admin': {
+      swr: 60,
+      prerender: true,
+    },
+    '/public-variant': {
+      prerender: true,
+    }
   },
+
   runtimeConfig: {
-    apiBackendBase:
-      process.env.NUXT_API_BACKEND_BASE || 'http://localhost:8000',
+    // Server-only runtime config (can be overridden by NUXT_API_BACKEND_BASE)
+    apiBackendBase: 'http://localhost:8000',
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api',
+      // Shared public runtime config (can be overridden by NUXT_PUBLIC_API_BASE)
+      apiBase: '/api',
     },
   },
+
+  // Proxy configuration for local development
   nitro: {
-    storage: {
-      cache: {
-        driver: 'memory',
+    devProxy: {
+      '/api': {
+        target: process.env.NUXT_API_BACKEND_BASE || 'http://localhost:8000/api',
+        changeOrigin: true,
       },
     },
+    storage: {
+      cache: {
+        driver: 'memory'
+      }
+    }
   },
+
   vite: {
     optimizeDeps: {
       include: ['@vue/devtools-core', '@vue/devtools-kit'],

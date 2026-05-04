@@ -1,37 +1,26 @@
-# Stage 1: Build
-FROM node:22-alpine AS builder
+FROM node:22-alpine
 
 WORKDIR /app
 
-# Arguments for build time
-ARG NUXT_API_BACKEND_BASE
-ARG NUXT_PUBLIC_API_BASE
+# Install curl for healthcheck
+RUN apk add --no-cache curl
 
-ENV NUXT_API_BACKEND_BASE=${NUXT_API_BACKEND_BASE}
-ENV NUXT_PUBLIC_API_BASE=${NUXT_PUBLIC_API_BASE}
-
-COPY package*.json ./
+# Copy package files and install dependencies
+COPY package.json ./
 RUN npm install
 
+# Copy application source
 COPY . .
 
-# Отладка: проверяем переменные
-RUN echo "Building with NUXT_API_BACKEND_BASE: ${NUXT_API_BACKEND_BASE}"
-RUN echo "Building with NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE}"
+# Ensure entrypoint is executable
+RUN chmod +x entrypoint.sh
 
-# Сборка
-RUN npm run build
-
-# Stage 2: Runner
-FROM node:22-alpine AS runner
-
-WORKDIR /app
-
+# Environment variables (can be overridden at runtime)
+ENV NUXT_API_BACKEND_BASE=http://backend:8000
+ENV NUXT_PUBLIC_API_BASE=/api
 ENV NODE_ENV=production
-
-COPY --from=builder /app/.output ./.output
-COPY --from=builder /app/package*.json ./
 
 EXPOSE 3000
 
-CMD ["node", ".output/server/index.mjs"]
+# Use entrypoint to build and start at runtime
+ENTRYPOINT ["./entrypoint.sh"]

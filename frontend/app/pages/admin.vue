@@ -1,10 +1,44 @@
 <script setup lang="ts">
 const config = useRuntimeConfig();
-const apiBase = config.public.apiBase;
 
+// Функция для безопасного fetch с fallback
+const fetchWithFallback = async (url: string, options = {}) => {
+  try {
+    return await $fetch(url, {
+      ...options,
+      timeout: 5000, // таймаут 5 секунд
+    });
+  } catch (error) {
+    // При ошибке (особенно во время пререндеринга) возвращаем пустые данные
+    console.warn(`Failed to fetch ${url}:`, error.message);
+    return null;
+  }
+};
+
+// На клиенте используем относительный путь, на сервере - абсолютный URL бэкенда
+const apiUrl = import.meta.server
+  ? `${config.backendUrl}/api/knowledge-base`
+  : '/api/knowledge-base';
+
+console.log('useFetch `/api/knowledge-base `  ');
+console.log('  apiUrl: ', apiUrl);
+// Для работы с useFetch используем другой подход
 const { data: kb, pending: kbPending, refresh: refreshKb } = await useFetch(
-  '/api/knowledge-base',
+  apiUrl,
+  {
+    // Не прерываем сборку при ошибке
+    onRequestError({ error }) {
+      console.warn('Knowledge base fetch error:', error.message);
+      // Возвращаем дефолтные данные
+      return { works: [], poets: [] };
+    },
+    onResponseError({ response }) {
+      console.warn('Knowledge base response error:', response.status);
+      return { works: [], poets: [] };
+    },
+  },
 );
+
 const {
   data: invalidationData,
   pending: invalidating,
@@ -13,6 +47,9 @@ const {
   method: 'POST',
   immediate: false,
   watch: false,
+  onRequestError({ error }) {
+    console.warn('Invalidate cache error:', error.message);
+  },
 });
 
 const works = computed(() => kb.value?.works || []);
@@ -24,11 +61,6 @@ const handleInvalidate = async () => {
 };
 
 const history = computed(() => invalidationData.value?.history || []);
-
-// Отладка
-if (import.meta.client) {
-  console.log('API Base:', apiBase);
-}
 </script>
 
 <template>
