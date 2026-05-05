@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  basePath: '/admin',
+  basePath: '/adminka/',
   trailingSlash: true,
   // Игнорировать автоматические редиректы
   skipTrailingSlashRedirect: true,
