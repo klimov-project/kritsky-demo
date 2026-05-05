@@ -100,3 +100,9 @@ coverage.xml
 .pyenv
 .python-version
 report.html
+
+
+frontend_react/
+.claude
+.mcp.json
+CLAUDE.md
