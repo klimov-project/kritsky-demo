@@ -69,6 +69,25 @@ services:
     expose:
       - "3000"
 
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+      # args:
+      #   NUXT_API_BACKEND_BASE: http://localhost:8000
+      #   NUXT_PUBLIC_API_BASE: http://localhost:8000/api
+    environment:
+      # NUXT_API_BACKEND_BASE: http://backend:8000
+      # NUXT_PUBLIC_API_BASE: http://backend:8000/api
+      - NUXT_API_BACKEND_BASE=http://backend:8000
+      - NUXT_PUBLIC_API_BASE=/api
+    restart: always
+    depends_on:
+      backend:
+        condition: service_healthy
+    expose:
+      - "3000"
+
   nginx:
     image: nginx:alpine
     restart: always
