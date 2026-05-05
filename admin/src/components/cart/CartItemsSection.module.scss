@@ -1,0 +1,11 @@
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+@media (max-width: 1024px) {
+    .section {
+        gap: 10px;
+    }
+}

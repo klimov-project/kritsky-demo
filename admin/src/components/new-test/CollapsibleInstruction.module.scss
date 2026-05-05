@@ -1,0 +1,53 @@
+.root {
+    border-radius: 10px;
+    background: #f6f6f6;
+    padding: 20px 40px;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 16px;
+    line-height: 1.25;
+    position: relative;
+}
+
+.content {
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.contentExpanded {
+    max-height: 40rem;
+}
+
+.contentCollapsed {
+    max-height: 4.8em;
+}
+
+.toggleWrap {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+}
+
+.toggleButton {
+    width: 25px;
+    height: 25px;
+    border-radius: 5px;
+    border: none;
+    background: #ffffff;
+    color: #333333;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    &:hover {
+        background: #ececec;
+    }
+}
+
+@media (max-width: 1024px) {
+    .root {
+        padding: 20px;
+    }
+}

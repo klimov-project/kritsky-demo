@@ -1,0 +1,369 @@
+.root {
+    position: relative;
+    z-index: 40;
+    color: #333333;
+}
+
+.shell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 43px;
+}
+
+.shell--container {
+    width: min(1440px, calc(100% - 40px));
+    margin: 30px auto 0;
+}
+
+.shell--embedded {
+    width: 100%;
+    margin-top: 30px;
+}
+
+.logoLink {
+    display: inline-flex;
+    width: 179px;
+    height: 43px;
+    flex-shrink: 0;
+}
+
+.desktopNav {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 50px;
+    white-space: nowrap;
+}
+
+.desktopNav--admin {
+    gap: 24px;
+}
+
+.desktopNavLink {
+    position: relative;
+    color: #333333;
+    text-decoration: none;
+    font-family: var(--font-pt-serif);
+    font-size: 18px;
+    line-height: 1;
+    text-transform: uppercase;
+    padding-bottom: 4px;
+}
+
+.desktopNavLink::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1.5px;
+    background: #000000;
+    transform-origin: left center;
+    transform: scaleX(0);
+    transition: transform 0.22s ease;
+}
+
+.desktopNav--admin .desktopNavLink {
+    font-size: 15px;
+    text-transform: none;
+}
+
+.desktopNavLink:hover::after {
+    transform: scaleX(1);
+}
+
+.desktopNavLink--active {
+    opacity: 1;
+}
+
+.desktopNavLink--active::after {
+    transform: scaleX(0);
+}
+
+.desktopUserActions,
+.desktopAdminActions {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.actionDivider {
+    width: 1px;
+    height: 26px;
+    background: #cfcfcf;
+}
+
+.iconLink,
+.iconButton {
+    color: #333333;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.iconLink:hover,
+.iconButton:hover {
+    opacity: 0.7;
+}
+
+.desktopLogout {
+    border: none;
+    background: transparent;
+    color: #333333;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-family: var(--font-pt-serif);
+    font-size: 14px;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.adminBadgeLink {
+    color: #333333;
+    text-decoration: none;
+    font-family: var(--font-pt-serif);
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.mobileActions {
+    display: none;
+    margin-left: auto;
+    align-items: center;
+    gap: 15px;
+}
+
+.cartWrap {
+    position: relative;
+    display: inline-flex;
+}
+
+.cartBadge {
+    position: absolute;
+    top: -4px;
+    right: -5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #bd5343;
+    color: #fff;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 9px;
+    line-height: 12px;
+    text-align: center;
+    font-weight: 700;
+}
+
+.mobileOverlay {
+    position: fixed;
+    inset: 0;
+    background: #ffffff;
+    z-index: 110;
+    overflow-y: auto;
+    padding: 10px 20px 26px;
+}
+
+.mobileOverlayHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mobileMenuTitle {
+    margin: 14px 0 0;
+    text-align: center;
+    font-family: var(--font-pt-serif);
+    font-size: 24px;
+    line-height: 1;
+}
+
+.mobileNav {
+    margin-top: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.mobileNavButton {
+    width: 100%;
+    min-height: 50px;
+    border: none;
+    border-radius: 10px;
+    background: #f6f6f6;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 16px;
+    line-height: 1;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 16px 30px;
+    cursor: pointer;
+}
+
+.mobileBottom {
+    margin-top: 160px;
+}
+
+.mobileActionList {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.mobileActionButton {
+    width: 100%;
+    min-height: 50px;
+    border: 1px solid #cfcfcf;
+    border-radius: 10px;
+    background: transparent;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 18px 16px;
+    cursor: pointer;
+}
+
+.mobileSocials {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.mobileSocialLink {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #333333;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 1360px) {
+    .desktopNav {
+        gap: 32px;
+    }
+
+    .desktopNavLink {
+        font-size: 16px;
+    }
+
+    .desktopNav--admin {
+        gap: 18px;
+    }
+
+    .desktopNav--admin .desktopNavLink {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .shell--container,
+    .shell--embedded {
+        width: 100%;
+        margin-top: 12px;
+    }
+
+    .desktopNav,
+    .desktopUserActions,
+    .desktopAdminActions {
+        display: none;
+    }
+
+    .mobileActions {
+        display: inline-flex;
+        gap: 12px;
+    }
+
+    .mobileBottom {
+        margin-top: 90px;
+    }
+
+    .logoLink {
+        width: 204px;
+        height: 50px;
+    }
+
+    .mobileActions .iconLink svg,
+    .mobileActions .iconButton svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .mobileMenuTitle {
+        font-size: 30px;
+        margin-top: 18px;
+    }
+
+    .mobileNav {
+        margin-top: 24px;
+        gap: 8px;
+    }
+
+    .mobileNavButton {
+        min-height: 62px;
+        font-size: 19px;
+        padding: 18px 24px;
+    }
+
+    .mobileActionButton {
+        min-height: 58px;
+        font-size: 14px;
+        padding: 16px 18px;
+    }
+
+    .mobileBottom {
+        margin-top: clamp(58px, 17vh, 132px);
+    }
+}
+
+@media (max-width: 640px) {
+    .mobileOverlay {
+        padding: 14px 16px 28px;
+    }
+
+    .logoLink {
+        width: 186px;
+        height: 45px;
+    }
+
+    .mobileActions .iconLink svg,
+    .mobileActions .iconButton svg {
+        width: 27px;
+        height: 27px;
+    }
+
+    .mobileMenuTitle {
+        font-size: 28px;
+    }
+
+    .mobileNavButton {
+        min-height: 58px;
+        font-size: 18px;
+    }
+
+    .mobileActionButton {
+        min-height: 56px;
+        font-size: 13px;
+    }
+}

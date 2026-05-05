@@ -1,0 +1,86 @@
+.root {
+    position: relative;
+}
+
+.card {
+    position: relative;
+    min-height: 102px;
+    border: 1px solid #cfcfcf;
+    border-radius: 10px;
+    background: #ffffff;
+    padding: 30px 56px 30px 40px;
+    color: #333333;
+}
+
+.actions {
+    position: absolute;
+    left: -139px;
+    top: 30px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.iconButton,
+.visibilityButton {
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 5px;
+    background: #f6f6f6;
+    color: #333333;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    &:hover:not(:disabled) {
+        background: #ececec;
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        color: #bdbdbd;
+    }
+}
+
+.visibilityButton {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+}
+
+.visibilityButtonActive {
+    color: #bd5343;
+}
+
+.content {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.body {
+    min-width: 0;
+    flex: 1;
+}
+
+@media (max-width: 1024px) {
+    .card {
+        min-height: 145px;
+        padding: 75px 20px 30px;
+    }
+
+    .actions {
+        left: 20px;
+        top: 20px;
+    }
+
+    .visibilityButton {
+        right: 20px;
+        top: 20px;
+    }
+}
