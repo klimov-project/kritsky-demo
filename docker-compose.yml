@@ -81,7 +81,7 @@ services:
       backend:
         condition: service_healthy
     expose:
-      - "3100"
+      - "3000"
 
   nginx:
     image: nginx:alpine
