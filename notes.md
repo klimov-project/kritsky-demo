@@ -32,3 +32,54 @@
 
 1. откат - 001 версия: `docker compose exec backend uv run alembic downgrade -1`
 2. заново - 002: `docker compose exec backend uv run alembic upgrade head`
+
+# Ревью frontend
+
+1. Основная беда - перегруженная ручка `api/knowledge-base`: огромный объём данных (более 5Мб json данных), пересчёт и долгий рендер, который блокирует главный поток
+2. Правильный ход - полная переработка архитектуры и перенесение вычислений варианта на бэк. Но в условиях ограниченного ресурса бэкендера нужен компромисс.
+   Нужно, чтобы пересчет шел на сервере при каждом запросе обновления страницы и не блокировал рендер (Сейчас useMemo пересчитывается КАЖЫДЙ РЕНДЕР). Результат пересчётов кешируем, желательно обновлять кеш только по изменению knowledge-base. Таким образом мы всегда получаем нужный результат быстро и без лишних загрузок. При вынужденных долгих пересчётах (сохранение и обновление в админке), которые должны вернуть новый результат - вешать лоадер и не давать плодить повторные запросы на ручку. Используем Web Worker как fallback если не получится посчитать на бэке.
+
+# Перезалив базы с прода на дев
+
+1. Создать дамп базы с прода (используя корректный docker-compose файл и env):
+   `docker compose -f docker-compose.prod.yml --env-file .env.prod exec -T db pg_dump -U postgres -d kritsky -Fc > ./kritsky-backup.dump`
+
+2. Очистить целевую базу данных на дев-сервере:
+   `docker compose down -v`
+
+   ### Возможные ответвления
+
+   #### С очисткой подключений и пересозданием базы
+
+   - Поднять только Postgres
+     `docker compose up -d backend`
+   - Закрыть все подключения
+     `docker compose exec -T db psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'kritsky';"`
+   - Дропнуть базы данных по названию "kritsky"
+     `docker compose exec -T db psql -U postgres -c "DROP DATABASE IF EXISTS kritsky;"`
+   - Создать пустую базу с названием "kritsky"
+     `docker compose exec -T db psql -U postgres -c "CREATE DATABASE kritsky;"`
+
+   #### Со схемой и миграциями
+
+   - Запустить контейнеры (бэкенд, базу данных, редис) для применения схемы:
+     `docker compose up -d db backend`
+
+   - Применить миграции Alembic (если в дампе старая структура или есть конфликт):
+
+   ```
+     docker compose exec backend uv run alembic downgrade -1
+     docker compose exec backend uv run alembic upgrade head
+   ```
+
+3) Залить дамп (с явным указанием compose-файла и env):
+   `docker compose -f docker-compose.yml --env-file .env exec -T db pg_restore -U postgres -d kritsky --clean --if-exists --no-owner --verbose < kritsky-backup.dump`
+
+4) Перезапустить бэкенд:
+   `docker compose down && docker compose up backend`
+
+5) Очистить кеш Redis (критично, иначе данные останутся старыми):
+   `docker compose exec redis redis-cli flushall`
+
+6) Пересобрать и поднять всё финально:
+   `docker compose down && docker compose up -d --build --force-recreate`

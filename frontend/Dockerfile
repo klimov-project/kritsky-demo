@@ -1,38 +1,26 @@
-ARG NEXT_PUBLIC_API_URL=http://localhost:8000
-ARG NEXT_PUBLIC_SUPPORT_EMAIL=admin@kritsky.local
-
-# Stage 1: Build
-FROM node:22-alpine AS builder
+FROM node:22-alpine
 
 WORKDIR /app
 
-ARG NEXT_PUBLIC_API_URL
-ARG NEXT_PUBLIC_SUPPORT_EMAIL
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-ENV NEXT_PUBLIC_SUPPORT_EMAIL=${NEXT_PUBLIC_SUPPORT_EMAIL}
+# Install curl for healthcheck
+RUN apk add --no-cache curl
 
+# Copy package files and install dependencies
 COPY package.json ./
+RUN npm install
 
-RUN npm ci --only=production || npm i --verbose
-
+# Copy application source
 COPY . .
 
-RUN npm run build
+# Ensure entrypoint is executable
+RUN chmod +x entrypoint.sh
 
-FROM node:22-alpine AS runner
-
-WORKDIR /app
-
+# Environment variables (can be overridden at runtime)
+ENV NUXT_API_BACKEND_BASE=http://backend:8000
+ENV NUXT_PUBLIC_API_BASE=/api
 ENV NODE_ENV=production
-ARG NEXT_PUBLIC_API_URL=http://localhost:8000
-ARG NEXT_PUBLIC_SUPPORT_EMAIL=admin@kritsky.local
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-ENV NEXT_PUBLIC_SUPPORT_EMAIL=${NEXT_PUBLIC_SUPPORT_EMAIL}
 
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
+EXPOSE 3000
 
-EXPOSE 3000 
-CMD ["npm", "start"]
+# Use entrypoint to build and start at runtime
+ENTRYPOINT ["./entrypoint.sh"]

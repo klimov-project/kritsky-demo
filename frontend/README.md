@@ -1,66 +1,75 @@
-# Frontend (Next.js)
+# Nuxt Minimal Starter
 
-Клиентская часть проекта на Next.js (App Router).
+Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
-## Требования
+## Setup
 
-- Node.js 20+
-- npm 10+
-
-## Локальный запуск (без Docker)
-
-1. Перейдите в директорию фронтенда:
+Make sure to install dependencies:
 
 ```bash
-cd frontend
+# npm
+npm install
+
+# pnpm
+pnpm install
+
+# yarn
+yarn install
+
+# bun
+bun install
 ```
 
-2. Установите зависимости:
+## Development Server
+
+Start the development server on `http://localhost:3000`:
 
 ```bash
-npm ci
-```
-
-3. Создайте `frontend/.env.local`:
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_SUPPORT_EMAIL=admin@kritsky.local
-```
-
-4. Запустите dev-сервер:
-
-```bash
+# npm
 npm run dev
+
+# pnpm
+pnpm dev
+
+# yarn
+yarn dev
+
+# bun
+bun run dev
 ```
 
-5. Проверьте в браузере: [http://localhost:3000](http://localhost:3000)
+## Production
 
-## Сборка и запуск production локально
+Build the application for production:
 
 ```bash
-cd frontend
+# npm
 npm run build
-npm start
+
+# pnpm
+pnpm build
+
+# yarn
+yarn build
+
+# bun
+bun run build
 ```
 
-## Запуск через Docker Compose (из корня проекта)
-
-1. В корневом `.env` задайте:
-
-```env
-NEXT_PUBLIC_API_URL=https://ege.kritsky.academy
-NEXT_PUBLIC_SUPPORT_EMAIL=admin@kritsky.local
-```
-
-2. Пересоберите frontend (обязательно, переменная вшивается в bundle):
+Locally preview production build:
 
 ```bash
-docker compose build --no-cache frontend
-docker compose up -d frontend
+# npm
+npm run preview
+
+# pnpm
+pnpm preview
+
+# yarn
+yarn preview
+
+# bun
+bun run preview
 ```
 
-## Важно про `NEXT_PUBLIC_API_URL`
-
-`NEXT_PUBLIC_API_URL` и `NEXT_PUBLIC_SUPPORT_EMAIL` читаются во время `build`.  
-Если изменить переменные и не пересобрать фронтенд, приложение продолжит использовать старые значения.
+Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
