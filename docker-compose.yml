@@ -73,20 +73,15 @@ services:
     build:
       context: ./admin
       dockerfile: Dockerfile
-      # args:
-      #   NUXT_API_BACKEND_BASE: http://localhost:8000
-      #   NUXT_PUBLIC_API_BASE: http://localhost:8000/api
     environment:
-      # NUXT_API_BACKEND_BASE: http://backend:8000
-      # NUXT_PUBLIC_API_BASE: http://backend:8000/api
-      - NUXT_API_BACKEND_BASE=http://backend:8000
-      - NUXT_PUBLIC_API_BASE=/api
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend:8000}
+      NEXT_PUBLIC_SUPPORT_EMAIL: ${NEXT_PUBLIC_SUPPORT_EMAIL:-admin@kritsky.local}
     restart: always
     depends_on:
       backend:
         condition: service_healthy
     expose:
-      - "3000"
+      - "3100"
 
   nginx:
     image: nginx:alpine
