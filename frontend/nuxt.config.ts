@@ -6,18 +6,21 @@ export default defineNuxtConfig({
   // Prerendering configuration
   routeRules: {
     '/': {
+      prerender: true,
       swr: 60,
-      prerender: true,
     },
-    '/admin1': {
-      swr: 60,
+    '/create-variant': {
       prerender: true,
+      swr: 300,
     },
-    '/public-variant': {
-      prerender: true,
+    '/api/knowledge-base': {
+      swr: 120,
     },
   },
 
+  devServer: {
+    port: 3003,
+  },
   runtimeConfig: {
     // Server-only runtime config (can be overridden by NUXT_API_BACKEND_BASE)
     apiBackendBase: 'http://localhost:8000',
@@ -49,5 +52,5 @@ export default defineNuxtConfig({
     },
   },
 
-  modules: ['@nuxtjs/tailwindcss', 'nuxt-auth-utils'],
+  modules: ['@nuxtjs/tailwindcss', 'nuxt-auth-utils', '@pinia/nuxt'],
 });

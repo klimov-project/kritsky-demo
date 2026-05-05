@@ -1,29 +1,23 @@
 <script setup lang="ts">
+import { useKnowledgeBase } from '~/composables/useKnowledgeBase';
+
 definePageMeta({
   layout: 'admin',
 });
 
-const config = useRuntimeConfig();
-
-// Fetch knowledge base
-const apiUrl = import.meta.server
-  ? `${config.apiBackendBase}/api/knowledge-base`
-  : '/api/knowledge-base';
-
-const { data: kb, pending, error, refresh } = await useFetch<any>(apiUrl, {
-  lazy: true,
-});
-
-const works = computed(() => kb.value?.works || []);
-const poets = computed(() => kb.value?.poets || []);
+const { kbStore, loadKnowledgeBase } = useKnowledgeBase();
+await loadKnowledgeBase();
 
 const activeTab = ref<'works' | 'poets'>('works');
 const searchQuery = ref('');
 
+const works = computed(() => kbStore.works ?? [])
+const poets = computed(() => kbStore.poets ?? [])
+
 const filteredWorks = computed(() => {
-  if (!searchQuery.value) return works.value;
+  if (!searchQuery.value) return kbStore.works;
   const query = searchQuery.value.toLowerCase();
-  return works.value.filter(
+  return kbStore.works.filter(
     (w: any) =>
       w.title?.toLowerCase().includes(query) ||
       w.author?.toLowerCase().includes(query),
@@ -31,9 +25,9 @@ const filteredWorks = computed(() => {
 });
 
 const filteredPoets = computed(() => {
-  if (!searchQuery.value) return poets.value;
+  if (!searchQuery.value) return kbStore.poets;
   const query = searchQuery.value.toLowerCase();
-  return poets.value.filter((p: any) => p.name?.toLowerCase().includes(query));
+  return kbStore.poets.filter((p: any) => p.name?.toLowerCase().includes(query));
 });
 
 const { execute: invalidateCache, pending: invalidating } = await useFetch<any>(
@@ -47,7 +41,7 @@ const { execute: invalidateCache, pending: invalidating } = await useFetch<any>(
 
 const handleInvalidate = async () => {
   await invalidateCache();
-  await refresh();
+  await loadKnowledgeBase(true);
 };
 </script>
 

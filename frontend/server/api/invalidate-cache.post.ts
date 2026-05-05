@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
 
   // Invalidate main caches
   await storage.removeItem('cache:knowledge-base');
+  await storage.removeItem('cache:knowledge-base-meta');
   await storage.removeItem('cache:pregenerated-variant');
 
   console.log('Cache invalidated at', timestamp);
