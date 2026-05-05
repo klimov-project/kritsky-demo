@@ -41,11 +41,25 @@ const closeMenus = () => {
               Главная
             </NuxtLink>
             <NuxtLink
+              to="/public-variant"
+              class="text-gray-700 hover:text-blue-600 transition"
+              active-class="text-blue-600 font-medium"
+            >
+              Публичная генерация
+            </NuxtLink>
+            <NuxtLink
               to="/new_test"
               class="text-gray-700 hover:text-blue-600 transition"
               active-class="text-blue-600 font-medium"
             >
               Конструктор
+            </NuxtLink>
+            <NuxtLink
+              to="/#"
+              class="text-gray-700 hover:text-blue-600 transition"
+              active-class="text-blue-600 font-medium"
+            >
+              Вариант недели
             </NuxtLink>
             <NuxtLink
               to="/shop"
