@@ -1,27 +1,23 @@
-export default defineRouteMiddleware(async (to, from) => {
-  // Define routes that require authentication
-  const protectedRoutes = ['/profile', '/my-variants', '/my-books'];
-
-  if (
-    protectedRoutes.some((route) => to.path.startsWith(route))
-  ) {
-    try {
-      const session = await useFetch('/api/auth/me', {
-        method: 'GET',
-      });
-
-      if (!session.data?.value?.user) {
-        return navigateTo({
-          path: '/login',
-          query: { redirect: to.fullPath },
-        });
-      }
-    } catch (error) {
-      console.error('Auth middleware error:', error);
-      return navigateTo({
-        path: '/login',
-        query: { redirect: to.fullPath },
-      });
-    }
+/**
+ * Auth middleware using nuxt-auth-utils
+ * 
+ * This middleware protects routes that require authentication.
+ * Use by adding `definePageMeta({ middleware: 'auth' })` to pages.
+ */
+export default defineNuxtRouteMiddleware(async (to) => {
+  // Use the built-in session composable from nuxt-auth-utils
+  const { loggedIn, fetch: fetchSession } = useUserSession();
+  
+  // Ensure we have the latest session state
+  if (!loggedIn.value) {
+    await fetchSession();
+  }
+  
+  // If still not logged in after fetching, redirect to login
+  if (!loggedIn.value) {
+    return navigateTo({
+      path: '/login',
+      query: { redirect: to.fullPath },
+    });
   }
 });

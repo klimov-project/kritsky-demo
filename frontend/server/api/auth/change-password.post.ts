@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${session.accessToken}`,
+          Authorization: `Bearer ${session.accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),

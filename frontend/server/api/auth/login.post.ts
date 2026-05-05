@@ -1,3 +1,8 @@
+/**
+ * Login endpoint using nuxt-auth-utils
+ *
+ * Proxies login request to backend, then stores user in sealed session cookie
+ */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
 
@@ -23,33 +28,36 @@ export default defineEventHandler(async (event) => {
 
     const data = await response.json();
 
-    // Set session with auth tokens
+    // Set user session using nuxt-auth-utils
+    // The session is encrypted and stored in a sealed cookie
     await setUserSession(event, {
       user: {
         id: data.user.id,
         email: data.user.email,
-        name: data.user.name,
+        name: data.user.name || data.user.first_name,
         phone: data.user.phone,
-        role: data.user.role,
-        isPro: data.user.isPro,
-        isBlocked: data.user.isBlocked,
+        role: data.user.role || 'user',
+        isPro: data.user.is_pro || data.user.isPro || false,
+        isBlocked: data.user.is_blocked || data.user.isBlocked || false,
       },
-      loggedInAt: new Date(),
-    });
-
-    // Store tokens in session (or in an httpOnly cookie)
-    await setUserSession(event, {
-      user: data.user,
-      accessToken: data.accessToken,
-      refreshToken: data.refreshToken,
+      // Store tokens for API calls that need them
+      accessToken: data.accessToken || data.access_token,
+      refreshToken: data.refreshToken || data.refresh_token,
+      loggedInAt: new Date().toISOString(),
     });
 
     return {
       user: data.user,
-      accessToken: data.accessToken,
+      success: true,
     };
   } catch (error) {
     console.error('Login error:', error);
-    throw error;
+    if (error.statusCode) {
+      throw error;
+    }
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'Login failed',
+    });
   }
 });

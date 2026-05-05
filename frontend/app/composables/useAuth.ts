@@ -1,27 +1,26 @@
+/**
+ * Authentication composable using nuxt-auth-utils
+ *
+ * Uses the built-in useUserSession() from nuxt-auth-utils module
+ * which manages session via sealed cookies (encrypted with NUXT_SESSION_PASSWORD)
+ */
+
 export const useAuth = () => {
   const router = useRouter();
-  const session = ref<any>(null);
+
+  // Use the built-in session composable from nuxt-auth-utils
+  const {
+    loggedIn,
+    user,
+    session,
+    fetch: fetchSession,
+    clear: clearSession,
+  } = useUserSession();
+
   const isLoading = ref(false);
   const error = ref<string | null>(null);
 
-  // Fetch current session
-  const fetchSession = async () => {
-    isLoading.value = true;
-    error.value = null;
-    try {
-      const result = await $fetch('/api/auth/me', {
-        method: 'GET',
-      });
-      session.value = result;
-    } catch (err: any) {
-      console.error('Session fetch error:', err);
-      session.value = null;
-    } finally {
-      isLoading.value = false;
-    }
-  };
-
-  // Login
+  // Login - calls our API which proxies to backend and sets session
   const login = async (email: string, password: string) => {
     isLoading.value = true;
     error.value = null;
@@ -30,22 +29,19 @@ export const useAuth = () => {
         method: 'POST',
         body: { email, password },
       });
-      session.value = result;
+      // Refresh session after login
+      await fetchSession();
       return result;
-    } catch (err: any) {
-      error.value = err?.data?.message || 'Login failed';
+    } catch (err) {
+      error.value = err?.data?.message || err?.statusMessage || 'Login failed';
       throw err;
     } finally {
       isLoading.value = false;
     }
   };
 
-  // Register
-  const register = async (
-    email: string,
-    password: string,
-    name?: string,
-  ) => {
+  // Register - calls our API which proxies to backend and sets session
+  const register = async (email: string, password: string, name?: string) => {
     isLoading.value = true;
     error.value = null;
     try {
@@ -53,17 +49,19 @@ export const useAuth = () => {
         method: 'POST',
         body: { email, password, name },
       });
-      session.value = result;
+      // Refresh session after registration
+      await fetchSession();
       return result;
-    } catch (err: any) {
-      error.value = err?.data?.message || 'Registration failed';
+    } catch (err) {
+      error.value =
+        err?.data?.message || err?.statusMessage || 'Registration failed';
       throw err;
     } finally {
       isLoading.value = false;
     }
   };
 
-  // Logout
+  // Logout - clears session
   const logout = async () => {
     isLoading.value = true;
     error.value = null;
@@ -71,10 +69,10 @@ export const useAuth = () => {
       await $fetch('/api/auth/logout', {
         method: 'POST',
       });
-      session.value = null;
+      await clearSession();
       await router.push('/');
-    } catch (err: any) {
-      error.value = err?.data?.message || 'Logout failed';
+    } catch (err) {
+      error.value = err?.data?.message || err?.statusMessage || 'Logout failed';
       throw err;
     } finally {
       isLoading.value = false;
@@ -94,10 +92,12 @@ export const useAuth = () => {
         method: 'PUT',
         body: payload,
       });
-      session.value = result;
+      // Refresh session to get updated user data
+      await fetchSession();
       return result;
-    } catch (err: any) {
-      error.value = err?.data?.message || 'Profile update failed';
+    } catch (err) {
+      error.value =
+        err?.data?.message || err?.statusMessage || 'Profile update failed';
       throw err;
     } finally {
       isLoading.value = false;
@@ -119,31 +119,29 @@ export const useAuth = () => {
           newPassword,
         },
       });
-    } catch (err: any) {
-      error.value = err?.data?.message || 'Password change failed';
+    } catch (err) {
+      error.value =
+        err?.data?.message || err?.statusMessage || 'Password change failed';
       throw err;
     } finally {
       isLoading.value = false;
     }
   };
 
-  // Initialize session on client
-  if (process.client) {
-    onMounted(() => {
-      fetchSession();
-    });
-  }
-
   return {
-    session: readonly(session),
+    // Session state from nuxt-auth-utils
+    session: computed(() => ({ user: user.value })),
+    user: readonly(user),
     isLoading: readonly(isLoading),
     error: readonly(error),
+    isAuthenticated: computed(() => loggedIn.value),
+
+    // Auth methods
     login,
     register,
     logout,
     updateProfile,
     changePassword,
     fetchSession,
-    isAuthenticated: computed(() => !!session.value?.user),
   };
 };

@@ -39,76 +39,6 @@ const handleLogout = async () => {
 
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-    <!-- Header/Navigation -->
-    <header class="bg-white shadow-sm">
-      <div
-        class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center"
-      >
-        <div class="text-2xl font-bold text-blue-600">Критский</div>
-        <nav class="flex gap-6 text-sm items-center">
-          <NuxtLink to="/" class="text-gray-700 hover:text-blue-600"
-            >Главная</NuxtLink
-          >
-          <NuxtLink to="/admin" class="text-gray-700 hover:text-blue-600"
-            >Управление</NuxtLink
-          >
-
-          <!-- User Menu -->
-          <div class="relative">
-            <button
-              v-if="isAuthenticated"
-              @click="showUserMenu = !showUserMenu"
-              class="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition"
-            >
-              <span class="font-medium">{{
-                session?.user?.name || session?.user?.email
-              }}</span>
-              <span>▼</span>
-            </button>
-            <NuxtLink
-              v-else
-              to="/login"
-              class="text-gray-700 hover:text-blue-600 font-medium"
-            >
-              Вход
-            </NuxtLink>
-
-            <!-- Dropdown Menu -->
-            <div
-              v-if="isAuthenticated && showUserMenu"
-              class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50"
-            >
-              <NuxtLink
-                to="/profile"
-                class="block px-4 py-2 text-gray-700 hover:bg-gray-100 first:rounded-t-lg"
-              >
-                👤 Профиль
-              </NuxtLink>
-              <NuxtLink
-                to="/my-variants"
-                class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-              >
-                📚 Мои варианты
-              </NuxtLink>
-              <NuxtLink
-                to="/shop"
-                class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-              >
-                🎁 Подписка
-              </NuxtLink>
-              <button
-                @click="handleLogout"
-                :disabled="authLoading"
-                class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 last:rounded-b-lg disabled:opacity-50"
-              >
-                🚪 {{ authLoading ? 'Выход...' : 'Выход' }}
-              </button>
-            </div>
-          </div>
-        </nav>
-      </div>
-    </header>
-
     <!-- Hero Section -->
     <section class="max-w-6xl mx-auto px-4 py-16 md:py-24">
       <div class="text-center mb-12">
@@ -188,48 +118,5 @@ const handleLogout = async () => {
         </div>
       </div>
     </section>
-
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-200 py-8 mt-16">
-      <div class="max-w-6xl mx-auto px-4">
-        <div class="grid md:grid-cols-3 gap-8 mb-6 text-sm">
-          <div>
-            <h4 class="font-bold mb-3">Информация</h4>
-            <div class="space-y-1">
-              <NuxtLink to="/about" class="block hover:text-white"
-                >О проекте</NuxtLink
-              >
-              <NuxtLink to="/privacy" class="block hover:text-white"
-                >Политика конфиденциальности</NuxtLink
-              >
-              <NuxtLink to="/terms" class="block hover:text-white"
-                >Пользовательское соглашение</NuxtLink
-              >
-            </div>
-          </div>
-          <div>
-            <h4 class="font-bold mb-3">Работа</h4>
-            <div class="space-y-1">
-              <NuxtLink to="/admin" class="block hover:text-white"
-                >Панель управления</NuxtLink
-              >
-              <NuxtLink to="/rules" class="block hover:text-white"
-                >Правила</NuxtLink
-              >
-              <a href="#" class="block hover:text-white">Поддержка</a>
-            </div>
-          </div>
-          <div>
-            <h4 class="font-bold mb-3">Контакты</h4>
-            <p class="text-xs">ИП Крицкий Роман Дмитриевич</p>
-            <p class="text-xs">ИНН: 772796119977</p>
-            <p class="text-xs">ОГРНИП: 325774600403322</p>
-          </div>
-        </div>
-        <div class="border-t border-gray-700 pt-6 text-center text-xs">
-          <p>© Критский, 2026. Все права защищены.</p>
-        </div>
-      </div>
-    </footer>
   </div>
 </template>

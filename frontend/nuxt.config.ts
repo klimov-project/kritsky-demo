@@ -9,7 +9,7 @@ export default defineNuxtConfig({
       swr: 60,
       prerender: true,
     },
-    '/admin': {
+    '/admin1': {
       swr: 60,
       prerender: true,
     },
