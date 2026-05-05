@@ -54,7 +54,12 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      # args:
+      #   NUXT_API_BACKEND_BASE: http://localhost:8000
+      #   NUXT_PUBLIC_API_BASE: http://localhost:8000/api
     environment:
+      # NUXT_API_BACKEND_BASE: http://backend:8000
+      # NUXT_PUBLIC_API_BASE: http://backend:8000/api
       - NUXT_API_BACKEND_BASE=http://backend:8000
       - NUXT_PUBLIC_API_BASE=/api
     restart: always

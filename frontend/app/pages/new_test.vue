@@ -7,25 +7,25 @@ const config = useRuntimeConfig();
 const auth = useAuth();
 const { session, isAuthenticated } = auth;
 
-// // Fetch knowledge base
-// const apiUrl = import.meta.server
-//   ? `${config.apiBackendBase}/api/knowledge-base`
-//   : '/api/knowledge-base';
+// Fetch knowledge base
+const apiUrl = import.meta.server
+  ? `${config.apiBackendBase}/api/knowledge-base`
+  : '/api/knowledge-base';
 
-// const {
-//   data: kb,
-//   pending: kbPending,
-//   error: kbError,
-//   refresh: refreshKb,
-// } = await useFetch<any>(apiUrl, {
-//   lazy: true,
-//   server: true,
-// });
+const {
+  data: kb,
+  pending: kbPending,
+  error: kbError,
+  refresh: refreshKb,
+} = await useFetch<any>(apiUrl, {
+  lazy: true,
+  server: true,
+});
 
 // Fetch pregenerated variant
 const {
   data: variantData,
-  pending: isLoading,
+  pending: variantPending,
   error: variantError,
   refresh: refreshVariant,
 } = await useFetch<any>('/api/variants/runtime/pregenerated', {
@@ -45,6 +45,7 @@ const isRefreshing = ref(false);
 const works = computed(() => kb.value?.works || []);
 const poets = computed(() => kb.value?.poets || []);
 const variant = computed(() => variantData.value?.variant || null);
+const isLoading = computed(() => kbPending.value || variantPending.value);
 const hasError = computed(() => kbError.value || variantError.value);
 
 const selectedWork = computed(() => {
