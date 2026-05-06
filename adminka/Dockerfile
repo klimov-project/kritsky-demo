@@ -2,19 +2,23 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-
-
-# Важно: NEXT_PUBLIC_* переменные ДОЛЖНЫ быть доступны при сборке
-ARG NEXT_PUBLIC_BASE_PATH=/adminka
-ENV NEXT_PUBLIC_BASE_PATH=${NEXT_PUBLIC_BASE_PATH}
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-ENV NEXT_PUBLIC_SUPPORT_EMAIL=${NEXT_PUBLIC_SUPPORT_EMAIL}
-
+# Копируем package.json и устанавливаем зависимости
 COPY package*.json ./
-RUN npm ci --only=production || npm i --verbose
+RUN npm install
 
+# Копируем исходники
 COPY . .
 
+# Устанавливаем переменные для сборки
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_SUPPORT_EMAIL
+ARG NEXT_PUBLIC_BASE_PATH=/adminka
+
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_SUPPORT_EMAIL=${NEXT_PUBLIC_SUPPORT_EMAIL}
+ENV NEXT_PUBLIC_BASE_PATH=${NEXT_PUBLIC_BASE_PATH}
+
+# Сборка
 RUN npm run build
 
 FROM node:22-alpine AS runner
@@ -31,4 +35,5 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
 EXPOSE 3000
+
 CMD ["npm", "start"]
