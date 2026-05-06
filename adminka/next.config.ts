@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   basePath: '/adminka',
   // assetPrefix: '/adminka',
   trailingSlash: true,
+  output: 'standalone',
 };
 
 export default nextConfig;
