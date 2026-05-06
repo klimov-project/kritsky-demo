@@ -1,20 +1,21 @@
 import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '/adminka',
-  assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || '/adminka',
-  trailingSlash: true,
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '/adminka';
 
-  // Важно для Next.js 16
+const nextConfig: NextConfig = {
+  basePath: basePath,
+  assetPrefix: basePath,
+  trailingSlash: true,
+  skipTrailingSlashRedirect: true,
+
+  // Важно для Next.js 16+
   output: 'standalone', // если используете Docker
 
-  // Настройки для статических файлов
+  // Явно указать пути к статике
   distDir: '.next',
 
-  // Экспериментальные настройки (если нужно)
-  experimental: {
-    // optimizeCss: true, // если используете CSS оптимизацию
-  },
+  // Для правильной работы с прокси
+  allowedDevOrigins: ['62.113.99.250', 'localhost'],
 };
 
 export default nextConfig;
