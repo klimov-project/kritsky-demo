@@ -8,7 +8,7 @@ export default defineNuxtConfig({
   routeRules: {
     '/': {
       prerender: true,
-      swr: 60,
+      swr: 300,
     },
     '/create-variant': {
       prerender: true,

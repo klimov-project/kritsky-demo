@@ -1,16 +1,27 @@
 <script setup lang="ts">
-const { data: variantsCount } = await useFetch<{ count: number }>(
-  '/api/variants-count',
-);
+const { data: variantsCount } = await useFetch<number>('/api/variants-count');
 
-console.log('variants-coun variantsCount', variantsCount.value);
+console.log('variants-count raw data:', variantsCount.value);
 
 const formattedCount = computed(() => {
-  if (!variantsCount.value?.count) return '1 000 000';
-  const count = variantsCount.value.count;
-  if (count >= 1000000) return (count / 1000000).toFixed(1) + ' млн';
-  if (count >= 1000) return (count / 1000).toFixed(1) + ' тыс';
-  return count.toString();
+  const count = variantsCount.value;
+
+  if (!count || count === 0) return '~1 000 000';
+
+  if (count >= 1_000_000_000_000) {
+    return `~${(count / 1_000_000_000_000).toFixed(1)} трлн`;
+  }
+  if (count >= 1_000_000_000) {
+    return `~${(count / 1_000_000_000).toFixed(1)} млрд`;
+  }
+  if (count >= 1_000_000) {
+    return `~${(count / 1_000_000).toFixed(1)} млн`;
+  }
+  if (count >= 1_000) {
+    return `~${(count / 1_000).toFixed(1)} тыс`;
+  }
+
+  return count.toLocaleString('ru-RU');
 });
 
 const navigateToConstructor = () => {

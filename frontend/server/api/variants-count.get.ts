@@ -1,37 +1,48 @@
-import { calculateTotalVariants } from '../utils/calculate-variants';
-
 export default defineEventHandler(async (event) => {
-  // Use the local cached API route to get knowledge-base
-  // This ensures we benefit from the Nitro caching implemented there
-  const kb = await $fetch('/api/knowledge-base');
-  
-  // We can still use a simple in-memory cache here for the count itself 
-  // to avoid re-calculating on every request if kb hasn't changed
   const storage = useStorage();
-  const cacheKey = 'cache:variants-count';
-  const kbHashKey = 'cache:kb-hash-for-count';
-  
-  const currentKbHash = simpleHash(kb);
-  const cachedHash = await storage.getItem(kbHashKey);
-  const cachedCount = await storage.getItem(cacheKey);
+  const CACHE_KEYS = {
+    hash: 'cache:kb-hash-for-count',
+    count: 'cache:variants-count',
+  } as const;
 
-  if (cachedHash === currentKbHash && cachedCount !== null) {
-    return cachedCount;
+  const kb = await $fetch('/api/knowledge-base');
+  const currentHash = simpleHash(kb);
+  console.log(' 1 — kb fetchted, currentHash: ', currentHash);
+
+  // Проверяем кэш
+  const [cachedHash, cachedCount] = await Promise.all([
+    storage.getItem(CACHE_KEYS.hash),
+    storage.getItem(CACHE_KEYS.count),
+  ]);
+
+  const isCacheValid =
+    String(cachedHash) === currentHash && cachedCount != null;
+
+  if (isCacheValid) {
+    console.log(' 2 — serving from cache');
+    return Number(cachedCount);
   }
 
+  console.log(' 3 — recalculating');
+
+  // Пересчитываем и обновляем кэш
   const count = calculateTotalVariants(kb);
-  
-  await storage.setItem(kbHashKey, currentKbHash);
-  await storage.setItem(cacheKey, count);
+
+  await Promise.all([
+    storage.setItem(CACHE_KEYS.hash, currentHash),
+    storage.setItem(CACHE_KEYS.count, String(count)),
+  ]);
 
   return count;
 });
 
-function simpleHash(obj: any): string {
+function simpleHash(obj: unknown): string {
   const str = JSON.stringify(obj);
-  let h = 0;
+  let hash = 0;
+
   for (let i = 0; i < str.length; i++) {
-    h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+    hash = (Math.imul(31, hash) + str.charCodeAt(i)) | 0;
   }
-  return String(h);
+
+  return String(hash);
 }
