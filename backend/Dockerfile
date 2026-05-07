@@ -8,12 +8,12 @@ ENV UV_COMPILE_BYTECODE=1
 
 COPY backend/ ./backend/
 
-WORKDIR /app/backend
+WORKDIR /app/backend 
+RUN sed -i 's/\r$//' entrypoint.sh
 RUN uv sync --no-dev
+RUN chmod +x entrypoint.sh
 
 EXPOSE 8000
 
-COPY backend/entrypoint.sh /app/backend/entrypoint.sh
-RUN chmod +x /app/backend/entrypoint.sh
 
-CMD ["./entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
