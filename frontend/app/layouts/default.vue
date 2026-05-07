@@ -292,13 +292,13 @@ const hasTransparentShell = computed(
 
           <!-- Mobile Footer -->
           <div class="lg:hidden">
-            <div class="grid grid-cols-2 gap-[20px] items-start">
+            <div class="grid mb-8 grid-cols-2 gap-[20px] items-start">
               <div class="flex flex-col gap-[4px] text-[13px]">
                 <NuxtLink to="/about">О проекте</NuxtLink>
                 <NuxtLink to="/terms">Пользовательское соглашение</NuxtLink>
                 <NuxtLink to="/privacy">Политика конфиденциальности</NuxtLink>
               </div>
-              <div class="text-right text-[12px] leading-[1.35]">
+              <div class="text-right text-[12px] leading-[1.9] lg:leading-[1.35]">
                 <p>ИП Крицкий Роман Дмитриевич</p>
                 <p>ИНН: 772796119977</p>
                 <p>ОГРНИП: 325774600403322</p>

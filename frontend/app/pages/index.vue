@@ -3,6 +3,8 @@ const { data: variantsCount } = await useFetch<{ count: number }>(
   '/api/variants-count',
 );
 
+console.log('variants-coun variantsCount', variantsCount.value);
+
 const formattedCount = computed(() => {
   if (!variantsCount.value?.count) return '1 000 000';
   const count = variantsCount.value.count;
@@ -27,15 +29,48 @@ const navigateToConstructor = () => {
       <img
         src="/E.svg"
         alt=""
-        class="absolute z-[3] w-[252px] h-auto top-[-70px] left-[228px] opacity-100 pointer-events-none animate-decor-in"
+        class="absolute z-[3] w-[252px] h-auto top-[-70px] left-[228px] opacity-100 pointer-events-none animate-decor-in hidden lg:block"
         style="animation-delay: 0.08s;"
       />
       <img
         src="/GE.svg"
         alt=""
-        class="absolute z-[1] w-[437px] h-auto top-[-74px] right-[243px] opacity-100 pointer-events-none animate-decor-in"
+        class="absolute z-[1] w-[437px] h-auto top-[-74px] right-[243px] opacity-100 pointer-events-none animate-decor-in hidden lg:block"
         style="animation-delay: 0.15s;"
       />
+      <div
+        class="absolute z-[3] flex flex-row items-center justify-center w-full h-[77%] lg:hidden"
+      >
+        <img
+          src="/E.svg"
+          alt=""
+          class="w-auto h-[70%] top-[-70px] opacity-100 pointer-events-none animate-decor-in"
+          style="animation-delay: 0.08s;"
+        />
+        <img
+          src="/GE.svg"
+          alt=""
+          class="w-auto h-[70%] top-[-74px] right-[243px] opacity-100 invisible pointer-events-none animate-decor-in"
+          style="animation-delay: 0.15s;"
+        />
+      </div>
+      <div
+        class="absolute z-[0] flex flex-row items-center justify-center w-full h-[77%] lg:hidden"
+      >
+        <img
+          src="/E.svg"
+          alt=""
+          class="w-auto h-[70%] top-[-70px] opacity-100 invisible pointer-events-none animate-decor-in"
+          style="animation-delay: 0.08s;"
+        />
+        <img
+          src="/GE.svg"
+          alt=""
+          class="w-auto h-[70%] top-[-74px] right-[243px] opacity-100 pointer-events-none animate-decor-in"
+          style="animation-delay: 0.15s;"
+        />
+      </div>
+
       <img
         src="/hero_text_without_i.svg"
         alt="КРИЦКИЙ"
@@ -49,7 +84,7 @@ const navigateToConstructor = () => {
       <img
         src="/upper_i.svg"
         alt=""
-        class="absolute right-[35px] top-0 w-[30px] h-auto z-[4] pointer-events-none opacity-0 animate-accent-in hidden lg:block "
+        class="absolute right-[35px] top-0 w-[30px] h-auto z-[4] pointer-events-none opacity-0 animate-accent-in hidden lg:block"
       />
     </div>
 
@@ -101,7 +136,7 @@ const navigateToConstructor = () => {
         Создать вариант
       </button>
       <div
-        class="w-full lg:w-auto max-w-[653px] h-[60px] rounded-[50px] bg-white text-[#828282] text-[16px] flex items-center px-[34px] gap-[6px] whitespace-nowrap overflow-hidden border border-[#cfcfcf] lg:border-none"
+        class="w-full lg:w-auto max-w-[653px] h-[60px] rounded-[50px] bg-white text-[#828282] text-[16px] flex items-center px-[34px] gap-[6px] whitespace-nowrap overflow-hidden border-none"
       >
         <span class="flex-shrink-0">Сейчас доступно:</span>
         <span
