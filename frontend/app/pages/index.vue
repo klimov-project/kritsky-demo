@@ -6,22 +6,11 @@ console.log('variants-count raw data:', variantsCount.value);
 const formattedCount = computed(() => {
   const count = variantsCount.value;
 
-  if (!count || count === 0) return '~1 000 000';
+  if (!count || count === 0) return '1 000 000';
 
-  if (count >= 1_000_000_000_000) {
-    return `~${(count / 1_000_000_000_000).toFixed(1)} трлн`;
-  }
-  if (count >= 1_000_000_000) {
-    return `~${(count / 1_000_000_000).toFixed(1)} млрд`;
-  }
-  if (count >= 1_000_000) {
-    return `~${(count / 1_000_000).toFixed(1)} млн`;
-  }
-  if (count >= 1_000) {
-    return `~${(count / 1_000).toFixed(1)} тыс`;
-  }
-
-  return count.toLocaleString('ru-RU');
+  return `${count
+    .toLocaleString('ru-RU')
+    .replace(/,/g, ' ')} вариантов заданий`;
 });
 
 const navigateToConstructor = () => {
@@ -34,74 +23,11 @@ const navigateToConstructor = () => {
     class="flex-1 flex flex-col items-center justify-center py-[clamp(20px,4vh,36px)]"
   >
     <!-- Hero Wordmark -->
-    <div
-      class="relative w-full max-w-[1125px] min-h-[clamp(190px,21vw,252px)] flex items-center justify-center"
-    >
-      <img
-        src="/E.svg"
-        alt=""
-        class="absolute z-[3] w-[252px] h-auto top-[-70px] left-[228px] opacity-100 pointer-events-none animate-decor-in hidden lg:block"
-        style="animation-delay: 0.08s;"
-      />
-      <img
-        src="/GE.svg"
-        alt=""
-        class="absolute z-[1] w-[437px] h-auto top-[-74px] right-[243px] opacity-100 pointer-events-none animate-decor-in hidden lg:block"
-        style="animation-delay: 0.15s;"
-      />
-      <div
-        class="absolute z-[3] flex flex-row items-center justify-center w-full h-[77%] lg:hidden"
-      >
-        <img
-          src="/E.svg"
-          alt=""
-          class="w-auto h-[70%] top-[-70px] opacity-100 pointer-events-none animate-decor-in"
-          style="animation-delay: 0.08s;"
-        />
-        <img
-          src="/GE.svg"
-          alt=""
-          class="w-auto h-[70%] top-[-74px] right-[243px] opacity-100 invisible pointer-events-none animate-decor-in"
-          style="animation-delay: 0.15s;"
-        />
-      </div>
-      <div
-        class="absolute z-[0] flex flex-row items-center justify-center w-full h-[77%] lg:hidden"
-      >
-        <img
-          src="/E.svg"
-          alt=""
-          class="w-auto h-[70%] top-[-70px] opacity-100 invisible pointer-events-none animate-decor-in"
-          style="animation-delay: 0.08s;"
-        />
-        <img
-          src="/GE.svg"
-          alt=""
-          class="w-auto h-[70%] top-[-74px] right-[243px] opacity-100 pointer-events-none animate-decor-in"
-          style="animation-delay: 0.15s;"
-        />
-      </div>
-
-      <img
-        src="/hero_text_without_i.svg"
-        alt="КРИЦКИЙ"
-        class="relative z-[2] w-full h-auto animate-wordmark-in hidden lg:block"
-      />
-      <img
-        src="/hero_text.svg"
-        alt="КРИЦКИЙ"
-        class="relative z-[2] w-full h-auto animate-wordmark-in lg:hidden"
-      />
-      <img
-        src="/upper_i.svg"
-        alt=""
-        class="absolute right-[35px] top-0 w-[30px] h-auto z-[4] pointer-events-none opacity-0 animate-accent-in hidden lg:block"
-      />
-    </div>
+    <HeroWordmark />
 
     <!-- Features Desktop -->
     <div
-      class="mt-[clamp(36px,5.6vh,56px)] w-full hidden lg:grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center text-[#828282] text-[16px] leading-[1.22]"
+      class="mt-[clamp(36px,5.6vh,56px)] lg:mt-[80px] max-w-[1125px] w-full hidden lg:grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center text-[#828282] text-[16px] leading-[1.22]"
     >
       <p class="max-w-[250px] justify-self-start">
         Профессиональный<br />конструктор ЕГЭ по литературе<br />для учителей и
@@ -138,7 +64,7 @@ const navigateToConstructor = () => {
 
     <!-- Actions -->
     <div
-      class="mt-[clamp(30px,6vh,74px)] w-full flex flex-col lg:flex-row items-center justify-center gap-[14px]"
+      class="mt-[clamp(30px,6vh,74px)] lg:mt-[80px] w-full flex flex-col lg:flex-row items-center justify-center gap-[14px]"
     >
       <button
         @click="navigateToConstructor"
@@ -147,14 +73,12 @@ const navigateToConstructor = () => {
         Создать вариант
       </button>
       <div
-        class="w-full lg:w-auto max-w-[653px] h-[60px] rounded-[50px] bg-white text-[#828282] text-[16px] flex items-center px-[34px] gap-[6px] whitespace-nowrap overflow-hidden border-none"
+        class="relative -left-[60px] -z-[1] pl-[70px] w-full lg:w-auto max-w-[653px] h-[60px] rounded-[50px] bg-white text-[#828282] text-[16px] flex items-center px-[34px] gap-[6px] whitespace-nowrap overflow-hidden border-none"
       >
         <span class="flex-shrink-0">Сейчас доступно:</span>
-        <span
-          class="text-[#333] text-[clamp(15px,1.45vw,21px)] overflow-hidden text-ellipsis"
-          >{{ formattedCount }}</span
-        >
-        <span class="flex-shrink-1 overflow-hidden">вариантов заданий</span>
+        <span class="overflow-hidden">
+          {{ formattedCount }}
+        </span>
       </div>
     </div>
   </section>
