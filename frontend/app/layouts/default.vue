@@ -155,36 +155,13 @@ const hasTransparentShell = computed(
           <!-- Mobile Actions Toggle -->
           <div class="ml-auto flex lg:hidden items-center gap-[12px]">
             <NuxtLink to="/cart" class="text-[#333]">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-                <path d="M3 6h18" />
-                <path d="M16 10a4 4 0 0 1-8 0" />
-              </svg>
+              <UiIconShoppingBag />
             </NuxtLink>
-            <button @click="toggleMobileMenu" class="text-[#333]">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
+            <button
+              @click="toggleMobileMenu"
+              class="ml-auto flex items-center text-[#333]"
+            >
+              <UiIconMenu />
             </button>
           </div>
         </div>
@@ -264,7 +241,7 @@ const hasTransparentShell = computed(
 
       <!-- Main Content -->
       <main
-        class="mx-auto max-w-[1440px] w-full px-4 lg:px-8 flex-1 flex flex-col"
+        class="hero-content mx-auto max-w-[1440px] w-full px-3 lg:px-0 flex-1 flex flex-col"
       >
         <slot />
       </main>
@@ -293,13 +270,15 @@ const hasTransparentShell = computed(
               <a
                 href="#"
                 class="w-[30px] h-[30px] rounded-full bg-[#333] text-white flex items-center justify-center hover:opacity-75 transition-opacity"
-                >YT</a
               >
+                <UiIconYT />
+              </a>
               <a
                 href="#"
                 class="w-[30px] h-[30px] rounded-full bg-[#333] text-white flex items-center justify-center hover:opacity-75 transition-opacity"
-                >TG</a
               >
+                <UiIconTG />
+              </a>
             </div>
             <div class="justify-self-end text-right text-[14px] leading-[1.45]">
               <p>ИП Крицкий Роман Дмитриевич</p>
@@ -334,13 +313,15 @@ const hasTransparentShell = computed(
                 <a
                   href="#"
                   class="w-[34px] h-[34px] rounded-full bg-[#333] text-white flex items-center justify-center"
-                  >YT</a
                 >
+                  <UiIconYT />
+                </a>
                 <a
                   href="#"
                   class="w-[34px] h-[34px] rounded-full bg-[#333] text-white flex items-center justify-center"
-                  >TG</a
                 >
+                  <UiIconTG />
+                </a>
               </div>
             </div>
           </div>
@@ -350,7 +331,10 @@ const hasTransparentShell = computed(
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+.hero-content {
+  min-height: 100vh;
+}
 .icon-list::before {
   content: '📋';
 }

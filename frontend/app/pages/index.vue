@@ -37,14 +37,19 @@ const navigateToConstructor = () => {
         style="animation-delay: 0.15s;"
       />
       <img
+        src="/hero_text_without_i.svg"
+        alt="КРИЦКИЙ"
+        class="relative z-[2] w-full h-auto animate-wordmark-in hidden lg:block"
+      />
+      <img
         src="/hero_text.svg"
         alt="КРИЦКИЙ"
-        class="relative z-[2] w-full h-auto animate-wordmark-in"
+        class="relative z-[2] w-full h-auto animate-wordmark-in lg:hidden"
       />
       <img
         src="/upper_i.svg"
         alt=""
-        class="absolute right-[35px] top-0 w-[30px] h-auto z-[4] pointer-events-none opacity-0 animate-accent-in"
+        class="absolute right-[35px] top-0 w-[30px] h-auto z-[4] pointer-events-none opacity-0 animate-accent-in hidden lg:block "
       />
     </div>
 
