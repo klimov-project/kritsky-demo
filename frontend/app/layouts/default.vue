@@ -25,13 +25,8 @@ watch(
 );
 
 const isIndexPage = computed(() => route.path === '/');
-const isTestPage = computed(
-  () => route.path === '/new_test' || route.path === '/author-variant',
-);
 const hasBackgroundLayer = computed(() => isIndexPage.value);
-const hasTransparentShell = computed(
-  () => hasBackgroundLayer.value || isTestPage.value,
-);
+const hasTransparentShell = computed(() => hasBackgroundLayer.value);
 </script>
 
 <template>
@@ -41,9 +36,9 @@ const hasTransparentShell = computed(
       { 'relative overflow-hidden': hasBackgroundLayer },
     ]"
   >
-    <!-- Background Layer for Home -->
+    <!-- Background Layer --- Fixed -->
     <div
-      v-if="hasBackgroundLayer"
+      v-if="isIndexPage"
       class="fixed inset-0 bg-center bg-no-repeat opacity-[0.02] pointer-events-none"
       style="background-image: url('/page_bg.svg'); background-size: auto;"
       aria-hidden="true"
@@ -52,9 +47,7 @@ const hasTransparentShell = computed(
     <div
       :class="[
         'w-full min-h-screen flex flex-col relative',
-        hasTransparentShell
-          ? 'bg-transparent z-10'
-          : 'bg-[var(--home-color-bg)]',
+        hasTransparentShell ? 'bg-transparent z-10' : 'bg-default',
       ]"
     >
       <!-- Header -->
@@ -81,19 +74,22 @@ const hasTransparentShell = computed(
           >
             <NuxtLink
               to="/new_test"
-              class="nav-link-animated font-serif text-[18px] uppercase"
-              >Конструктор</NuxtLink
+              class="nav-link-animated text-[#333] font-serif text-[18px] uppercase"
             >
+              Конструктор
+            </NuxtLink>
             <NuxtLink
               to="/author-variant"
-              class="nav-link-animated font-serif text-[18px] uppercase"
-              >Вариант недели</NuxtLink
+              class="nav-link-animated text-[#333] font-serif text-[18px] uppercase"
             >
+              Вариант недели
+            </NuxtLink>
             <NuxtLink
               to="/shop"
-              class="nav-link-animated font-serif text-[18px] uppercase"
-              >Магазин</NuxtLink
+              class="nav-link-animated text-[#333] font-serif text-[18px] uppercase"
             >
+              Магазин
+            </NuxtLink>
           </nav>
 
           <!-- Desktop Actions -->
@@ -337,6 +333,19 @@ const hasTransparentShell = computed(
 </template>
 
 <style scoped lang="scss">
+.bg-default {
+  position: relative;
+}
+
+.bg-default:before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background: url('/periya-full-x2-compress.svg') no-repeat 0 159px / 100%;
+  opacity: 0.02;
+}
 .icon-list::before {
   content: '📋';
 }

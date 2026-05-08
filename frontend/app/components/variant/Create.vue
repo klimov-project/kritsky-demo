@@ -114,7 +114,7 @@ const getTaskNumber = (key: string) => {
   <!-- Sidebar -->
   <VariantSidebar />
   <!-- Page Header -->
-  <div class="max-w-6xl mx-auto px-4 py-4">
+  <div class="max-w-6xl w-full bg-white rounded-[10px] mb-3 p-4">
     <VariantFilters
       :works="works"
       :selected-work-id="selectedWorkId"

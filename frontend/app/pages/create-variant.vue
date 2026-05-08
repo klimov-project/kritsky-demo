@@ -29,7 +29,7 @@ if (import.meta.client && !kbStore.hasData) {
 </script>
 
 <template>
-  <div class="w-full max-w-[956px] text-[#333333] mt-7">
+  <div class="w-full max-w-[956px] text-[#333333] mt-8">
     <div
       class="w-full bg-white rounded-[10px] flex justify-center items-center p-5 mb-3"
     >
@@ -41,7 +41,7 @@ if (import.meta.client && !kbStore.hasData) {
       <h2 class="font-normal text-xl leading-7">Часть 1</h2>
     </div>
   </div>
-  <div class="relative min-h-screen bg-gray-50 w-full max-w-[956px]">
+  <div class="relative min-h-screen w-full max-w-[956px]">
     <VariantCreate />
   </div>
 </template>

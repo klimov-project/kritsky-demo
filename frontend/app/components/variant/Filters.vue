@@ -36,16 +36,14 @@ const selectedExcerptId = computed({
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div>
-      <label
-        class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2"
-      >
+  <div class="space-y-4 grid grid-cols-1 md:grid-cols-2">
+    <div class="w-full text-[#333333]">
+      <label class="block text-xs font-medium uppercase tracking-wider mb-2">
         Произведение
       </label>
       <select
         v-model="selectedWorkId"
-        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="w-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <option value="">Все произведения</option>
         <option v-for="work in works" :key="work.id" :value="work.id">
@@ -54,7 +52,7 @@ const selectedExcerptId = computed({
       </select>
     </div>
 
-    <div v-if="selectedWork">
+    <div>
       <label
         class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2"
       >
@@ -62,7 +60,7 @@ const selectedExcerptId = computed({
       </label>
       <select
         v-model="selectedChapter"
-        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="w-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <option value="">Все главы</option>
         <option
@@ -75,7 +73,7 @@ const selectedExcerptId = computed({
       </select>
     </div>
 
-    <div>
+    <div class="md:col-span-2">
       <label
         class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2"
       >
@@ -83,7 +81,7 @@ const selectedExcerptId = computed({
       </label>
       <select
         v-model="selectedExcerptId"
-        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="w-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <option value="">Выберите отрывок</option>
         <option
