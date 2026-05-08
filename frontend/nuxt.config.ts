@@ -10,10 +10,10 @@ export default defineNuxtConfig({
       prerender: true,
       swr: 300,
     },
-    '/create-variant': {
-      prerender: true,
-      swr: 300,
-    },
+    // '/create-variant': {
+    //   prerender: true,
+    //   swr: 300,
+    // },
     '/api/knowledge-base': {
       swr: 120,
     },
@@ -24,10 +24,9 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     // Server-only runtime config (can be overridden by NUXT_API_BACKEND_BASE)
-    apiBackendBase: 'http://localhost:8000',
+    apiBackendUrl: 'http://localhost:8000/api',
     public: {
-      // Shared public runtime config (can be overridden by NUXT_PUBLIC_API_BASE)
-      apiBase: '/api',
+      apiUrl: '/api',
     },
   },
 

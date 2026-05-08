@@ -15,7 +15,10 @@ export default defineEventHandler(async () => {
   }
 
   const config = useRuntimeConfig();
-  const apiUrl = `${config.apiBackendBase}/api/knowledge-base`;
+
+  console.log('knowledge-base.get.ts `/api/knowledge-base `  ');
+  console.log('config.apiBackendUrl', config.apiBackendUrl);
+  const apiUrl = `${config.apiBackendUrl}/knowledge-base`;
 
   const payload = await $fetch<KnowledgeBasePayload>(apiUrl);
   const fetchedAt = new Date().toISOString();

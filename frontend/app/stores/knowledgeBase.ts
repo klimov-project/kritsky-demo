@@ -1,10 +1,9 @@
-import { cachedFetch } from '~/utils/cached-fetch';
-
 export interface KnowledgeBasePayload {
   works?: Array<Record<string, any>>;
   poets?: Array<Record<string, any>>;
   stats?: Record<string, any>;
   fetchedAt?: string;
+  settings: Record<string, any>;
 }
 
 export const useKnowledgeBaseStore = defineStore('knowledgeBase', {
@@ -13,6 +12,7 @@ export const useKnowledgeBaseStore = defineStore('knowledgeBase', {
     works: [] as Array<Record<string, any>>,
     poets: [] as Array<Record<string, any>>,
     stats: {} as Record<string, any>,
+    settings: {} as Record<string, any>,
     lastFetchedAt: null as string | null,
     isLoading: false,
     error: null as string | null,
@@ -38,6 +38,7 @@ export const useKnowledgeBaseStore = defineStore('knowledgeBase', {
       this.poets = Array.isArray(payload.poets) ? payload.poets : [];
       this.stats = payload.stats ?? {};
       this.lastFetchedAt = payload.fetchedAt ?? new Date().toISOString();
+      this.settings = payload.settings || {};
     },
 
     async fetchKnowledgeBase(force = false) {
@@ -50,13 +51,12 @@ export const useKnowledgeBaseStore = defineStore('knowledgeBase', {
 
       try {
         const config = useRuntimeConfig();
-        const apiUrl = import.meta.server
-          ? `${config.apiBackendBase}/api/knowledge-base`
-          : '/api/knowledge-base';
+        console.log('fetchKnowledgeBase `/api/knowledge-base `  ');
+        console.log('config.public.apiUrl', config.public.apiUrl);
+        const kbUrl = `${config.public.apiUrl}/knowledge-base`;
 
         // Temporarily disable caching for debugging
-        console.log('Fetching knowledge base from:', apiUrl);
-        const payload = await $fetch<KnowledgeBasePayload>(apiUrl);
+        const payload = await $fetch<KnowledgeBasePayload>(kbUrl);
         console.log('Fetched payload:', {
           works: payload?.works?.length,
           poets: payload?.poets?.length,

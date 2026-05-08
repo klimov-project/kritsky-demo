@@ -1,74 +1,236 @@
 <script setup lang="ts">
 import { useKnowledgeBase } from '~/composables/useKnowledgeBase';
+const config = useRuntimeConfig();
 
-definePageMeta({
-  layout: 'default',
+const apiUrl = import.meta.server ? config.apiBackendUrl : config.public.apiUrl;
+
+// Fetch knowledge base
+const { kbStore, loadKnowledgeBase } = useKnowledgeBase();
+loadKnowledgeBase();
+const { isLoading: kbPending, error: kbError } = storeToRefs(kbStore);
+// Fetch pregenerated variant
+const variantUrl = `${apiUrl}/variants/runtime/pregenerated`;
+
+const {
+  data: variantData,
+  pending: variantPending,
+  error: variantError,
+  refresh: refreshVariant,
+} = await useFetch<any>(variantUrl, {
+  server: false,
+  lazy: true,
+  cache: 'no-store',
 });
 
-const { kbStore, loadKnowledgeBase } = useKnowledgeBase();
-await loadKnowledgeBase();
+// State
+const selectedWorkId = ref('');
+const selectedExcerptId = ref('');
+const selectedChapter = ref('');
+const showAnswers = ref<Record<string, boolean>>({});
+const isRefreshing = ref(false);
+// Computed
+const works = computed(() => kbStore.works || []);
+const poets = computed(() => kbStore.poets || []);
+const variant = computed(() => variantData.value?.variant || null);
+const isLoading = computed(() => kbPending.value || variantPending.value);
+const hasError = computed(() => kbError.value || variantError.value);
 
-const totalWorks = computed(() => kbStore.works.length);
-const totalPoets = computed(() => kbStore.poets.length);
-const hasError = computed(() => !!kbStore.error);
+const selectedWork = computed(() => {
+  return works.value.find((w: any) => w.id === selectedWorkId.value);
+});
+
+const excerptChapters = computed(() => {
+  if (!selectedWork.value) return [];
+  // Simple implementation - extract unique chapters from excerpts
+  const chapters = new Set<string>();
+  selectedWork.value.excerpts?.forEach((excerpt: any) => {
+    if (excerpt.chapter) chapters.add(excerpt.chapter);
+  });
+  return Array.from(chapters);
+});
+
+const excerptDropdownOptions = computed(() => {
+  if (!selectedWork.value) return [];
+  return (
+    selectedWork.value.excerpts?.map((excerpt: any, i: number) => ({
+      value: excerpt.id,
+      label: `Отрывок ${i + 1}${
+        excerpt.chapter ? ` (${excerpt.chapter})` : ''
+      }`,
+    })) || []
+  );
+});
+
+// Task arrays
+const shortTasks = ['task1', 'task2', 'task3', 'task4', 'task5'];
+const longTasks = [
+  'task6',
+  'task7',
+  'task8',
+  'task9',
+  'task10',
+  'task11',
+  'task12',
+  'task13',
+  'task14',
+  'task15',
+  'task16',
+];
+
+// Methods
+const toggleAnswer = (taskKey: string) => {
+  showAnswers.value[taskKey] = !showAnswers.value[taskKey];
+};
+
+const handleRefreshVariant = async () => {
+  isRefreshing.value = true;
+  try {
+    await refreshVariant();
+  } finally {
+    isRefreshing.value = false;
+  }
+};
+
+const refreshBlock1 = async () => {
+  // Stub - refresh excerpt and tasks 1-5
+  await handleRefreshVariant();
+};
+
+const formatAnswer = (answer: any) => {
+  if (Array.isArray(answer)) {
+    return answer.join(', ');
+  }
+  return answer || 'Нет ответа';
+};
+
+const getTaskNumber = (key: string) => {
+  return key.replace('task', '');
+};
 </script>
 
 <template>
-  <section class="min-h-screen bg-slate-50 py-14">
-    <div class="max-w-5xl mx-auto px-4">
-      <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
-        <div class="px-8 py-10 sm:px-12">
-          <h1 class="text-4xl font-bold text-slate-900 mb-4">
-            Создать вариант ЕГЭ
-          </h1>
-          <p class="text-lg text-slate-600 mb-8">
-            Быстрый доступ к базе знаний и оптимизированная загрузка материала.
-          </p>
-
-          <div class="grid gap-4 sm:grid-cols-2 mb-8">
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-              <p class="text-sm uppercase tracking-[0.18em] text-slate-400 mb-2">
-                Произведений в базе
-              </p>
-              <p class="text-5xl font-semibold text-slate-900">{{ totalWorks }}</p>
-            </div>
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-              <p class="text-sm uppercase tracking-[0.18em] text-slate-400 mb-2">
-                Поэтов в базе
-              </p>
-              <p class="text-5xl font-semibold text-slate-900">{{ totalPoets }}</p>
-            </div>
-          </div>
-
-          <div v-if="hasError" class="rounded-2xl border border-red-200 bg-red-50 p-6 mb-6 text-red-700">
-            Не удалось загрузить базу знаний. Попробуйте обновить страницу.
-          </div>
-
-          <div class="space-y-4">
-            <p class="text-slate-600 leading-7">
-              Используйте данные из единого кеша для создания новых вариантов без лишних повторных запросов.
-            </p>
-            <p class="text-slate-600 leading-7">
-              Если данные устарели, вы можете очистить кеш в админке, и база будет обновлена автоматически.
+  <div class="min-h-screen bg-gray-50">
+    <!-- Page Header -->
+    <div class="bg-white border-b">
+      <div class="max-w-6xl mx-auto px-4 py-4">
+        <div
+          class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+        >
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">
+              Конструктор вариантов ЕГЭ
+            </h1>
+            <p class="text-sm text-gray-600 mt-1">
+              Генерируйте уникальные варианты для подготовки к экзамену
             </p>
           </div>
-
-          <div class="mt-10 flex flex-col sm:flex-row gap-4">
-            <NuxtLink
-              to="/public-variant"
-              class="inline-flex items-center justify-center rounded-full bg-sky-600 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-sky-500/20 hover:bg-sky-700 transition"
+          <div class="flex gap-3">
+            <button
+              @click="handleRefreshVariant"
+              :disabled="isRefreshing || isLoading"
+              class="bg-[#bd5343] hover:bg-[#ab4a3c] text-white px-4 py-2 rounded-[50px] font-medium transition flex items-center gap-2 uppercase"
             >
-              Сгенерировать вариант
-            </NuxtLink>
-            <NuxtLink
-              to="/admin/materials"
-              class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-8 py-4 text-base font-semibold text-slate-900 hover:bg-slate-100 transition"
-            >
-              Управление базой знаний
-            </NuxtLink>
+              <span v-if="isRefreshing" class="animate-spin">↻</span>
+              {{ isRefreshing ? 'Генерация...' : 'Новый вариант' }}
+            </button>
           </div>
         </div>
       </div>
     </div>
-  </section>
+
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto px-4 py-6">
+      <div class="flex gap-6">
+        <!-- Sidebar -->
+        <NewTestSidebar
+          :works="works"
+          :selected-work-id="selectedWorkId"
+          :selected-chapter="selectedChapter"
+          :selected-excerpt-id="selectedExcerptId"
+          :selected-work="selectedWork"
+          :excerpt-chapters="excerptChapters"
+          :excerpt-dropdown-options="excerptDropdownOptions"
+          :is-loading="isLoading"
+          @update:selected-work-id="selectedWorkId = $event"
+          @update:selected-chapter="selectedChapter = $event"
+          @update:selected-excerpt-id="selectedExcerptId = $event"
+          @refresh-block-1="refreshBlock1"
+        />
+
+        <!-- Main Variant Content -->
+        <div class="flex-1 min-w-0">
+          <!-- Loading State -->
+          <div v-if="isLoading" class="text-center py-20">
+            <div
+              class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+            ></div>
+            <p class="mt-4 text-gray-600">Подготовка варианта...</p>
+          </div>
+
+          <!-- Error State -->
+          <div
+            v-else-if="hasError"
+            class="bg-red-50 border border-red-200 rounded-lg p-6"
+          >
+            <p class="text-red-700">
+              Ошибка загрузки данных. Пожалуйста, попробуйте позже.
+            </p>
+            <button
+              @click="refreshVariant()"
+              class="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
+            >
+              Повторить загрузку
+            </button>
+          </div>
+
+          <!-- Empty State -->
+          <div
+            v-else-if="!variant"
+            class="bg-white rounded-lg shadow p-6 text-center"
+          >
+            <p class="text-gray-600">
+              Нет данных для отображения. Нажмите "Новый вариант" для генерации.
+            </p>
+          </div>
+
+          <!-- Variant Content -->
+          <div v-else class="space-y-8">
+            <!-- Variant Header -->
+            <NewTestVariantHeader />
+
+            <!-- Excerpt Text -->
+            <NewTestExcerpt
+              :excerpt-text="variant.excerpt?.text"
+              :excerpt-author="variant.excerpt?.author"
+              :excerpt-work="variant.excerpt?.work"
+            />
+
+            <!-- Tasks Section -->
+            <NewTestTaskList
+              title="Задания 1–5"
+              :task-keys="shortTasks"
+              :variant="variant"
+              :show-answers="showAnswers"
+              @toggle-answer="toggleAnswer"
+            />
+
+            <!-- Part 2 -->
+            <NewTestTaskList
+              title="Часть 2. Задания с развёрнутым ответом"
+              :task-keys="longTasks"
+              :variant="variant"
+              :show-answers="showAnswers"
+              @toggle-answer="toggleAnswer"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
+
+<style>
+.prose p {
+  margin-bottom: 0.5rem;
+}
+</style>

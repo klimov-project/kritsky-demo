@@ -14,7 +14,7 @@ const formattedCount = computed(() => {
 });
 
 const navigateToConstructor = () => {
-  navigateTo('/new_test');
+  navigateTo('/create-variant');
 };
 </script>
 

@@ -17,8 +17,8 @@ const fetchWithFallback = async (url: string, options = {}) => {
 
 // На клиенте используем относительный путь, на сервере - абсолютный URL бэкенда
 const apiUrl = import.meta.server
-  ? `${config.backendUrl}/api/knowledge-base`
-  : '/api/knowledge-base';
+  ? `${config.apiBackendUrl}/knowledge-base`
+  : `${config.public.apiUrl}/knowledge-base`;
 
 console.log('useFetch `/api/knowledge-base `  ');
 console.log('  apiUrl: ', apiUrl);
