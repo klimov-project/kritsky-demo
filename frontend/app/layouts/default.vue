@@ -60,7 +60,10 @@ const hasTransparentShell = computed(
       <!-- Header -->
       <header class="relative z-40">
         <div
-          class="mx-auto max-w-[1440px] w-full px-4 lg:px-8 mt-[30px] flex items-center min-h-[43px]"
+          :class="[
+            'mx-0 w-full px-4 lg:px-8 pt-[14px] flex items-center',
+            isIndexPage ? 'min-h-[86px]' : 'min-h-[100px] py-[13.5px] bg-white',
+          ]"
         >
           <NuxtLink to="/" class="inline-flex w-[179px] h-[43px] flex-shrink-0">
             <img
@@ -241,7 +244,7 @@ const hasTransparentShell = computed(
 
       <!-- Main Content -->
       <main
-        class="hero-content mx-auto max-w-[1440px] w-full px-3 lg:px-0 flex-1 flex flex-col"
+        class="min-h-screen mx-auto max-w-[1440px] w-full px-3 lg:px-0 flex-1 flex flex-col flex items-center justify-center"
       >
         <slot />
       </main>
@@ -298,7 +301,9 @@ const hasTransparentShell = computed(
                 <NuxtLink to="/terms">Пользовательское соглашение</NuxtLink>
                 <NuxtLink to="/privacy">Политика конфиденциальности</NuxtLink>
               </div>
-              <div class="text-right text-[12px] leading-[1.9] lg:leading-[1.35]">
+              <div
+                class="text-right text-[12px] leading-[1.9] lg:leading-[1.35]"
+              >
                 <p>ИП Крицкий Роман Дмитриевич</p>
                 <p>ИНН: 772796119977</p>
                 <p>ОГРНИП: 325774600403322</p>
@@ -332,9 +337,6 @@ const hasTransparentShell = computed(
 </template>
 
 <style scoped lang="scss">
-.hero-content {
-  min-height: 100vh;
-}
 .icon-list::before {
   content: '📋';
 }
