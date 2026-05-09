@@ -1,6 +1,23 @@
 <script setup lang="ts">
+interface Work {
+  id: string
+  age18: boolean
+  title: string
+  author: string
+  workId: string
+  authorId: string
+  externalTags: string
+  internalTags: string
+  exercisesCount: {
+    task1: number
+    task2: number
+    task3: number
+  }
+  excerptsCount: number
+}
+
 interface Props {
-  works: any[]
+  works: Work[]
   selectedWorkId: string
   selectedChapter: string
   selectedExcerptId: string
@@ -33,76 +50,116 @@ const selectedExcerptId = computed({
   get: () => props.selectedExcerptId,
   set: (value) => emit('update:selected-excerpt-id', value)
 })
+
+// Преобразуем works в формат для USelect
+const workOptions = computed(() => {
+  return props.works.map(work => ({
+    value: work.id,
+    label: work.title,
+    // Дополнительно можно добавить автора
+    author: work.author,
+    // Можно использовать слот для кастомного отображения
+  }))
+})
+
+// Для отображения автора в селекте (если нужно)
+const authorOptions = computed(() => {
+  // Получаем уникальных авторов из works
+  const uniqueAuthors = [...new Set(props.works.map(work => work.author))]
+  return uniqueAuthors.map(author => ({
+    value: author,
+    label: author,
+  }))
+})
 </script>
 
 <template>
-  <div class="space-y-4 grid grid-cols-1 md:grid-cols-2">
-    <div class="w-full text-[#333333]">
-      <label class="block text-xs font-medium uppercase tracking-wider mb-2">
-        Произведение
-      </label>
-      <select
-        v-model="selectedWorkId"
-        class="w-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Все произведения</option>
-        <option v-for="work in works" :key="work.id" :value="work.id">
-          {{ work.author }} — {{ work.title }}
-        </option>
-      </select>
-    </div>
-
-    <div>
-      <label
-        class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2"
-      >
-        Глава
-      </label>
-      <select
-        v-model="selectedChapter"
-        class="w-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Все главы</option>
-        <option
-          v-for="(chapter, i) in excerptChapters"
-          :key="chapter"
-          :value="chapter"
+  <div class="p-6 rounded-lg">
+    <div class="space-y-4 grid grid-cols-1 md:grid-cols-2">
+      <!-- Произведение -->
+      <div class="w-full">
+        <label
+          class="block text-base font-medium uppercase tracking-wider mb-2 text-toned"
         >
-          {{ i + 1 }}. {{ chapter }}
-        </option>
-      </select>
-    </div>
-
-    <div class="md:col-span-2">
-      <label
-        class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2"
-      >
-        Отрывок
-      </label>
-      <select
-        v-model="selectedExcerptId"
-        class="w-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Выберите отрывок</option>
-        <option
-          v-for="excerpt in excerptDropdownOptions"
-          :key="excerpt.value"
-          :value="excerpt.value"
+          Произведение
+        </label>
+        <USelect
+          v-model="selectedWorkId"
+          :items="workOptions"
+          option-attribute="label"
+          value-attribute="value"
+          placeholder="Все произведения"
+          class="w-full"
         >
-          {{ excerpt.label }}
-        </option>
-      </select>
-    </div>
-  </div>
+          <!-- Кастомное отображение элемента в селекте -->
 
-  <!-- Actions -->
-  <div class="pt-4 border-t mt-4">
-    <button
-      @click="$emit('refresh-block-1')"
-      :disabled="isLoading"
-      class="w-full bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition text-sm"
-    >
-      Обновить отрывок и задания 1–5
-    </button>
+          <!-- Кастомное отображение выбранного элемента -->
+          <template #selected="{ selected }">
+            <div class="flex items-center justify-between w-full">
+              <span>{{ selected?.label || 'Все произведения' }}</span>
+              <span
+                v-if="selected?.author"
+                class="text-base text-gray-400 ml-2"
+              >
+                {{ selected.author }}
+              </span>
+            </div>
+          </template>
+        </USelect>
+      </div>
+
+      <!-- Глава -->
+      <div>
+        <label
+          class="block text-base font-medium text-toned uppercase tracking-wider mb-2"
+        >
+          Глава
+        </label>
+        <USelect
+          v-model="selectedChapter"
+          :items="excerptChapters"
+          placeholder="Все главы"
+          class="w-full"
+        />
+      </div>
+
+      <!-- Отрывок -->
+      <div class="md:col-span-2">
+        <label
+          class="block text-base font-medium text-toned uppercase tracking-wider mb-2"
+        >
+          Отрывок
+        </label>
+        <USelect
+          v-model="selectedExcerptId"
+          :items="excerptDropdownOptions"
+          option-attribute="label"
+          value-attribute="value"
+          placeholder="Выберите отрывок"
+          class="w-full"
+        />
+      </div>
+    </div>
+
+    <!-- Отладочная информация (можно удалить) -->
+    <div v-if="false" class="mt-4 text-base text-gray-500">
+      <div>Всего произведений: {{ works.length }}</div>
+      <div>Выбранное произведение: {{ selectedWorkId }}</div>
+      <div v-if="selectedWork">Автор: {{ selectedWork.author }}</div>
+    </div>
+
+    <!-- Кнопка действия -->
+    <div class="pt-6 mt-6 border-t border-default">
+      <UButton
+        @click="$emit('refresh-block-1')"
+        :loading="isLoading"
+        :disabled="isLoading"
+        block
+        size="lg"
+        class="rounded-[50px]"
+      >
+        Обновить отрывок и задания 1–5
+      </UButton>
+    </div>
   </div>
 </template>

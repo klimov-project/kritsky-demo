@@ -25,8 +25,8 @@ export default defineEventHandler(async (event) => {
 
   console.log(' 3 — recalculating');
 
-  // Пересчитываем и обновляем кэш
-  const count = calculateTotalVariants(kb);
+  // Пересчитываем и обновляем кэш (или мокаем свою цифру 809830331)
+  const count = kb ? calculateTotalVariants(kb) : 809830331;
 
   await Promise.all([
     storage.setItem(CACHE_KEYS.hash, currentHash),

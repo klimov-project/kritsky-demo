@@ -1,0 +1,92 @@
+export const uiConfig = {
+  select: {
+    slots: {
+      root: 'w-full',
+      base: [
+        'w-full',
+        'min-h-[50px]',
+        'border',
+        'border-[#cfcfcf]',
+        'rounded-[10px]',
+        'py-[13px]',
+        'pl-[20px]',
+        'pr-[42px]',
+        'bg-white',
+        'text-[#333]',
+        'text-[14px]',
+        'leading-[1.2]',
+        'appearance-none',
+        'outline-none',
+        'duration-0',
+        'transition-[border-color]',
+        'ease-linear',
+        'focus:border-[#bd5343]',
+        'focus:ring-0',
+      ],
+    },
+    defaultVariants: {
+      size: 'md',
+      color: 'white',
+    },
+  },
+
+  input: {
+    slots: {
+      root: 'w-full',
+      base: [
+        'h-[50px]',
+        'rounded-[10px]',
+        'border',
+        'border-[#cfcfcf]',
+        'px-[25px]',
+        'text-[16px]',
+        'text-[#333]',
+        'bg-white',
+        'outline-none',
+        'transition-[border-color]',
+        'duration-200',
+        'ease-linear',
+        'focus:border-[#bdbdbd]',
+        'focus:ring-0',
+        'file:bg-transparent',
+      ],
+    },
+    defaultVariants: {
+      size: 'md',
+      color: 'white',
+    },
+  },
+
+  modal: {
+    slots: {
+      overlay: 'bg-[#333]/80',
+      base: ['relative'],
+      body: 'p-0',
+      inner: 'px-[50px] py-[70px]',
+      title: [
+        'm-0',
+        'mb-[12px]',
+        'text-[40px]',
+        'leading-[1]',
+        'font-normal',
+        'text-[#333]',
+      ],
+      description: ['m-0', 'text-[#333]', 'text-[20px]', 'leading-[1.25]'],
+      close: [
+        'absolute',
+        'top-[-34px]',
+        'right-[-24px]',
+        'text-white',
+        'cursor-pointer',
+        'p-0',
+        'leading-[1]',
+        'transition-opacity',
+        'duration-300',
+        'ease-linear',
+      ],
+    },
+    defaultVariants: {
+      overlay: false,
+    },
+  },
+};

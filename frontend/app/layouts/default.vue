@@ -32,7 +32,7 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
 <template>
   <div
     :class="[
-      'min-h-screen bg-[var(--home-color-bg)]',
+      'min-h-screen',
       { 'relative overflow-hidden': hasBackgroundLayer },
     ]"
   >
@@ -47,7 +47,7 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
     <div
       :class="[
         'w-full min-h-screen flex flex-col relative',
-        hasTransparentShell ? 'bg-transparent z-10' : 'bg-default',
+        hasTransparentShell ? 'bg-transparent z-10' : '',
       ]"
     >
       <!-- Header -->

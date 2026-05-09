@@ -2,7 +2,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   ssr: true,
-  css: ['~/assets/styles/main.scss'],
+  css: ['~/assets/styles/main.scss', '~/assets/styles/nuxt-ui.css'],
 
   // Prerendering configuration
   routeRules: {
@@ -48,9 +48,9 @@ export default defineNuxtConfig({
 
   vite: {
     optimizeDeps: {
-      include: ['@vue/devtools-core', '@vue/devtools-kit'],
+      include: ['@vue/devtools-core', '@vue/devtools-kit', 'pinia'],
     },
   },
 
-  modules: ['@nuxtjs/tailwindcss', 'nuxt-auth-utils', '@pinia/nuxt'],
+  modules: ['nuxt-auth-utils', '@pinia/nuxt', '@nuxt/ui'],
 });
