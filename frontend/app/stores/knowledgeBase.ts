@@ -17,18 +17,15 @@ export interface KnowledgeBasePayload {
 export const useKnowledgeBaseStore = defineStore('knowledgeBase', {
   state: () => ({
     knowledgeBase: null as KnowledgeBasePayload | null,
-    works: [] as Array<Record<string, any>>,
-    poets: [] as Array<Record<string, any>>,
     stats: {} as Record<string, any>,
     settings: {} as Record<string, any>,
-    lastFetchedAt: null as string | null,
-    isLoading: false,
-    error: null as string | null,
+    isHydrated: false,
     lastKnownHash: null as string | null,
   }),
 
   getters: {
-    hasData: (state) => !!state.knowledgeBase,
+    works: (state) => state.knowledgeBase?.works || [],
+    poets: (state) => state.knowledgeBase?.poets || [],
     worksCount: (state) => state.works.length,
     poetsCount: (state) => state.poets.length,
     variantsCount: (state) =>
@@ -44,60 +41,17 @@ export const useKnowledgeBaseStore = defineStore('knowledgeBase', {
 
   actions: {
     hydrate(payload: KnowledgeBasePayload) {
-      if (!payload) {
+      if (!payload) return;
+      if (payload._metadata?.hash === this.lastKnownHash) {
+        console.log('Хеш не изменился, пропускаем гидрацию');
         return;
       }
 
-      // Полный payload - обновляем стор
       this.knowledgeBase = payload;
-      this.works = Array.isArray(payload.works) ? payload.works : [];
-      this.poets = Array.isArray(payload.poets) ? payload.poets : [];
+      this.isHydrated = true;
       this.stats = payload.stats ?? {};
-      this.lastFetchedAt =
-        payload._metadata?.fetchedAt ?? new Date().toISOString();
       this.settings = payload.settings || {};
-
-      if (payload._metadata?.hash) {
-        this.lastKnownHash = payload._metadata?.hash;
-        console.log('Updated store with payload, hash:', this.lastKnownHash);
-      }
-    },
-
-    async fetchKnowledgeBase(force = false) {
-      if (this.hasData && !force) {
-        console.log('Using existing store data');
-        return this.knowledgeBase;
-      }
-
-      this.isLoading = true;
-      this.error = null;
-
-      try {
-        const config = useRuntimeConfig();
-        const kbUrl = `${config.public.apiUrl}/knowledge-base`;
-
-        const response = await $fetch<KnowledgeBasePayload>(kbUrl);
-
-        // const transformedPayload = transformToKnowledgeBasePayload(response);
-        // this.hydrate(transformedPayload);
-        console.log('Full payload received, hydrating store');
-        this.hydrate(response);
-
-        console.log('Hydrated store:', {
-          works: this.works.length,
-          poets: this.poets.length,
-          hash: this.lastKnownHash,
-        });
-
-        return response;
-      } catch (error) {
-        console.error('Error fetching knowledge base:', error);
-        this.error =
-          (error as Error)?.message || 'Не удалось загрузить базу знаний.';
-        return null;
-      } finally {
-        this.isLoading = false;
-      }
+      this.lastKnownHash = payload._metadata?.hash || null;
     },
   },
 });
