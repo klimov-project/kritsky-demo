@@ -1,9 +1,8 @@
 import { useKnowledgeBaseStore } from '~/stores/knowledgeBase';
 
 export default defineNuxtPlugin(() => {
-  if (import.meta.client) {
-    return;
-  }
+  if (import.meta.client) return;
+  console.log('knowledge-base.server');
 
   //   const route = useRoute();
   //   if (route?.path !== '/create-variant') {

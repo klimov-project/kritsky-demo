@@ -1,9 +1,8 @@
 import { useKnowledgeBaseStore } from '~/stores/knowledgeBase';
 
 export default defineNuxtPlugin(() => {
-  if (!process.client) {
-    return;
-  }
+  if (!import.meta.client) return;
+  console.log('knowledge-base.client');
 
   const kbStore = useKnowledgeBaseStore();
   const storageKey = 'kb-store-cache';
@@ -16,6 +15,7 @@ export default defineNuxtPlugin(() => {
 
       if (serialized && !kbStore.hasData) {
         const payload = JSON.parse(serialized) as Record<string, any>;
+        console.log('Restore knowledge base cache on client');
         kbStore.hydrate(payload);
       }
     } catch (error) {
