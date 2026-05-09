@@ -5,11 +5,9 @@ const { pending, error, refresh, variantsCount, store } = useKnowledgeBase();
 <template>
   <div class="max-w-4xl mx-auto p-6 bg-gray-50 min-h-screen">
     <pre>
-        pending {{ pending }},
-        error {{ error }},
-        refresh {{ refresh }},
+        pending {{ pending }}, 
         variantsCount: {{ variantsCount }},
-        store: {{ store }},
+        store.isStale: {{ store.isStale }},
     </pre>
   </div>
 </template>

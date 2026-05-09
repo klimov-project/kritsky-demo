@@ -46,7 +46,6 @@ export function useKnowledgeBase() {
 
   // Вычисляемые значения на основе данных
   const variantsCount = computed(() => {
-    console.log('data.value', data.value);
     return data.value?._metadata?.computed?.variantsCount;
   });
 

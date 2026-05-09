@@ -119,7 +119,7 @@ function calculateBlockVariants(
 // Функция подсчёта вариаций на главной странице
 export function calculateTotalVariants(kb: any): number {
   let total = 0;
-  if (!kb) return 19999999999;
+  if (!kb.works) return 19999999999;
 
   for (const work of kb.works) {
     for (const excerpt of work.excerpts) {
