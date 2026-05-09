@@ -83,45 +83,4 @@ const navigateToConstructor = () => {
     </div>
   </section>
 </template>
-
-<style scoped>
-@keyframes wordmark-in {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes decor-in {
-  from {
-    opacity: 0;
-    transform: translateY(-22px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes accent-in {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.animate-wordmark-in {
-  animation: wordmark-in 0.95s cubic-bezier(0.18, 0.9, 0.2, 1) both;
-}
-.animate-decor-in {
-  animation: decor-in 0.95s cubic-bezier(0.18, 0.9, 0.2, 1) both;
-}
-.animate-accent-in {
-  animation: accent-in 0.7s ease 0.45s forwards;
-}
-</style>
+ 
