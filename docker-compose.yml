@@ -17,9 +17,9 @@ services:
   redis:
     image: redis:7-alpine
     restart: always
-    command: [ "redis-server", "--appendonly", "yes" ]
+    command: ["redis-server", "--appendonly", "yes"]
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 3s
       timeout: 3s
       retries: 10
@@ -43,7 +43,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -54,14 +54,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      # args:
-      #   NUXT_API_BACKEND_BASE: http://localhost:8000
-      #   NUXT_PUBLIC_API_BASE: http://localhost:8000/api
     environment:
-      # NUXT_API_BACKEND_BASE: http://backend:8000
-      # NUXT_PUBLIC_API_BASE: http://backend:8000/api
-      - NUXT_API_BACKEND_BASE=http://backend:8000
-      - NUXT_PUBLIC_API_BASE=/api
+      REDIS_HOST: ${REDIS_HOST:-redis://redis:6379/0}
+      NUXT_API_BACKEND_BASE: http://backend:8000
+      NUXT_PUBLIC_API_BASE: /api
     restart: always
     depends_on:
       backend:

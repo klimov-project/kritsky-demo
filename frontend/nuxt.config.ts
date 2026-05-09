@@ -8,14 +8,14 @@ export default defineNuxtConfig({
   routeRules: {
     '/': {
       prerender: true,
-      swr: 300,
+      swr: 35,
     },
     // '/create-variant': {
     //   prerender: true,
     //   swr: 300,
     // },
     '/api/knowledge-base': {
-      swr: 120,
+      swr: 35,
     },
   },
 
@@ -41,7 +41,10 @@ export default defineNuxtConfig({
     },
     storage: {
       cache: {
-        driver: 'memory',
+        driver: 'redis',
+        host: process.env.REDIS_HOST,
+        port: 6379,
+        // password: process.env.REDIS_PASSWORD
       },
     },
   },

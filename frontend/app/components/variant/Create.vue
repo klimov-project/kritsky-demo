@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import { useKnowledgeBase } from '~/composables/useKnowledgeBase';
 const config = useRuntimeConfig();
-const { kbStore, loadKnowledgeBase } = useKnowledgeBase();
-if (import.meta.client && !kbStore.hasData) {
-  loadKnowledgeBase().catch((e) => {
-    console.log('check fallback');
-    // Client-side fallback only, server-side loading is handled by the background plugin.
-  });
-}
+const { store: kbStore } = useKnowledgeBase();
 const { isLoading: kbPending, error: kbError } = storeToRefs(kbStore);
 // Fetch pregenerated variant
 const apiUrl = import.meta.server ? config.apiBackendUrl : config.public.apiUrl;

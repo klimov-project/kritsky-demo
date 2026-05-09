@@ -116,12 +116,10 @@ function calculateBlockVariants(
   return availableGeneral + availableCustom || 1;
 }
 
-// --- Главная функция ---
+// Функция подсчёта вариаций на главной странице
 export function calculateTotalVariants(kb: any): number {
   let total = 0;
-  console.log('calculateTotalVariants kb');
-  if (!kb) return 809830331;
-  console.log('calculateTotalVariants kb 2');
+  if (!kb) return 19999999999;
 
   for (const work of kb.works) {
     for (const excerpt of work.excerpts) {

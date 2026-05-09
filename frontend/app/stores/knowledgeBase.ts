@@ -2,10 +2,16 @@ export interface KnowledgeBasePayload {
   works?: Array<Record<string, any>>;
   poets?: Array<Record<string, any>>;
   stats?: Record<string, any>;
-  fetchedAt?: string;
   settings?: Record<string, any>;
-  _hash?: string;
-  _fromCache?: boolean;
+  _metadata?: {
+    hash: string;
+    fetchedAt: string;
+    computed: {
+      variantsCount: number;
+      poetsCount: number;
+      totalEntities: number;
+    };
+  };
 }
 
 export const useKnowledgeBaseStore = defineStore('knowledgeBase', {
@@ -25,6 +31,15 @@ export const useKnowledgeBaseStore = defineStore('knowledgeBase', {
     hasData: (state) => !!state.knowledgeBase,
     worksCount: (state) => state.works.length,
     poetsCount: (state) => state.poets.length,
+    variantsCount: (state) =>
+      state.knowledgeBase?._metadata?.computed?.variantsCount,
+    isStale: (state) => {
+      if (!state.knowledgeBase?._metadata?.fetchedAt) return true;
+      const fetchedTime = new Date(
+        state.knowledgeBase._metadata.fetchedAt,
+      ).getTime();
+      return Date.now() - fetchedTime > 5 * 60 * 1000;
+    },
   },
 
   actions: {
@@ -33,29 +48,18 @@ export const useKnowledgeBaseStore = defineStore('knowledgeBase', {
         return;
       }
 
-      // Проверяем, пришел ли только хеш или полный payload
-      if (payload._fromCache && payload._hash) {
-        console.log('Received hash-only response, using existing store data');
-        // Используем существующие данные в сторе
-        if (!this.knowledgeBase) {
-          console.warn(
-            'No existing data in store and received hash-only response',
-          );
-        }
-        return;
-      }
-
       // Полный payload - обновляем стор
       this.knowledgeBase = payload;
       this.works = Array.isArray(payload.works) ? payload.works : [];
       this.poets = Array.isArray(payload.poets) ? payload.poets : [];
       this.stats = payload.stats ?? {};
-      this.lastFetchedAt = payload.fetchedAt ?? new Date().toISOString();
+      this.lastFetchedAt =
+        payload._metadata?.fetchedAt ?? new Date().toISOString();
       this.settings = payload.settings || {};
 
-      if (payload._hash) {
-        this.lastKnownHash = payload._hash;
-        console.log('Updated store with payload, hash:', payload._hash);
+      if (payload._metadata?.hash) {
+        this.lastKnownHash = payload._metadata?.hash;
+        console.log('Updated store with payload, hash:', this.lastKnownHash);
       }
     },
 
@@ -70,27 +74,14 @@ export const useKnowledgeBaseStore = defineStore('knowledgeBase', {
 
       try {
         const config = useRuntimeConfig();
-        console.log('fetchKnowledgeBase `/api/knowledge-base `');
-        console.log('config.public.apiUrl', config.public.apiUrl);
         const kbUrl = `${config.public.apiUrl}/knowledge-base`;
 
         const response = await $fetch<KnowledgeBasePayload>(kbUrl);
 
-        console.log(
-          'Response type:',
-          response?._fromCache ? 'HASH_ONLY' : 'FULL_PAYLOAD',
-        );
-
-        if (response?._fromCache) {
-          console.log('Using cached data from store');
-          // Данные уже в сторе с предыдущей гидратации
-          return this.knowledgeBase;
-        }
-
-        const transformedPayload = transformToKnowledgeBasePayload(response);
-        this.hydrate(transformedPayload);
-        // console.log('Full payload received, hydrating store');
-        // this.hydrate(response);
+        // const transformedPayload = transformToKnowledgeBasePayload(response);
+        // this.hydrate(transformedPayload);
+        console.log('Full payload received, hydrating store');
+        this.hydrate(response);
 
         console.log('Hydrated store:', {
           works: this.works.length,
@@ -185,9 +176,16 @@ export function transformToKnowledgeBasePayload(
     poets,
     stats: rawPayload.stats || {},
     settings: rawPayload.settings || {},
-    fetchedAt: new Date().toISOString(),
-    _hash: rawPayload._hash || undefined, // Прокидываем хеш, если он есть
-    _fromCache: false, // Явно указываем, что это свежие данные
+    _metadata: {
+      hash: rawPayload._hash || undefined, // Прокидываем хеш, если он есть
+      fetchedAt: new Date().toISOString(),
+      computed: {
+        variantsCount: calculateTotalVariants(rawPayload) || 555555,
+        poetsCount: rawPayload.poets?.length || 0,
+        totalEntities:
+          (rawPayload.works?.length || 0) + (rawPayload.poets?.length || 0),
+      },
+    },
   };
 
   return result;
@@ -215,23 +213,3 @@ function countExcerptTasks(tasks: any): number {
 
   return count;
 }
-
-// Пример использования в вашем компоненте или init-скрипте:
-// import { useKnowledgeBaseStore } from '@/stores/knowledgeBase'; // Ваш путь к стору
-
-// async function initStore() {
-//   const store = useKnowledgeBaseStore();
-//   try {
-//     // rawData — это ответ от вашего API (тот самый большой JSON)
-//     const response = await fetch('/api/knowledge-base');
-//     const rawData = await response.json();
-//
-//     const transformedPayload = transformToKnowledgeBasePayload(rawData);
-//     store.hydrate(transformedPayload);
-//
-//     console.log('Стор успешно обновлён сокращёнными данными');
-//   } catch (error) {
-//     store.error = 'Не удалось загрузить или обработать базу знаний';
-//     console.error(error);
-//   }
-// }

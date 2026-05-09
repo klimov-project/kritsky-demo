@@ -1,6 +1,5 @@
 <script setup lang="ts">
-const { data: variantsCount } = await useFetch<number>('/api/variants-count');
-
+const { variantsCount } = useKnowledgeBase(); 
 console.log('variants-count raw data:', variantsCount.value);
 
 const formattedCount = computed(() => {
@@ -83,4 +82,3 @@ const navigateToConstructor = () => {
     </div>
   </section>
 </template>
- 

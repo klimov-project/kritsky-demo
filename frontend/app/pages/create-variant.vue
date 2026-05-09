@@ -19,13 +19,6 @@ useHead({
     { property: 'og:type', content: 'website' },
   ],
 });
-
-const { kbStore, loadKnowledgeBase } = useKnowledgeBase();
-if (import.meta.client && !kbStore.hasData) {
-  loadKnowledgeBase().catch(() => {
-    // Client-side fallback only, server-side loading is handled by the background plugin.
-  });
-}
 </script>
 
 <template>
