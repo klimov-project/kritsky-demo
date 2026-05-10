@@ -9,16 +9,15 @@ interface CacheMeta {
   updatedAt: string;
 }
 
-// Единый источник правды — мета-информация из бэкенда
-let backendCacheFingerprint: string | null = null; // "sizeBytes:updatedAt"
+let backendCacheFingerprint: string | null = null;
 let lastMetaCheck = 0;
-const META_CHECK_INTERVAL = 5 * 60 * 1000; // 5 минут
+const META_CHECK_INTERVAL = 50_000; // 50 секунд для теста
+const META_CACHE_TTL = 50; // 50 секунд
 
 async function getBackendFingerprint(config: any): Promise<string | null> {
   const now = Date.now();
 
-  // Проверяем не чаще чем раз в 5 минут
-  if (backendCacheFingerprint && now - lastMetaCheck < META_CHECK_INTERVAL) {
+  if (now - lastMetaCheck < META_CHECK_INTERVAL) {
     return backendCacheFingerprint;
   }
 
@@ -31,42 +30,95 @@ async function getBackendFingerprint(config: any): Promise<string | null> {
     if (cacheMeta?.exists) {
       backendCacheFingerprint = `${cacheMeta.sizeBytes}:${cacheMeta.updatedAt}`;
       lastMetaCheck = now;
+      console.log('[KB] Fingerprint updated:', backendCacheFingerprint);
       return backendCacheFingerprint;
     }
   } catch (error) {
-    console.error('Failed to fetch cache meta:', error);
+    console.error('[KB] Failed to fetch cache meta:', error);
   }
 
-  return backendCacheFingerprint; // Возвращаем последний известный, если запрос упал
+  return backendCacheFingerprint;
 }
+
+async function updateKbCache(config: any) {
+  const currentFingerprint = await getBackendFingerprint(config);
+
+  const cached = await useStorage('cache').getItem<{
+    payload: KnowledgeBasePayload;
+    fingerprint: string;
+  }>('knowledge-base');
+
+  // Если фингерпринт совпадает — не обновляем
+  if (cached && cached.fingerprint === currentFingerprint) {
+    return;
+  }
+
+  // Данные изменились — делаем полный запрос
+  console.log('[KB] Cache miss, fetching full data...');
+  const rawPayload = await $fetch<KnowledgeBasePayload>(
+    `${config.apiBackendUrl}/knowledge-base`,
+  );
+
+  const enrichedPayload = enrichPayload(rawPayload);
+
+  await useStorage('cache').setItem('knowledge-base', {
+    payload: enrichedPayload,
+    fingerprint: currentFingerprint,
+  });
+
+  console.log('[KB] Cache updated');
+}
+
+// Фоновая задача обновления кеша
+let updateInterval: NodeJS.Timeout | null = null;
+
+function startBackgroundUpdate(config: any) {
+  if (updateInterval) return;
+
+  // Первое обновление сразу
+  updateKbCache(config);
+
+  // Затем по интервалу
+  updateInterval = setInterval(() => {
+    updateKbCache(config);
+  }, META_CHECK_INTERVAL);
+
+  console.log(
+    `[KB] Background update started, interval: ${META_CHECK_INTERVAL}ms`,
+  );
+}
+
+// Инициализация при первом вызове
+let initialized = false;
 
 export default defineCachedEventHandler(
   async (event) => {
     const config = useRuntimeConfig();
 
-    // 1. Получаем актуальный фингерпринт (с дедупликацией по времени)
-    const currentFingerprint = await getBackendFingerprint(config);
+    // Запускаем фоновое обновление при первом запросе
+    if (!initialized) {
+      startBackgroundUpdate(config);
+      initialized = true;
+    }
 
-    // 2. Проверяем сохранённые данные в Redis
+    // Отдаём данные из Redis (или обновляем синхронно при первом запросе)
     const cached = await useStorage('cache').getItem<{
       payload: KnowledgeBasePayload;
       fingerprint: string;
     }>('knowledge-base');
 
-    // 3. Если фингерпринт совпадает — отдаём кеш
-    if (cached && cached.fingerprint === currentFingerprint) {
+    if (cached) {
       return cached.payload;
     }
 
-    // 4. Данные изменились (или первый запуск) — полный запрос
+    // Если кеша нет (первый запуск) — делаем синхронный запрос
+    const currentFingerprint = await getBackendFingerprint(config);
     const rawPayload = await $fetch<KnowledgeBasePayload>(
       `${config.apiBackendUrl}/knowledge-base`,
     );
 
-    // 5. Обогащаем
     const enrichedPayload = enrichPayload(rawPayload);
 
-    // 6. Сохраняем в Redis и данные, и фингерпринт
     await useStorage('cache').setItem('knowledge-base', {
       payload: enrichedPayload,
       fingerprint: currentFingerprint,
@@ -75,7 +127,7 @@ export default defineCachedEventHandler(
     return enrichedPayload;
   },
   {
-    maxAge: 60 * 5,
+    maxAge: META_CACHE_TTL,
     swr: true,
     name: 'knowledge-base',
   },
