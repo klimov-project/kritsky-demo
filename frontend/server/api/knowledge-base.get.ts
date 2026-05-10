@@ -75,17 +75,19 @@ let updateInterval: NodeJS.Timeout | null = null;
 function startBackgroundUpdate(config: any) {
   if (updateInterval) return;
 
-  // Первое обновление сразу
+  // Не запускаем фоновое обновление во время пререндеринга/билда
+  if (import.meta.prerender) {
+    console.log('[KB] Skipping background update during prerender');
+    return;
+  }
+
   updateKbCache(config);
 
-  // Затем по интервалу
   updateInterval = setInterval(() => {
     updateKbCache(config);
   }, META_CHECK_INTERVAL);
 
-  console.log(
-    `[KB] Background update started, interval: ${META_CHECK_INTERVAL}ms`,
-  );
+  console.log(`[KB] Background update started, interval: ${META_CHECK_INTERVAL}ms`);
 }
 
 // Инициализация при первом вызове
