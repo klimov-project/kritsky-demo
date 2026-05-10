@@ -59,8 +59,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     environment:
-      NITRO_REDIS_HOST: redis-cache
-      NITRO_REDIS_PORT: 6379
+      NITRO_STORAGE_CACHE: redis://redis-cache:6379/0
       NUXT_API_BACKEND_BASE: http://backend:8000
       NUXT_API_BACKEND_URL: http://backend:8000/api
       NUXT_PUBLIC_API_BASE: /api
@@ -69,8 +68,13 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+      redis-cache:
+        condition: service_healthy
     expose:
       - "3000"
+    networks:
+      - default
+      - app-network
 
   redis-cache:
     image: redis:7-alpine

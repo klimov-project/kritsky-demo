@@ -46,9 +46,7 @@ export default defineNuxtConfig({
     storage: {
       cache: {
         driver: 'redis',
-        host: process.env.NITRO_REDIS_HOST || 'redis-cache',
-        port: parseInt(process.env.NITRO_REDIS_PORT || '6379'),
-        db: 0,
+        url: process.env.NITRO_STORAGE_CACHE || 'redis://redis-cache:6379/0',
       },
     },
   },
