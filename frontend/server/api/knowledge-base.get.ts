@@ -1,52 +1,76 @@
 import type { KnowledgeBasePayload } from '~/stores/knowledgeBase';
 import crypto from 'crypto';
 
+interface CacheMeta {
+  redisEnabled: boolean;
+  key: string;
+  exists: boolean;
+  sizeBytes: number;
+  updatedAt: string;
+}
+
+// Единый источник правды — мета-информация из бэкенда
+let backendCacheFingerprint: string | null = null; // "sizeBytes:updatedAt"
+let lastMetaCheck = 0;
+const META_CHECK_INTERVAL = 5 * 60 * 1000; // 5 минут
+
+async function getBackendFingerprint(config: any): Promise<string | null> {
+  const now = Date.now();
+
+  // Проверяем не чаще чем раз в 5 минут
+  if (backendCacheFingerprint && now - lastMetaCheck < META_CHECK_INTERVAL) {
+    return backendCacheFingerprint;
+  }
+
+  try {
+    const cacheMeta = await $fetch<CacheMeta>(
+      `${config.apiBackendUrl}/knowledge-base/cache/meta`,
+      { ignoreResponseError: true },
+    );
+
+    if (cacheMeta?.exists) {
+      backendCacheFingerprint = `${cacheMeta.sizeBytes}:${cacheMeta.updatedAt}`;
+      lastMetaCheck = now;
+      return backendCacheFingerprint;
+    }
+  } catch (error) {
+    console.error('Failed to fetch cache meta:', error);
+  }
+
+  return backendCacheFingerprint; // Возвращаем последний известный, если запрос упал
+}
+
 export default defineCachedEventHandler(
   async (event) => {
     const config = useRuntimeConfig();
 
-    // 1. Проверяем мета-информацию кеша бэкенда
-    const cacheMeta = await $fetch<{
-      redisEnabled: boolean;
-      key: string;
-      exists: boolean;
-      sizeBytes: number;
-      updatedAt: string;
-    }>(`${config.apiBackendUrl}/knowledge-base/cache/meta`, {
-      ignoreResponseError: true,
-    });
+    // 1. Получаем актуальный фингерпринт (с дедупликацией по времени)
+    const currentFingerprint = await getBackendFingerprint(config);
 
-    // 2. Проверяем последний хеш из Redis
-    const lastHash = await useStorage('redis').getItem('kb:last-hash');
+    // 2. Проверяем сохранённые данные в Redis
+    const cached = await useStorage('cache').getItem<{
+      payload: KnowledgeBasePayload;
+      fingerprint: string;
+    }>('knowledge-base');
 
-    // 3. Если кеш бэкенда не изменился — отдаём свой закешированный ответ
-    if (cacheMeta?.exists && lastHash === cacheMeta?.updatedAt) {
-      const cached = await useStorage('cache').getItem('knowledge-base');
-      console.log('Хеш не изменился, отдаём из кеша');
-      if (cached) {
-        return cached;
-      }
+    // 3. Если фингерпринт совпадает — отдаём кеш
+    if (cached && cached.fingerprint === currentFingerprint) {
+      return cached.payload;
     }
 
-    // 4. Кеш изменился (или первый запуск) — делаем полный запрос
-    const payload = await $fetch<KnowledgeBasePayload>(
+    // 4. Данные изменились (или первый запуск) — полный запрос
+    const rawPayload = await $fetch<KnowledgeBasePayload>(
       `${config.apiBackendUrl}/knowledge-base`,
     );
 
-    // 5. Обогащаем и сохраняем
-    const enrichedPayload = enrichPayload(payload);
-    await useStorage('cache').setItem('knowledge-base', enrichedPayload);
+    // 5. Обогащаем
+    const enrichedPayload = enrichPayload(rawPayload);
 
-    // 6. Сохраняем новый хеш и метаданные в Redis
-    if (cacheMeta?.updatedAt) {
-      await useStorage('redis').setItem('kb:last-hash', cacheMeta.updatedAt);
-      await useStorage('redis').setItem('kb:meta', {
-        hash: enrichedPayload._metadata.hash,
-        updatedAt: cacheMeta.updatedAt,
-        fetchedAt: enrichedPayload._metadata.fetchedAt,
-        sizeBytes: cacheMeta.sizeBytes,
-      });
-    }
+    // 6. Сохраняем в Redis и данные, и фингерпринт
+    await useStorage('cache').setItem('knowledge-base', {
+      payload: enrichedPayload,
+      fingerprint: currentFingerprint,
+    });
 
     return enrichedPayload;
   },
@@ -70,7 +94,7 @@ function enrichPayload(payload: KnowledgeBasePayload) {
       hash: currentHash,
       fetchedAt: new Date().toISOString(),
       computed: {
-        variantsCount: calculateTotalVariants(payload) || 7777777,
+        variantsCount: calculateTotalVariants(payload),
         poetsCount: payload.poets?.length || 0,
         totalEntities:
           (payload.works?.length || 0) + (payload.poets?.length || 0),

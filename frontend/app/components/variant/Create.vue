@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useKnowledgeBase } from '~/composables/useKnowledgeBase';
 const config = useRuntimeConfig();
-const { store: kbStore } = useKnowledgeBase();
-const { isLoading: kbPending, error: kbError } = storeToRefs(kbStore);
+const { store: kbStore, pending: kbPending, error: kbError} = useKnowledgeBase();
+
 // Fetch pregenerated variant
 const apiUrl = import.meta.server ? config.apiBackendUrl : config.public.apiUrl;
 const variantUrl = `${apiUrl}/variants/runtime/pregenerated`;
