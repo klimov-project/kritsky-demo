@@ -3,19 +3,18 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: true,
   css: ['~/assets/styles/main.scss', '~/assets/styles/nuxt-ui.css'],
+  modules: ['nuxt-auth-utils', '@pinia/nuxt', '@nuxt/ui'],
 
   // Prerendering configuration
   routeRules: {
     '/': {
       prerender: true,
       swr: 35,
+      // swr: 300,
     },
-    // '/create-variant': {
-    //   prerender: true,
-    //   swr: 300,
-    // },
     '/api/knowledge-base': {
       swr: 35,
+      // swr: 120,
     },
   },
 
@@ -23,10 +22,11 @@ export default defineNuxtConfig({
     port: 3003,
   },
   runtimeConfig: {
-    // Server-only runtime config (can be overridden by NUXT_API_BACKEND_BASE)
-    apiBackendUrl: 'http://localhost:8000/api',
+    // Server-only runtime config
+    apiBackendUrl:
+      process.env.NUXT_API_BACKEND_BASE || 'http://localhost:8000/api',
     public: {
-      apiUrl: '/api',
+      apiUrl: process.env.NUXT_PUBLIC_API_BASE || '/api',
     },
   },
 
@@ -54,6 +54,4 @@ export default defineNuxtConfig({
       include: ['@vue/devtools-core', '@vue/devtools-kit', 'pinia'],
     },
   },
-
-  modules: ['nuxt-auth-utils', '@pinia/nuxt', '@nuxt/ui'],
 });
