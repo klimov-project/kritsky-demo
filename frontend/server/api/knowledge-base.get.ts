@@ -56,3 +56,25 @@ export default defineCachedEventHandler(
     name: 'knowledge-base',
   },
 );
+
+function enrichPayload(payload: KnowledgeBasePayload) {
+  const payloadString = JSON.stringify(payload);
+  const currentHash = crypto
+    .createHash('sha256')
+    .update(payloadString)
+    .digest('hex');
+
+  return {
+    ...payload,
+    _metadata: {
+      hash: currentHash,
+      fetchedAt: new Date().toISOString(),
+      computed: {
+        variantsCount: calculateTotalVariants(payload) || 7777777,
+        poetsCount: payload.poets?.length || 0,
+        totalEntities:
+          (payload.works?.length || 0) + (payload.poets?.length || 0),
+      },
+    },
+  };
+}
