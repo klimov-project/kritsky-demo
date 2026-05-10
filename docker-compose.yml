@@ -59,7 +59,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     environment:
-      NITRO_STORAGE_CACHE: redis://redis-frontend:6377/0
+      NITRO_REDIS_HOST: redis-cache
+      NITRO_REDIS_PORT: 6379
       NUXT_API_BACKEND_BASE: http://backend:8000
       NUXT_API_BACKEND_URL: http://backend:8000/api
       NUXT_PUBLIC_API_BASE: /api
@@ -71,12 +72,19 @@ services:
     expose:
       - "3000"
 
-  redis-frontend:
+  redis-cache:
     image: redis:7-alpine
-    container_name: kritsky-redis-frontend
+    container_name: kritsky-redis-cache
     restart: unless-stopped
-    ports:
-      - "6377:6377"
+    volumes:
+      - redis_cache_data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   adminka:
     build:
@@ -109,6 +117,11 @@ services:
       backend:
         condition: service_healthy
 
+networks:
+  app-network:
+    driver: bridge
+
 volumes:
+  redis_cache_data:
   postgres_data:
   redis_data:
