@@ -8,6 +8,7 @@ interface CacheMeta {
   sizeBytes: number;
   updatedAt: string;
 }
+const maxAgeNitro = 50;
 
 async function getBackendFingerprint(config: any): Promise<string | null> {
   try {
@@ -63,8 +64,8 @@ export default defineCachedEventHandler(
     return enrichedPayload;
   },
   {
-    maxAge: 50, // 50 секунд кеш на стороне Nitro
-    swr: true, // после 50с отдаёт stale + фоново обновляет
+    maxAge: maxAgeNitro,
+    swr: true, // После `maxAgeNitro` сек при запросе — отдаёт stale и фоново обновляет
     name: 'knowledge-base',
   },
 );

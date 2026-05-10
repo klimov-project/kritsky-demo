@@ -7,7 +7,11 @@ services:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-kritsky}" ]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-kritsky}",
+        ]
       interval: 3s
       timeout: 3s
       retries: 10
@@ -55,16 +59,24 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     environment:
-      REDIS_HOST: ${REDIS_HOST:-redis://redis:6379/0}
+      NITRO_STORAGE_CACHE: redis://redis-frontend:6377/0
       NUXT_API_BACKEND_BASE: http://backend:8000
       NUXT_API_BACKEND_URL: http://backend:8000/api
       NUXT_PUBLIC_API_BASE: /api
+      NUXT_SESSION_PASSWORD: ${NUXT_SESSION_PASSWORD:-change-me-to-random-string}
     restart: always
     depends_on:
       backend:
         condition: service_healthy
     expose:
       - "3000"
+
+  redis-frontend:
+    image: redis:7-alpine
+    container_name: kritsky-redis-frontend
+    restart: unless-stopped
+    ports:
+      - "6377:6377"
 
   adminka:
     build:

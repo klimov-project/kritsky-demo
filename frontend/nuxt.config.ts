@@ -28,6 +28,10 @@ export default defineNuxtConfig({
     public: {
       apiUrl: process.env.NUXT_PUBLIC_API_BASE || '/api',
     },
+    session: {
+      password:
+        process.env.NUXT_SESSION_PASSWORD || 'dev-secret-at-least-32-chars',
+    },
   },
 
   // Proxy configuration for local development
@@ -42,8 +46,8 @@ export default defineNuxtConfig({
     storage: {
       cache: {
         driver: 'redis',
-        host: process.env.REDIS_HOST,
-        port: 6379,
+        host: process.env.NITRO_STORAGE_CACHE,
+        port: 6377,
         // password: process.env.REDIS_PASSWORD
       },
     },
