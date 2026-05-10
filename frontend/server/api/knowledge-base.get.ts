@@ -47,12 +47,13 @@ export default defineCachedEventHandler(
 
     // 4. Данные изменились — полный запрос к бэкенду
     console.log('[KB] Cache miss, fetching full data...');
-    const rawPayload = await $fetch<KnowledgeBasePayload>(
+    const rawPayload = await $fetch<any>(
       `${config.apiBackendUrl}/knowledge-base`,
     );
 
-    // 5. Обогащаем payload (хеш, метаданные, подсчёт вариантов)
-    const enrichedPayload = enrichPayload(rawPayload);
+    // 5. Преобразуем тяжёлый backend payload в лёгкий frontend payload
+    const lightPayload = transformToKnowledgeBasePayload(rawPayload);
+    const enrichedPayload = enrichPayload(lightPayload, rawPayload);
 
     // 6. Сохраняем в Redis
     await useStorage('cache').setItem('knowledge-base', {
@@ -70,7 +71,7 @@ export default defineCachedEventHandler(
   },
 );
 
-function enrichPayload(payload: KnowledgeBasePayload) {
+function enrichPayload(payload: KnowledgeBasePayload, rawPayload?: any) {
   const payloadString = JSON.stringify(payload);
   const currentHash = crypto
     .createHash('sha256')
@@ -83,7 +84,7 @@ function enrichPayload(payload: KnowledgeBasePayload) {
       hash: currentHash,
       fetchedAt: new Date().toISOString(),
       computed: {
-        variantsCount: calculateTotalVariants(payload),
+        variantsCount: calculateTotalVariants(rawPayload || payload),
         poetsCount: payload.poets?.length || 0,
         totalEntities:
           (payload.works?.length || 0) + (payload.poets?.length || 0),
