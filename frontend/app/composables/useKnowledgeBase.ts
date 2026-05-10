@@ -22,13 +22,12 @@ export function useKnowledgeBase() {
       key: 'knowledge-base',
       getCachedData: (key) => {
         const cached = useNuxtApp().payload.data[key];
-        if (cached) {
-          return cached;
-        }
+        return cached || undefined;
       },
       transform: (response) => {
         // Гидрация только если хеш изменился
         if (response._metadata?.hash !== store.lastKnownHash) {
+          console.log('[Store] Hydrating, new hash:', response._metadata?.hash);
           store.hydrate(response);
         }
         return response;
@@ -43,7 +42,7 @@ export function useKnowledgeBase() {
   );
 
   const variantsCount = computed(() => {
-    return data.value?._metadata?.computed?.variantsCount;
+    return data.value?._metadata?.computed?.variantsCount ?? 0;
   });
 
   return {
