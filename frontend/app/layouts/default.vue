@@ -146,13 +146,13 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
           <!-- Mobile Actions Toggle -->
           <div class="ml-auto flex lg:hidden items-center gap-[12px]">
             <NuxtLink to="/cart" class="text-[#333]">
-              <UiIconShoppingBag />
+              <IconShoppingBag />
             </NuxtLink>
             <button
               @click="toggleMobileMenu"
               class="ml-auto flex items-center text-[#333]"
             >
-              <UiIconMenu />
+              <IconMenu />
             </button>
           </div>
         </div>
@@ -262,13 +262,13 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
                 href="#"
                 class="w-[30px] h-[30px] rounded-full bg-[#333] text-white flex items-center justify-center hover:opacity-75 transition-opacity"
               >
-                <UiIconYT />
+                <IconYT />
               </a>
               <a
                 href="#"
                 class="w-[30px] h-[30px] rounded-full bg-[#333] text-white flex items-center justify-center hover:opacity-75 transition-opacity"
               >
-                <UiIconTG />
+                <IconTG />
               </a>
             </div>
             <div
@@ -309,13 +309,13 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
                   href="#"
                   class="w-[34px] h-[34px] rounded-full bg-[#333] text-white flex items-center justify-center"
                 >
-                  <UiIconYT />
+                  <IconYT />
                 </a>
                 <a
                   href="#"
                   class="w-[34px] h-[34px] rounded-full bg-[#333] text-white flex items-center justify-center"
                 >
-                  <UiIconTG />
+                  <IconTG />
                 </a>
               </div>
             </div>

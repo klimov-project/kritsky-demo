@@ -28,6 +28,14 @@ export default defineNuxtConfig({
     port: 3003,
   },
 
+  components: [
+    {
+      path: '~/components/ui',
+      pattern: '**/*.vue',
+      prefix: '',
+    },
+  ],
+
   runtimeConfig: {
     // Server-only runtime config
     apiBackendUrl:

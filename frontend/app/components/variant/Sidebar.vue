@@ -27,7 +27,7 @@
           href="mailto:support@kritsky.academy"
           class="font-normal text-xs leading-[14px] tracking-[0.1em] uppercase text-[#333333] px-3 flex items-center gap-2"
         >
-          <UiIconEmail />
+          <IconEmail />
           Обратная связь
         </a>
       </div>

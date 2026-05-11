@@ -6,8 +6,11 @@ interface Props {
 }
 
 defineProps<Props>();
-const scene = useNavigateScene();
+const { sceneNavigation: scene, navigateScene } = useNavigateScene();
 
+const handleNav = (key: 'previous' | 'next') => {
+  navigateScene(key);
+};
 </script>
 <template>
   <div class="w-full bg-white rounded-[10px] mb-3 p-[30px_40px]">
@@ -24,7 +27,26 @@ const scene = useNavigateScene();
         {{ excerptAuthor }} — «{{ excerptWork }}»
       </p>
     </div>
-    <div v-if="scene.hasNext">Следующая</div>
-    <div v-if="scene.hasPrevious">Предыдущая</div>
+
+    <div class="pt-7 flex justify-between items-center">
+      <BaseButton v-if="scene.hasNext" previous @click="handleNav('next')">
+        Предыдущая сцена
+      </BaseButton>
+
+      <BaseButton v-if="scene.hasPrevious" next @click="handleNav('previous')">
+        Следующая сцена
+      </BaseButton>
+
+      <!-- <UButton
+        @click="$emit('refresh-block-1')"
+        :loading="isLoading"
+        :disabled="isLoading"
+        block
+        size="lg"
+        class="update-variant-btn__filter w-auto h-[50px] whitespace-nowrap"
+      >
+        Обновить отрывок и задания 1–5
+      </UButton> -->
+    </div>
   </div>
 </template>
