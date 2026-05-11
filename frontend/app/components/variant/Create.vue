@@ -1,7 +1,12 @@
 <script setup lang="ts">
+import type { Work } from '@/types/knowledgeBaseTypes';
 import { useKnowledgeBase } from '~/composables/useKnowledgeBase';
 const config = useRuntimeConfig();
-const { store: kbStore, pending: kbPending, error: kbError} = useKnowledgeBase();
+const {
+  store: kbStore,
+  pending: kbPending,
+  error: kbError,
+} = useKnowledgeBase();
 
 // Fetch pregenerated variant
 const apiUrl = import.meta.server ? config.apiBackendUrl : config.public.apiUrl;
@@ -25,7 +30,7 @@ const selectedChapter = ref('');
 const showAnswers = ref<Record<string, boolean>>({});
 const isRefreshing = ref(false);
 // Computed
-const works = computed(() => kbStore.works || []);
+const works = computed(() => (kbStore.works || []) as Work[]);
 const poets = computed(() => kbStore.poets || []);
 const variant = computed(() => variantData.value?.variant || null);
 const isLoading = computed(() => kbPending.value || variantPending.value);

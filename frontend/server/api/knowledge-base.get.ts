@@ -34,6 +34,7 @@ export default defineCachedEventHandler(
     // 1. Получаем текущий фингерпринт бэкенда
     const currentFingerprint = await getBackendFingerprint(config);
 
+    console.log('currentFingerprint: ', currentFingerprint);
     // 2. Проверяем сохранённый кеш в Redis
     const cached = await useStorage('cache').getItem<{
       payload: KnowledgeBasePayload;
