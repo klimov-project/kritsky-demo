@@ -2,7 +2,7 @@
 import type { Work } from '@/types/knowledgeBaseTypes';
 interface Props {
   works: Work[]
-  selectedWorkId: string 
+  selectedWorkId: string
   selectedChapter: string
   selectedExcerptId: string
   selectedWork: any
@@ -44,10 +44,9 @@ const disabledExcerpt = computed(() => props.excerptDropdownOptions.length === 0
 const workOptions = computed(() => {
   const options = props.works.map(work => ({
     value: work.id,
-    label: work.title, 
-    author: work.author, 
-  })); 
-  const foundWork = props.works.find(w => w.id === props.selectedWorkId); 
+    label: `${work.author} — ${work.title}`,
+    author: work.author,
+  }));
   return options;
 })
 
@@ -100,7 +99,7 @@ const workOptions = computed(() => {
           v-model="selectedChapter"
           :items="excerptChapters"
           :disabled="disabledChapter"
-          placeholder="Все главы"
+          placeholder="Нет глав"
           class="w-full"
         />
       </div>

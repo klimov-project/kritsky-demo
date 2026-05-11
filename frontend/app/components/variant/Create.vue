@@ -40,7 +40,7 @@ const variant = computed(() => variantData.value?.variant ?? null);
 watch(variant, (newVariant) => {
   console.log('ПРОИЗВЕДЕНИЕ : ', newVariant?.work?.title);
   console.log('Отрывок : ', newVariant?.excerpt?.title);
-  console.log(' newVariant?.excerpt ? : ', newVariant?.excerpt);
+
   if (newVariant?.excerpt) {
     console.log('Глава: ', newVariant.excerpt.chapter);
 
@@ -49,24 +49,6 @@ watch(variant, (newVariant) => {
     selectedChapter.value = newVariant.excerpt.chapter || '';
     selectedExcerptId.value =
       newVariant.excerpt.excerptId || newVariant.excerpt.id || '';
-    console.log(
-      'selectedWorkId: ' +
-        selectedWorkId.value +
-        '  ---- resolved work id: ' +
-        (newVariant.work?.id || newVariant.excerpt?.workId),
-    );
-    console.log(
-      'selectedChapter: ' +
-        selectedChapter.value +
-        '  ---- newVariant.excerpt.chapter: ' +
-        newVariant.excerpt.chapter,
-    );
-    console.log(
-      'selectedExcerptId: ' +
-        selectedExcerptId.value +
-        '  ---- newVariant.excerpt.excerptId: ' +
-        newVariant.excerpt.excerptId,
-    );
   }
 });
 
@@ -195,10 +177,10 @@ const getTaskNumber = (key: string) => {
     />
   </div>
 
-  <div class="max-w-6xl mx-auto px-4 py-6">
+  <div class="max-w-6xl px-4 py-6">
     <div class="flex gap-6">
       <div class="flex-1 min-w-0">
-        <!-- Loading state — показывается и на сервере, и на клиенте -->
+        <!-- Loading  -->
         <div v-if="isLoading" class="text-center py-20">
           <div
             class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"
@@ -235,18 +217,15 @@ const getTaskNumber = (key: string) => {
 
           <!-- Variant Content -->
           <div v-else class="space-y-8">
-            <!-- Variant Header -->
-            <NewTestVariantHeader />
-
-            <!-- Excerpt Text -->
-            <NewTestExcerpt
+            <!-- Excerpt  -->
+            <VariantExcerpt
               :excerpt-text="variant.excerpt?.text"
               :excerpt-author="variant.excerpt?.author"
               :excerpt-work="variant.excerpt?.work"
             />
 
             <!-- Tasks Section -->
-            <NewTestTaskList
+            <VariantTasks1
               title="Задания 1–5"
               :task-keys="shortTasks"
               :variant="variant"

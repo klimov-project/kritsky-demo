@@ -1,6 +1,5 @@
 <script setup lang="ts">
-const { variantsCount } = useKnowledgeBase(); 
-console.log('variants-count raw data:', variantsCount.value);
+const { variantsCount } = useKnowledgeBase();
 
 const formattedCount = computed(() => {
   const count = variantsCount.value;

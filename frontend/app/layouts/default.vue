@@ -36,14 +36,6 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
       { 'relative overflow-hidden': hasBackgroundLayer },
     ]"
   >
-    <!-- Background Layer --- Fixed -->
-    <div
-      v-if="isIndexPage"
-      class="fixed inset-0 bg-center bg-no-repeat opacity-[0.02] pointer-events-none"
-      style="background-image: url('/page_bg.svg'); background-size: auto;"
-      aria-hidden="true"
-    />
-
     <div
       :class="[
         'w-full min-h-screen flex flex-col relative',
@@ -253,15 +245,15 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
             class="hidden lg:grid grid-cols-[1fr_auto_1fr] items-center gap-[16px]"
           >
             <div class="flex flex-col items-start gap-[6px] text-[14px]">
-              <NuxtLink to="/about" class="hover:opacity-70 transition-opacity"
+              <NuxtLink to="/about" class="nav-link-animated transition-opacity"
                 >О проекте</NuxtLink
               >
-              <NuxtLink to="/terms" class="hover:opacity-70 transition-opacity"
+              <NuxtLink to="/terms" class="nav-link-animated transition-opacity"
                 >Пользовательское соглашение</NuxtLink
               >
               <NuxtLink
                 to="/privacy"
-                class="hover:opacity-70 transition-opacity"
+                class="nav-link-animated transition-opacity"
                 >Политика конфиденциальности</NuxtLink
               >
             </div>
@@ -279,7 +271,9 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
                 <UiIconTG />
               </a>
             </div>
-            <div class="justify-self-end text-right text-[14px] leading-[1.45]">
+            <div
+              class="justify-self-end text-right text-[14px] leading-[1.45] flex flex-col items-start gap-[6px] text-[14px]"
+            >
               <p>ИП Крицкий Роман Дмитриевич</p>
               <p>ИНН: 772796119977</p>
               <p>ОГРНИП: 325774600403322</p>
