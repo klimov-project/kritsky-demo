@@ -66,6 +66,7 @@ const computedTrailingIcon = computed(() => {
   padding: 20px 35px 18px;
   border: none;
   box-shadow: none;
+  border-radius: 10px;
 
   &:hover:not(:disabled) {
     background-color: #eeeeee;

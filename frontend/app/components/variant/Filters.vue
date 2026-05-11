@@ -110,22 +110,20 @@ const workOptions = computed(() => {
     </div>
 
     <div class="pt-7 flex justify-center items-center">
-      <UButton
+      <BaseButton
         @click="$emit('refresh-block-1')"
         :loading="isLoading"
         :disabled="isLoading"
-        block
-        size="lg"
-        class="update-variant-btn__filter w-auto h-[50px] whitespace-nowrap"
+        class="update-variant-btn__filter"
       >
         Обновить отрывок и задания 1–5
-      </UButton>
+      </BaseButton>
     </div>
   </div>
 </template>
 <style lang="scss">
 .create-variant-filters {
-  button[data-slot='base'] {
+  button[data-slot='base']:not(.update-variant-btn__filter) {
     padding: 15px 24px;
     background-color: #ffffff;
 
@@ -137,26 +135,6 @@ const workOptions = computed(() => {
     font-weight: 400;
     font-size: 16px;
     line-height: 19px;
-  }
-
-  button.update-variant-btn__filter {
-    background-color: #f6f6f6;
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ui-text);
-    padding: 20px 35px 18px;
-    border: 0px solid;
-    box-shadow: none;
-    word-wrap: none;
-    &:hover:not(:disabled) {
-      background-color: #eeeeee;
-    }
-    :disabled,
-    [disabled] {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
   }
 }
 </style>

@@ -48,7 +48,7 @@
     --ui-color-charcoal-200: #d1d1d1;
     --ui-color-charcoal-300: #b3b3b3;
     --ui-color-charcoal-400: #8c8c8c;
-    --ui-color-charcoal-500: #666666;
+    --ui-color-charcoal-500: #828282;
     --ui-color-charcoal-600: #4d4d4d;
     --ui-color-charcoal-700: #404040;
     --ui-color-charcoal-800: #383838;
@@ -58,7 +58,7 @@
 
     /* --- Текст (Семантическая привязка) --- */
     --ui-text-dimmed: var(--ui-color-charcoal-200);
-    --ui-text-muted: var(--ui-color-charcoal-300);
+    --ui-text-muted: var(--ui-color-charcoal-500);
     --ui-text-toned: var(--ui-color-charcoal-400);
     --ui-text-default: var(--ui-text);
     --ui-text-highlighted: var(--ui-text);

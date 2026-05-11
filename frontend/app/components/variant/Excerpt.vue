@@ -6,10 +6,15 @@ interface Props {
 }
 
 defineProps<Props>();
-const { sceneNavigation: scene, navigateScene } = useNavigateScene();
+const {
+  sceneNavigation: scene,
+  navigateScene: navigate,
+  nextTitle,
+  prevTitle,
+} = useNavigateScene();
 
 const handleNav = (key: 'previous' | 'next') => {
-  navigateScene(key);
+  navigate(key);
 };
 </script>
 <template>
@@ -36,17 +41,11 @@ const handleNav = (key: 'previous' | 'next') => {
       <BaseButton v-if="scene.hasPrevious" next @click="handleNav('previous')">
         Следующая сцена
       </BaseButton>
+    </div>
 
-      <!-- <UButton
-        @click="$emit('refresh-block-1')"
-        :loading="isLoading"
-        :disabled="isLoading"
-        block
-        size="lg"
-        class="update-variant-btn__filter w-auto h-[50px] whitespace-nowrap"
-      >
-        Обновить отрывок и задания 1–5
-      </UButton> -->
+    <div class="pt-2 flex justify-between items-center text-gray-500 text-base">
+      <span v-if="scene.hasNext"> {{ nextTitle }}</span>
+      <span v-if="scene.hasPrevious"> {{ prevTitle }}</span>
     </div>
   </div>
 </template>

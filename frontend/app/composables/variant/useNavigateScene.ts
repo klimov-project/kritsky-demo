@@ -44,12 +44,12 @@ export const useNavigateScene = () => {
       orderedExcerpts,
     } = sceneNavigation.value;
 
+    if (!currentIndex || !orderedExcerpts) return;
     if (direction === 'previous' && !hasPrevious) return;
     if (direction === 'next' && !hasNext) return;
 
-    const targetIndex =
-      direction === 'previous' ? currentIndex - 1 : currentIndex + 1;
-    const targetExcerpt = orderedExcerpts[targetIndex];
+    // const targetIndex =
+    //   direction === 'previous' ? currentIndex - 1 : currentIndex + 1;
 
     // In a real implementation, we would set selectedExcerptId and then refreshBlock('block1')
     // For this migration, we'll follow the React logic of calling the API with the target excerpt
@@ -65,8 +65,32 @@ export const useNavigateScene = () => {
     }
   };
 
+  const nextTitle = computed(() => {
+    if (!variant.value) return null;
+
+    const { hasNext, currentIndex, orderedExcerpts } = sceneNavigation.value;
+    if (!currentIndex || !orderedExcerpts) return;
+    return hasNext ? orderedExcerpts[currentIndex + 1]?.title || null : null;
+  });
+
+  const prevTitle = computed(() => {
+    if (!variant.value) return null;
+
+    const {
+      hasPrevious,
+      currentIndex,
+      orderedExcerpts,
+    } = sceneNavigation.value;
+    if (!currentIndex || !orderedExcerpts) return;
+    return hasPrevious
+      ? orderedExcerpts[currentIndex - 1]?.title || null
+      : null;
+  });
+
   return {
     sceneNavigation,
     navigateScene,
+    nextTitle,
+    prevTitle,
   };
 };
