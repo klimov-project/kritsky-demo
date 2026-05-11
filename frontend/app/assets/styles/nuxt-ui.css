@@ -2,8 +2,8 @@
 @import "@nuxt/ui";
 
 :root {
-    --ui-white: #ffffff;
-    --ui-text: #333333;
+    --ui-white: #fff;
+    --ui-text: #333;
     --ui-radius: 10px;
     --ui-primary-bg: #f6f6f6;
 
@@ -60,8 +60,8 @@
     --ui-text-dimmed: var(--ui-color-charcoal-200);
     --ui-text-muted: var(--ui-color-charcoal-300);
     --ui-text-toned: var(--ui-color-charcoal-400);
-    --ui-text-default: var(--ui-color-sage-50);
-    --ui-text-highlighted: var(--ui-color-charcoal-950);
+    --ui-text-default: var(--ui-text);
+    --ui-text-highlighted: var(--ui-text);
 
     /* --- Фон (Семантическая привязка) --- */
     --ui-bg: var(--ui-white);

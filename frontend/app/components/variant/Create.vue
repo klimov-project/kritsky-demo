@@ -42,13 +42,16 @@ watch(variant, (newVariant) => {
   console.log('Отрывок : ', newVariant?.excerpt?.title);
 
   if (newVariant?.excerpt) {
-    console.log('Глава: ', newVariant.excerpt.chapter);
+    const { excerpt } = newVariant;
+    console.log('Глава: ', excerpt.chapter);
 
-    selectedWorkId.value =
-      newVariant.work?.id || newVariant.excerpt?.workId || '';
-    selectedChapter.value = newVariant.excerpt.chapter || '';
-    selectedExcerptId.value =
-      newVariant.excerpt.excerptId || newVariant.excerpt.id || '';
+    // selectedWorkId.value = newVariant.work?.id || excerpt?.workId || '';
+    selectedWorkId.value = newVariant.work?.id || '';
+    selectedChapter.value = excerpt.chapter || '';
+    selectedExcerptId.value = excerpt.title || '';
+    console.log('selectedChapter.value ', selectedChapter.value);
+    console.log('selectedExcerptId.value ', selectedExcerptId.value);
+    console.log('excerpt ', excerpt);
   }
 });
 
@@ -59,26 +62,7 @@ const selectedWork = computed(() =>
   works.value.find((w) => w.id === selectedWorkId.value),
 );
 
-watch(selectedWorkId, (newId, oldId) => {
-  if (!oldId || newId === oldId) return;
-  selectedChapter.value = '';
-  selectedExcerptId.value = '';
-});
-
-watch(selectedChapter, (newChapter, oldChapter) => {
-  if (newChapter === oldChapter) return;
-  selectedExcerptId.value = '';
-  if (selectedWork.value && newChapter) {
-    const firstExcerpt = selectedWork.value.excerpts?.find(
-      (excerpt: any) => excerpt.chapter === newChapter,
-    );
-    if (firstExcerpt) {
-      selectedExcerptId.value = firstExcerpt.excerptId || firstExcerpt.id || '';
-    }
-  }
-});
-
-const excerptChapters = computed(() => {
+const excerptChaptersOptions = computed(() => {
   if (!selectedWork.value) return [];
   const chapters = new Set<string>();
   selectedWork.value.excerpts?.forEach((excerpt: any) => {
@@ -95,18 +79,11 @@ const excerptDropdownOptions = computed(() => {
         (excerpt: any) => excerpt.chapter === selectedChapter.value,
       )
     : selectedWork.value.excerpts;
-
   const options =
     filteredExcerpts?.map((excerpt: any, i: number) => ({
-      value: excerpt.excerptId || excerpt.id,
-      label: `Отрывок ${i + 1}${
-        excerpt.chapter ? ` (${excerpt.chapter})` : ''
-      }`,
+      value: excerpt?.title || excerpt.id,
+      label: excerpt?.title || `Отрывок ${i + 1} (${excerpt.chapter})`,
     })) || [];
-  const foundExcerpt = selectedWork.value.excerpts?.find(
-    (e: any) => e.id === selectedExcerptId.value,
-  );
-  console.log('foundExcerpt for selectedExcerptId:', foundExcerpt);
   return options;
 });
 
@@ -140,6 +117,18 @@ const handleRefreshVariant = async () => {
   }
 };
 
+const manualUpdateWork = async (workTitle: string) => {
+  selectedWorkId.value = workTitle;
+
+  selectedChapter.value = '';
+  selectedExcerptId.value = '';
+};
+
+const manualUpdateChapter = async (chapterTitle: string) => {
+  selectedChapter.value = chapterTitle;
+  selectedExcerptId.value = '';
+};
+
 const refreshBlock1 = async () => {
   // Stub - refresh excerpt and tasks 1-5
   await handleRefreshVariant();
@@ -167,83 +156,79 @@ const getTaskNumber = (key: string) => {
       :selected-chapter="selectedChapter"
       :selected-excerpt-id="selectedExcerptId"
       :selected-work="selectedWork"
-      :excerpt-chapters="excerptChapters"
+      :excerpt-chapters="excerptChaptersOptions"
       :excerpt-dropdown-options="excerptDropdownOptions"
       :is-loading="isLoading"
-      @update:selected-work-id="selectedWorkId = $event"
-      @update:selected-chapter="selectedChapter = $event"
+      @update:selected-work-id="manualUpdateWork"
+      @update:selected-chapter="manualUpdateChapter"
       @update:selected-excerpt-id="selectedExcerptId = $event"
       @refresh-block-1="handleRefreshVariant"
     />
   </div>
 
-  <div class="max-w-6xl px-4 py-6">
-    <div class="flex gap-6">
-      <div class="flex-1 min-w-0">
-        <!-- Loading  -->
-        <div v-if="isLoading" class="text-center py-20">
-          <div
-            class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"
-          ></div>
-          <p class="mt-4 text-gray-600">Подготовка варианта...</p>
-        </div>
-
-        <ClientOnly v-else>
-          <!-- Error -->
-          <div
-            v-if="hasError"
-            class="bg-red-50 border border-red-200 rounded-lg p-6"
-          >
-            <p class="text-red-700">
-              Ошибка загрузки данных. Пожалуйста, попробуйте позже.
-            </p>
-            <button
-              @click="refreshVariant()"
-              class="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
-            >
-              Повторить загрузку
-            </button>
-          </div>
-
-          <!-- Empty -->
-          <div
-            v-else-if="!variant"
-            class="bg-white rounded-lg shadow p-6 text-center"
-          >
-            <p class="text-gray-600">
-              Нет данных для отображения. Нажмите "Новый вариант" для генерации.
-            </p>
-          </div>
-
-          <!-- Variant Content -->
-          <div v-else class="space-y-8">
-            <!-- Excerpt  -->
-            <VariantExcerpt
-              :excerpt-text="variant.excerpt?.text"
-              :excerpt-author="variant.excerpt?.author"
-              :excerpt-work="variant.excerpt?.work"
-            />
-
-            <!-- Tasks Section -->
-            <VariantTasks1
-              title="Задания 1–5"
-              :task-keys="shortTasks"
-              :variant="variant"
-              :show-answers="showAnswers"
-              @toggle-answer="toggleAnswer"
-            />
-
-            <!-- Part 2 -->
-            <NewTestTaskList
-              title="Часть 2. Задания с развёрнутым ответом"
-              :task-keys="longTasks"
-              :variant="variant"
-              :show-answers="showAnswers"
-              @toggle-answer="toggleAnswer"
-            />
-          </div>
-        </ClientOnly>
-      </div>
+  <div class="max-w-6xl">
+    <!-- Loading  -->
+    <div v-if="isLoading" class="text-center py-20">
+      <div
+        class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"
+      ></div>
+      <p class="mt-4 text-gray-600">Подготовка варианта...</p>
     </div>
+
+    <ClientOnly v-else>
+      <!-- Error -->
+      <div
+        v-if="hasError"
+        class="bg-red-50 border border-red-200 rounded-lg p-6"
+      >
+        <p class="text-red-700">
+          Ошибка загрузки данных. Пожалуйста, попробуйте позже.
+        </p>
+        <button
+          @click="refreshVariant()"
+          class="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
+        >
+          Повторить загрузку
+        </button>
+      </div>
+
+      <!-- Empty -->
+      <div
+        v-else-if="!variant"
+        class="bg-white rounded-lg shadow p-6 text-center"
+      >
+        <p class="text-gray-600">
+          Нет данных для отображения. Нажмите "Новый вариант" для генерации.
+        </p>
+      </div>
+
+      <!-- Variant Content -->
+      <div v-else class="space-y-8">
+        <!-- Excerpt  -->
+        <VariantExcerpt
+          :excerpt-text="variant.excerpt?.text"
+          :excerpt-author="selectedWork?.author"
+          :excerpt-work="selectedWork?.title"
+        />
+
+        <!-- Tasks Section -->
+        <VariantTasks1
+          title="Задания 1–5"
+          :task-keys="shortTasks"
+          :variant="variant"
+          :show-answers="showAnswers"
+          @toggle-answer="toggleAnswer"
+        />
+
+        <!-- Part 2 -->
+        <NewTestTaskList
+          title="Часть 2. Задания с развёрнутым ответом"
+          :task-keys="longTasks"
+          :variant="variant"
+          :show-answers="showAnswers"
+          @toggle-answer="toggleAnswer"
+        />
+      </div>
+    </ClientOnly>
   </div>
 </template>

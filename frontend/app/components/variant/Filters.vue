@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Work } from '@/types/knowledgeBaseTypes';
+
 interface Props {
   works: Work[]
   selectedWorkId: string
@@ -49,25 +50,6 @@ const workOptions = computed(() => {
   }));
   return options;
 })
-
-// Для отображения автора в селекте (если нужно)
-// const authorOptions = computed(() => {
-//   // Получаем уникальных авторов из works
-//   const uniqueAuthors = [...new Set(props.works.map(work => work.author))]
-//   return uniqueAuthors.map(author => ({
-//     value: author,
-//     label: author,
-//   }))
-// })
-
-// Debug logging for filters
-// console.log('Filters props:');
-// console.log('selectedWorkId:', props.selectedWorkId);
-// console.log('selectedChapter:', props.selectedChapter);
-// console.log('selectedExcerptId:', props.selectedExcerptId);
-// console.log('excerptChapters:', props.excerptChapters);
-// console.log('excerptDropdownOptions:', props.excerptDropdownOptions);
-// console.log('works length:', props.works.length);
 </script>
 
 <template>
