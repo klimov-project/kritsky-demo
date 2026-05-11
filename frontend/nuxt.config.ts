@@ -9,11 +9,7 @@ export default defineNuxtConfig({
   ui: { fonts: false }, // disable the @nuxt/fonts module.
   icon: {
     serverBundle: false,
-    provider: 'none',
-    clientBundle: {
-      scan: true,
-      icons: ['lucide:loader-circle', 'lucide:chevron-down'],
-    },
+    provider: 'none'
   },
 
   // Prerendering configuration
@@ -23,12 +19,15 @@ export default defineNuxtConfig({
       swr: 35,
       // swr: 300,
     },
+    '/create-variant': {
+      isr: false,
+    },
   },
 
   devServer: {
     port: 3003,
   },
-  
+
   runtimeConfig: {
     // Server-only runtime config
     apiBackendUrl:
