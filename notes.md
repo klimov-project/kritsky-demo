@@ -75,11 +75,8 @@
 3) Залить дамп (с явным указанием compose-файла и env):
    `docker compose -f docker-compose.yml --env-file .env exec -T db pg_restore -U postgres -d kritsky --clean --if-exists --no-owner --verbose < kritsky-backup.dump`
 
-4) Перезапустить бэкенд:
-   `docker compose down && docker compose up backend -d`
-
-5) Очистить кеш Redis (критично, иначе данные останутся старыми):
+4) Очистить кеш Redis (критично, иначе данные останутся старыми):
    `docker compose exec redis redis-cli flushall`
 
-6) Пересобрать и поднять всё финально:
+5) Пересобрать и поднять всё финально:
    `docker compose down && docker compose up -d --build --force-recreate`
