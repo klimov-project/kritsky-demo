@@ -39,7 +39,7 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
     <div
       :class="[
         'w-full min-h-screen flex flex-col relative',
-        hasTransparentShell ? 'bg-transparent z-10' : '',
+        hasTransparentShell ? 'bg-transparent z-10' : 'bg-default',
       ]"
     >
       <!-- Header -->
@@ -328,6 +328,7 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
 
 <style scoped lang="scss">
 .bg-default {
+  background-color: var(--home-color-bg);
   position: relative;
 }
 
