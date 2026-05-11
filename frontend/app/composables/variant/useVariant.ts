@@ -1,5 +1,15 @@
 import type { GeneratedVariant } from '@/types/generatedVariant';
 
 export const useVariant = () => {
-  return useState<GeneratedVariant | null>('generated-variant', () => null);
+  const currentVariant = useCurrentVariant();
+
+  const setVariant = (variant: GeneratedVariant) => {
+    if (!variant) return;
+    currentVariant.value = variant;
+  };
+
+  return {
+    currentVariant,
+    setVariant,
+  };
 };

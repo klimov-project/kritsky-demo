@@ -1,12 +1,12 @@
 import type { Work } from '@/types/knowledgeBaseTypes';
+export const useNavigateScene = () => {
+  const { store: kbStore } = useKnowledgeBase();
 
-export const useNavigateScene = (
-  variant: Ref<any | null>,
-  works: Ref<Work[]>,
-) => {
+  const variantRef = useCurrentVariant();
+
+  const works = computed(() => (kbStore.works ?? []) as Work[]);
+
   const sceneNavigation = computed(() => {
-    const variantRef = useVariant();
-
     if (!variantRef.value) {
       return { hasPrevious: false, hasNext: false };
     }
@@ -26,5 +26,5 @@ export const useNavigateScene = (
     };
   });
 
-  return { sceneNavigation };
+  return sceneNavigation;
 };

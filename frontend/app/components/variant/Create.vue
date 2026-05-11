@@ -3,6 +3,7 @@ import type { Work } from '@/types/knowledgeBaseTypes';
 import { useKnowledgeBase } from '~/composables/useKnowledgeBase';
 
 const config = useRuntimeConfig();
+const { setVariant } = useVariant();
 const {
   store: kbStore,
   pending: kbPending,
@@ -35,9 +36,11 @@ const isRefreshing = ref(false);
 
 const works = computed(() => (kbStore.works ?? []) as Work[]);
 const variant = computed(() => variantData.value?.variant ?? null);
+setVariant(variant.value);
 
 // Watcher to update filters based on variant data
 watch(variant, (newVariant) => {
+  setVariant(newVariant);
   console.log('ПРОИЗВЕДЕНИЕ : ', newVariant?.work?.title);
   console.log('Отрывок : ', newVariant?.excerpt?.title);
 
