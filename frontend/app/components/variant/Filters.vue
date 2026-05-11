@@ -58,9 +58,8 @@ const authorOptions = computed(() => {
 </script>
 
 <template>
-  <div class="p-6 rounded-lg">
-    <div class="space-y-4 grid grid-cols-1 md:grid-cols-2">
-      <!-- Произведение -->
+  <div class="create-variant-filters p-6 rounded-lg">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
       <div class="w-full">
         <label
           class="block text-base font-medium uppercase tracking-wider mb-2 text-toned"
@@ -70,35 +69,18 @@ const authorOptions = computed(() => {
         <USelect
           v-model="selectedWorkId"
           :items="workOptions"
-          option-attribute="label"
-          value-attribute="value"
-          placeholder="Все произведения"
+          placeholder="Выберите произведение"
           class="w-full"
-        >
-          <!-- Кастомное отображение элемента в селекте -->
-
-          <!-- Кастомное отображение выбранного элемента -->
-          <template #selected="{ selected }">
-            <div class="flex items-center justify-between w-full">
-              <span>{{ selected?.label || 'Все произведения' }}</span>
-              <span
-                v-if="selected?.author"
-                class="text-base text-gray-400 ml-2"
-              >
-                {{ selected.author }}
-              </span>
-            </div>
-          </template>
-        </USelect>
+        />
       </div>
 
-      <!-- Глава -->
       <div>
         <label
           class="block text-base font-medium text-toned uppercase tracking-wider mb-2"
         >
           Глава
         </label>
+
         <USelect
           v-model="selectedChapter"
           :items="excerptChapters"
@@ -107,7 +89,6 @@ const authorOptions = computed(() => {
         />
       </div>
 
-      <!-- Отрывок -->
       <div class="md:col-span-2">
         <label
           class="block text-base font-medium text-toned uppercase tracking-wider mb-2"
@@ -125,25 +106,65 @@ const authorOptions = computed(() => {
       </div>
     </div>
 
-    <!-- Отладочная информация (можно удалить) -->
+    <!-- Отладочная информация -->
     <div v-if="false" class="mt-4 text-base text-gray-500">
       <div>Всего произведений: {{ works.length }}</div>
       <div>Выбранное произведение: {{ selectedWorkId }}</div>
       <div v-if="selectedWork">Автор: {{ selectedWork.author }}</div>
     </div>
 
-    <!-- Кнопка действия -->
-    <div class="pt-6 mt-6 border-t border-default">
+    <div class="pt-7 flex justify-center items-center">
       <UButton
         @click="$emit('refresh-block-1')"
         :loading="isLoading"
         :disabled="isLoading"
         block
         size="lg"
-        class="rounded-[50px]"
+        class="update-variant-btn__filter w-auto h-[50px] whitespace-nowrap"
       >
         Обновить отрывок и задания 1–5
       </UButton>
     </div>
   </div>
 </template>
+<style lang="scss">
+.create-variant-filters {
+  button[data-slot='base'] {
+    padding: 15px 24px;
+    background-color: #ffffff;
+
+    box-shadow: 0 0 0 1px #cfcfcf;
+    --tw-ring-color: #cfcfcf;
+
+    border-radius: 10px;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 19px;
+    color: #333333;
+  }
+
+  button.update-variant-btn__filter {
+    background-color: #f6f6f6;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #333333;
+    padding: 20px 35px 18px;
+    border: 0px solid;
+    box-shadow: none;
+    word-wrap: none;
+
+    --ui-button-bg: #f6f6f6;
+    --ui-button-text: #333333;
+    &:hover:not(:disabled) {
+      background-color: #eeeeee;
+    }
+    :disabled,
+    [disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+</style>

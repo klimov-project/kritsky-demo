@@ -1,9 +1,20 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+
   ssr: true,
+
   css: ['~/assets/styles/main.scss', '~/assets/styles/nuxt-ui.css'],
   modules: ['nuxt-auth-utils', '@pinia/nuxt', '@nuxt/ui'],
+  ui: { fonts: false }, // disable the @nuxt/fonts module.
+  icon: {
+    serverBundle: false,
+    provider: 'none',
+    clientBundle: {
+      scan: true,
+      icons: ['lucide:loader-circle', 'lucide:chevron-down'],
+    },
+  },
 
   // Prerendering configuration
   routeRules: {
@@ -12,15 +23,12 @@ export default defineNuxtConfig({
       swr: 35,
       // swr: 300,
     },
-    '/api/knowledge-base': {
-      swr: 35,
-      // swr: 120,
-    },
   },
 
   devServer: {
     port: 3003,
   },
+  
   runtimeConfig: {
     // Server-only runtime config
     apiBackendUrl:
@@ -43,12 +51,12 @@ export default defineNuxtConfig({
         changeOrigin: true,
       },
     },
-    storage: {
-      cache: {
-        driver: 'redis',
-        url: process.env.NITRO_STORAGE_CACHE || 'redis://redis-cache:6379/0',
-      },
-    },
+    // storage: {
+    //   cache: {
+    //     driver: 'redis',
+    //     url: process.env.NITRO_STORAGE_CACHE || 'redis://redis-cache:6379/0',
+    //   },
+    // },
   },
 
   vite: {

@@ -9,7 +9,8 @@ const {
 } = useKnowledgeBase();
 
 // Fetch pregenerated variant
-const apiUrl = import.meta.server ? config.apiBackendUrl : config.public.apiUrl;
+// const apiUrl = import.meta.server ? config.apiBackendUrl : config.public.apiUrl;
+const apiUrl = 'http://localhost:8000/api';
 const variantUrl = `${apiUrl}/variants/runtime/pregenerated`;
 
 const {
@@ -18,7 +19,6 @@ const {
   error: variantError,
   refresh: refreshVariant,
 } = await useFetch<any>(variantUrl, {
-  server: false,
   lazy: true,
   cache: 'no-store',
 });
@@ -130,20 +130,18 @@ const getTaskNumber = (key: string) => {
     />
   </div>
 
-  <!-- Main Content -->
   <div class="max-w-6xl mx-auto px-4 py-6">
     <div class="flex gap-6">
-      <!-- Main Variant Content -->
       <div class="flex-1 min-w-0">
-        <!-- Loading State -->
+        <!-- Loading -->
         <div v-if="isLoading" class="text-center py-20">
           <div
-            class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+            class="inline-block animate-spin rounded-full h-8 w-8 border-b-2"
           ></div>
           <p class="mt-4 text-gray-600">Подготовка варианта...</p>
         </div>
 
-        <!-- Error State -->
+        <!-- Error -->
         <div
           v-else-if="hasError"
           class="bg-red-50 border border-red-200 rounded-lg p-6"
@@ -159,7 +157,7 @@ const getTaskNumber = (key: string) => {
           </button>
         </div>
 
-        <!-- Empty State -->
+        <!-- Empty -->
         <div
           v-else-if="!variant"
           class="bg-white rounded-lg shadow p-6 text-center"

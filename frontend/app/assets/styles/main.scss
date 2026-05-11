@@ -41,6 +41,14 @@ body {
     font-family: var(--font-pt-serif) !important;
 }
 
+// nuxt-ui global fixes
+
+[data-slot='content'] {
+    border-radius: var(--ui-radius) !important;
+}
+
+// from react realisation
+
 .rich-content p {
     min-height: 1.5em;
 }
