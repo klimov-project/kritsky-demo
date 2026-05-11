@@ -47,6 +47,32 @@ body {
     border-radius: var(--ui-radius) !important;
 }
 
+[data-slot="item"] {
+    border-radius: var(--ui-radius) !important;
+    padding: 10px 16px;
+}
+
+/* Стили для выделенного элемента в выпадающем списке */
+[data-slot="item"][data-highlighted]::before {
+    border-radius: var(--ui-radius) !important;
+    background-color: var(--ui-primary-bg) !important;
+    color: var(--ui-primary-hover) !important;
+}
+
+[data-slot="item"]::before {
+    border-radius: var(--ui-radius) !important;
+}
+
+/* Или с повышенной специфичностью */
+[data-slot="content"] [data-slot="item"]::before {
+    border-radius: var(--ui-radius) !important;
+}
+
+/* Цвет выделения */
+[data-slot="item"][data-highlighted]::before {
+    background-color: var(--ui-primary-bg) !important;
+}
+
 // from react realisation
 
 .rich-content p {

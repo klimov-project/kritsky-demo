@@ -10,16 +10,19 @@ const {
 } = useKnowledgeBase();
 
 // Fetch pregenerated variant
-const apiUrl = import.meta.server ? config.apiBackendUrl : config.public.apiUrl;
-// const apiUrl = 'http://localhost:8000/api';
+// const apiUrl = import.meta.server ? config.apiBackendUrl : config.public.apiUrl;
+const apiUrl = import.meta.server
+  ? config.apiBackendUrl
+  : 'http://localhost:8000/api';
 const variantUrl = `${apiUrl}/variants/runtime/pregenerated`;
+
 const {
   data: variantData,
   pending: variantPending,
   error: variantError,
   refresh: refreshVariant,
 } = useLazyFetch<any>(variantUrl, {
-  server: true,
+  server: false,
   default: () => null,
 });
 
@@ -31,9 +34,41 @@ const showAnswers = ref<Record<string, boolean>>({});
 const isRefreshing = ref(false);
 
 const works = computed(() => (kbStore.works ?? []) as Work[]);
-const poets = computed(() => kbStore.poets || []);
 const variant = computed(() => variantData.value?.variant ?? null);
 
+// Watcher to update filters based on variant data
+watch(variant, (newVariant) => {
+  console.log('ПРОИЗВЕДЕНИЕ : ', newVariant?.work?.title);
+  console.log('Отрывок : ', newVariant?.excerpt?.title);
+  console.log(' newVariant?.excerpt ? : ', newVariant?.excerpt);
+  if (newVariant?.excerpt) {
+    console.log('Глава: ', newVariant.excerpt.chapter);
+
+    selectedWorkId.value =
+      newVariant.work?.id || newVariant.excerpt?.workId || '';
+    selectedChapter.value = newVariant.excerpt.chapter || '';
+    selectedExcerptId.value =
+      newVariant.excerpt.excerptId || newVariant.excerpt.id || '';
+    console.log(
+      'selectedWorkId: ' +
+        selectedWorkId.value +
+        '  ---- resolved work id: ' +
+        (newVariant.work?.id || newVariant.excerpt?.workId),
+    );
+    console.log(
+      'selectedChapter: ' +
+        selectedChapter.value +
+        '  ---- newVariant.excerpt.chapter: ' +
+        newVariant.excerpt.chapter,
+    );
+    console.log(
+      'selectedExcerptId: ' +
+        selectedExcerptId.value +
+        '  ---- newVariant.excerpt.excerptId: ' +
+        newVariant.excerpt.excerptId,
+    );
+  }
+});
 
 const isLoading = computed(() => kbPending.value || variantPending.value);
 const hasError = computed(() => !!kbError.value || !!variantError.value);
@@ -42,26 +77,55 @@ const selectedWork = computed(() =>
   works.value.find((w) => w.id === selectedWorkId.value),
 );
 
+watch(selectedWorkId, (newId, oldId) => {
+  if (!oldId || newId === oldId) return;
+  selectedChapter.value = '';
+  selectedExcerptId.value = '';
+});
+
+watch(selectedChapter, (newChapter, oldChapter) => {
+  if (newChapter === oldChapter) return;
+  selectedExcerptId.value = '';
+  if (selectedWork.value && newChapter) {
+    const firstExcerpt = selectedWork.value.excerpts?.find(
+      (excerpt: any) => excerpt.chapter === newChapter,
+    );
+    if (firstExcerpt) {
+      selectedExcerptId.value = firstExcerpt.excerptId || firstExcerpt.id || '';
+    }
+  }
+});
+
 const excerptChapters = computed(() => {
   if (!selectedWork.value) return [];
-  // Simple implementation - extract unique chapters from excerpts
   const chapters = new Set<string>();
   selectedWork.value.excerpts?.forEach((excerpt: any) => {
     if (excerpt.chapter) chapters.add(excerpt.chapter);
   });
-  return Array.from(chapters);
+  const chaptersArray = Array.from(chapters);
+  return chaptersArray;
 });
 
 const excerptDropdownOptions = computed(() => {
   if (!selectedWork.value) return [];
-  return (
-    selectedWork.value.excerpts?.map((excerpt: any, i: number) => ({
-      value: excerpt.id,
+  const filteredExcerpts = selectedChapter.value
+    ? selectedWork.value.excerpts?.filter(
+        (excerpt: any) => excerpt.chapter === selectedChapter.value,
+      )
+    : selectedWork.value.excerpts;
+
+  const options =
+    filteredExcerpts?.map((excerpt: any, i: number) => ({
+      value: excerpt.excerptId || excerpt.id,
       label: `Отрывок ${i + 1}${
         excerpt.chapter ? ` (${excerpt.chapter})` : ''
       }`,
-    })) || []
+    })) || [];
+  const foundExcerpt = selectedWork.value.excerpts?.find(
+    (e: any) => e.id === selectedExcerptId.value,
   );
+  console.log('foundExcerpt for selectedExcerptId:', foundExcerpt);
+  return options;
 });
 
 // Task arrays
@@ -142,62 +206,64 @@ const getTaskNumber = (key: string) => {
           <p class="mt-4 text-gray-600">Подготовка варианта...</p>
         </div>
 
-        <!-- Error -->
-        <div
-          v-else-if="hasError"
-          class="bg-red-50 border border-red-200 rounded-lg p-6"
-        >
-          <p class="text-red-700">
-            Ошибка загрузки данных. Пожалуйста, попробуйте позже.
-          </p>
-          <button
-            @click="refreshVariant()"
-            class="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
+        <ClientOnly v-else>
+          <!-- Error -->
+          <div
+            v-if="hasError"
+            class="bg-red-50 border border-red-200 rounded-lg p-6"
           >
-            Повторить загрузку
-          </button>
-        </div>
+            <p class="text-red-700">
+              Ошибка загрузки данных. Пожалуйста, попробуйте позже.
+            </p>
+            <button
+              @click="refreshVariant()"
+              class="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
+            >
+              Повторить загрузку
+            </button>
+          </div>
 
-        <!-- Empty -->
-        <div
-          v-else-if="!variant"
-          class="bg-white rounded-lg shadow p-6 text-center"
-        >
-          <p class="text-gray-600">
-            Нет данных для отображения. Нажмите "Новый вариант" для генерации.
-          </p>
-        </div>
+          <!-- Empty -->
+          <div
+            v-else-if="!variant"
+            class="bg-white rounded-lg shadow p-6 text-center"
+          >
+            <p class="text-gray-600">
+              Нет данных для отображения. Нажмите "Новый вариант" для генерации.
+            </p>
+          </div>
 
-        <!-- Variant Content -->
-        <div v-else class="space-y-8">
-          <!-- Variant Header -->
-          <NewTestVariantHeader />
+          <!-- Variant Content -->
+          <div v-else class="space-y-8">
+            <!-- Variant Header -->
+            <NewTestVariantHeader />
 
-          <!-- Excerpt Text -->
-          <NewTestExcerpt
-            :excerpt-text="variant.excerpt?.text"
-            :excerpt-author="variant.excerpt?.author"
-            :excerpt-work="variant.excerpt?.work"
-          />
+            <!-- Excerpt Text -->
+            <NewTestExcerpt
+              :excerpt-text="variant.excerpt?.text"
+              :excerpt-author="variant.excerpt?.author"
+              :excerpt-work="variant.excerpt?.work"
+            />
 
-          <!-- Tasks Section -->
-          <NewTestTaskList
-            title="Задания 1–5"
-            :task-keys="shortTasks"
-            :variant="variant"
-            :show-answers="showAnswers"
-            @toggle-answer="toggleAnswer"
-          />
+            <!-- Tasks Section -->
+            <NewTestTaskList
+              title="Задания 1–5"
+              :task-keys="shortTasks"
+              :variant="variant"
+              :show-answers="showAnswers"
+              @toggle-answer="toggleAnswer"
+            />
 
-          <!-- Part 2 -->
-          <NewTestTaskList
-            title="Часть 2. Задания с развёрнутым ответом"
-            :task-keys="longTasks"
-            :variant="variant"
-            :show-answers="showAnswers"
-            @toggle-answer="toggleAnswer"
-          />
-        </div>
+            <!-- Part 2 -->
+            <NewTestTaskList
+              title="Часть 2. Задания с развёрнутым ответом"
+              :task-keys="longTasks"
+              :variant="variant"
+              :show-answers="showAnswers"
+              @toggle-answer="toggleAnswer"
+            />
+          </div>
+        </ClientOnly>
       </div>
     </div>
   </div>
