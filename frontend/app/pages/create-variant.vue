@@ -19,6 +19,16 @@ useHead({
     { property: 'og:type', content: 'website' },
   ],
 });
+
+const { variant, isInitialLoading } = useVariantState();
+const { pregenerateVariant } = useGenerateVariant();
+// Initial fetch logic
+onMounted(async () => {
+  if (!variant.value) {
+    await pregenerateVariant();
+  }
+  isInitialLoading.value = false;
+});
 </script>
 
 <template>

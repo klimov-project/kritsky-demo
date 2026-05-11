@@ -2,64 +2,56 @@
 import type { Work } from '@/types/knowledgeBaseTypes';
 import { useKnowledgeBase } from '~/composables/useKnowledgeBase';
 
-const config = useRuntimeConfig();
-const { setVariant } = useVariant();
+const {
+  variant,
+  selectedWorkId,
+  selectedExcerptId,
+  selectedChapter,
+  checkedAnswers,
+  refreshLoadingByBlock,
+  statusMessage,
+  isInitialLoading,
+} = useVariantState();
+
 const {
   store: kbStore,
   pending: kbPending,
   error: kbError,
 } = useKnowledgeBase();
 
-// Fetch pregenerated variant
-const apiUrl = import.meta.server ? config.apiBackendUrl : config.public.apiUrl;
-// const apiUrl = import.meta.server
-//   ? config.apiBackendUrl
-//   : 'http://localhost:8000/api';
-const variantUrl = `${apiUrl}/variants/runtime/pregenerated`;
-
-const {
-  data: variantData,
-  pending: variantPending,
-  error: variantError,
-  refresh: refreshVariant,
-} = useLazyFetch<any>(variantUrl, {
-  server: false,
-  default: () => null,
-});
-
-// State
-const selectedWorkId = ref('');
-const selectedExcerptId = ref('');
-const selectedChapter = ref('');
-const showAnswers = ref<Record<string, boolean>>({});
-const isRefreshing = ref(false);
+const { generateVariant, refreshBlock } = useGenerateVariant();
 
 const works = computed(() => (kbStore.works ?? []) as Work[]);
-const variant = computed(() => variantData.value?.variant ?? null);
-setVariant(variant.value);
 
-// Watcher to update filters based on variant data
-watch(variant, (newVariant) => {
-  setVariant(newVariant);
-  console.log('ПРОИЗВЕДЕНИЕ : ', newVariant?.work?.title);
-  console.log('Отрывок : ', newVariant?.excerpt?.title);
-
-  if (newVariant?.excerpt) {
-    const { excerpt } = newVariant;
-    console.log('Глава: ', excerpt.chapter);
-
-    // selectedWorkId.value = newVariant.work?.id || excerpt?.workId || '';
-    selectedWorkId.value = newVariant.work?.id || '';
-    selectedChapter.value = excerpt.chapter || '';
-    selectedExcerptId.value = excerpt.title || '';
-    console.log('selectedChapter.value ', selectedChapter.value);
-    console.log('selectedExcerptId.value ', selectedExcerptId.value);
-    console.log('excerpt ', excerpt);
-  }
+// Initial fetch logic
+onMounted(async () => {
+  // if (!variant.value) {
+  //   await generateVariant();
+  // }
+  // isInitialLoading.value = false;
 });
 
-const isLoading = computed(() => kbPending.value || variantPending.value);
-const hasError = computed(() => !!kbError.value || !!variantError.value);
+// Watcher to update filters based on variant data
+watch(
+  variant,
+  (newVariant) => {
+    if (newVariant?.excerpt) {
+      const { excerpt } = newVariant;
+      selectedWorkId.value = newVariant.work?.id || '';
+      selectedChapter.value = excerpt.chapter || '';
+      selectedExcerptId.value = excerpt.title || '';
+    }
+  },
+  { immediate: true },
+);
+
+const isLoading = computed(
+  () =>
+    kbPending.value ||
+    isInitialLoading.value ||
+    refreshLoadingByBlock.value.block1,
+);
+const hasError = computed(() => !!kbError.value || !!statusMessage.value);
 
 const selectedWork = computed(() =>
   works.value.find((w) => w.id === selectedWorkId.value),
@@ -71,8 +63,7 @@ const excerptChaptersOptions = computed(() => {
   selectedWork.value.excerpts?.forEach((excerpt: any) => {
     if (excerpt.chapter) chapters.add(excerpt.chapter);
   });
-  const chaptersArray = Array.from(chapters);
-  return chaptersArray;
+  return Array.from(chapters);
 });
 
 const excerptDropdownOptions = computed(() => {
@@ -82,12 +73,12 @@ const excerptDropdownOptions = computed(() => {
         (excerpt: any) => excerpt.chapter === selectedChapter.value,
       )
     : selectedWork.value.excerpts;
-  const options =
+  return (
     filteredExcerpts?.map((excerpt: any, i: number) => ({
       value: excerpt?.title || excerpt.id,
       label: excerpt?.title || `Отрывок ${i + 1} (${excerpt.chapter})`,
-    })) || [];
-  return options;
+    })) || []
+  );
 });
 
 // Task arrays
@@ -98,7 +89,10 @@ const longTasks = [
   'task8',
   'task9',
   'task10',
-  'task11',
+  'task11_1',
+  'task11_2_3',
+  'task11_4',
+  'task11_5',
   'task12',
   'task13',
   'task14',
@@ -108,44 +102,22 @@ const longTasks = [
 
 // Methods
 const toggleAnswer = (taskKey: string) => {
-  showAnswers.value[taskKey] = !showAnswers.value[taskKey];
-};
-
-const handleRefreshVariant = async () => {
-  isRefreshing.value = true;
-  try {
-    await refreshVariant();
-  } finally {
-    isRefreshing.value = false;
+  if (checkedAnswers.value.has(taskKey)) {
+    checkedAnswers.value.delete(taskKey);
+  } else {
+    checkedAnswers.value.add(taskKey);
   }
 };
 
-const manualUpdateWork = async (workTitle: string) => {
-  selectedWorkId.value = workTitle;
-
+const manualUpdateWork = (workId: string) => {
+  selectedWorkId.value = workId;
   selectedChapter.value = '';
   selectedExcerptId.value = '';
 };
 
-const manualUpdateChapter = async (chapterTitle: string) => {
+const manualUpdateChapter = (chapterTitle: string) => {
   selectedChapter.value = chapterTitle;
   selectedExcerptId.value = '';
-};
-
-const refreshBlock1 = async () => {
-  // Stub - refresh excerpt and tasks 1-5
-  await handleRefreshVariant();
-};
-
-const formatAnswer = (answer: any) => {
-  if (Array.isArray(answer)) {
-    return answer.join(', ');
-  }
-  return answer || 'Нет ответа';
-};
-
-const getTaskNumber = (key: string) => {
-  return key.replace('task', '');
 };
 </script>
 
@@ -165,7 +137,7 @@ const getTaskNumber = (key: string) => {
       @update:selected-work-id="manualUpdateWork"
       @update:selected-chapter="manualUpdateChapter"
       @update:selected-excerpt-id="selectedExcerptId = $event"
-      @refresh-block-1="handleRefreshVariant"
+      @refresh-block-1="refreshBlock('block1')"
     />
   </div>
 
@@ -185,10 +157,13 @@ const getTaskNumber = (key: string) => {
         class="bg-red-50 border border-red-200 rounded-lg p-6"
       >
         <p class="text-red-700">
-          Ошибка загрузки данных. Пожалуйста, попробуйте позже.
+          {{
+            statusMessage ||
+            'Ошибка загрузки данных. Пожалуйста, попробуйте позже.'
+          }}
         </p>
         <button
-          @click="refreshVariant()"
+          @click="generateVariant"
           class="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
         >
           Повторить загрузку
@@ -210,8 +185,8 @@ const getTaskNumber = (key: string) => {
         <!-- Excerpt  -->
         <VariantExcerpt
           :excerpt-text="variant.excerpt?.text"
-          :excerpt-author="selectedWork?.author"
-          :excerpt-work="selectedWork?.title"
+          :excerpt-author="variant.work?.author"
+          :excerpt-work="variant.work?.title"
         />
 
         <!-- Tasks Section -->
@@ -219,16 +194,16 @@ const getTaskNumber = (key: string) => {
           title="Задания 1–5"
           :task-keys="shortTasks"
           :variant="variant"
-          :show-answers="showAnswers"
+          :show-answers="checkedAnswers"
           @toggle-answer="toggleAnswer"
         />
 
         <!-- Part 2 -->
-        <NewTestTaskList
+        <VariantTasks2
           title="Часть 2. Задания с развёрнутым ответом"
           :task-keys="longTasks"
           :variant="variant"
-          :show-answers="showAnswers"
+          :show-answers="checkedAnswers"
           @toggle-answer="toggleAnswer"
         />
       </div>
