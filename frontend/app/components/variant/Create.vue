@@ -10,10 +10,10 @@ const {
 } = useKnowledgeBase();
 
 // Fetch pregenerated variant
-// const apiUrl = import.meta.server ? config.apiBackendUrl : config.public.apiUrl;
-const apiUrl = import.meta.server
-  ? config.apiBackendUrl
-  : 'http://localhost:8000/api';
+const apiUrl = import.meta.server ? config.apiBackendUrl : config.public.apiUrl;
+// const apiUrl = import.meta.server
+//   ? config.apiBackendUrl
+//   : 'http://localhost:8000/api';
 const variantUrl = `${apiUrl}/variants/runtime/pregenerated`;
 
 const {
