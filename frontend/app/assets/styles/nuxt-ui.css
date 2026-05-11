@@ -3,6 +3,10 @@
 
 :root {
     --ui-white: #ffffff;
+    --ui-text: #333333;
+    --ui-radius: 10px; 
+    --ui-button-bg: #f6f6f6;
+    
     /* --- Палитра красного --- */
     --ui-color-red-50: #fdf2f2;
     --ui-color-red-100: #fde8e8;
@@ -60,10 +64,8 @@
     --ui-text-highlighted: var(--ui-color-charcoal-950);
 
     /* --- Фон (Семантическая привязка) --- */
-    --ui-bg: var(--ui-white);
-    /* Белые карточки */
-    --ui-bg-muted: var(--ui-color-neutral-50);
-    /* bg-gray-50 для фона страницы */
+    --ui-bg: var(--ui-white); 
+    --ui-bg-muted: var(--ui-color-neutral-50); 
     --ui-bg-elevated: var(--ui-color-neutral-100);
 
     /* --- Границы (На основе документации) --- */
@@ -72,8 +74,7 @@
     --ui-border-accented: var(--ui-color-neutral-300);
 
     /* --- Глобальные   --- */
-    --ui-radius: 10px;
-    /* --text-xs: 16px; */
+    --ui-button-text: var(--ui-text);
     --tw-ring-color: var(--ui-color-charcoal-50)
 }
 

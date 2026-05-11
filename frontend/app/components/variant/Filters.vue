@@ -35,6 +35,11 @@ const selectedExcerptId = computed({
   set: (value) => emit('update:selected-excerpt-id', value)
 })
 
+
+const disabledWorks = computed(() => props.works.length === 0)
+const disabledChapter = computed(() => props.excerptChapters.length === 0)
+const disabledExcerpt = computed(() => props.excerptDropdownOptions.length === 0)
+
 // Преобразуем works в формат для USelect
 const workOptions = computed(() => {
   return props.works.map(work => ({
@@ -69,6 +74,7 @@ const authorOptions = computed(() => {
         <USelect
           v-model="selectedWorkId"
           :items="workOptions"
+          :disabled="disabledWorks"
           placeholder="Выберите произведение"
           class="w-full"
         />
@@ -84,6 +90,7 @@ const authorOptions = computed(() => {
         <USelect
           v-model="selectedChapter"
           :items="excerptChapters"
+          :disabled="disabledChapter"
           placeholder="Все главы"
           class="w-full"
         />
@@ -98,8 +105,7 @@ const authorOptions = computed(() => {
         <USelect
           v-model="selectedExcerptId"
           :items="excerptDropdownOptions"
-          option-attribute="label"
-          value-attribute="value"
+          :disabled="disabledExcerpt"
           placeholder="Выберите отрывок"
           class="w-full"
         />
@@ -141,7 +147,6 @@ const authorOptions = computed(() => {
     font-weight: 400;
     font-size: 16px;
     line-height: 19px;
-    color: #333333;
   }
 
   button.update-variant-btn__filter {
@@ -149,14 +154,11 @@ const authorOptions = computed(() => {
     font-size: 12px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #333333;
+    color: var(--ui-text);
     padding: 20px 35px 18px;
     border: 0px solid;
     box-shadow: none;
     word-wrap: none;
-
-    --ui-button-bg: #f6f6f6;
-    --ui-button-text: #333333;
     &:hover:not(:disabled) {
       background-color: #eeeeee;
     }

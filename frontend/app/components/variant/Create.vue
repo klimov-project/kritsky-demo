@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Work } from '@/types/knowledgeBaseTypes';
 import { useKnowledgeBase } from '~/composables/useKnowledgeBase';
+
 const config = useRuntimeConfig();
 const {
   store: kbStore,
@@ -9,18 +10,17 @@ const {
 } = useKnowledgeBase();
 
 // Fetch pregenerated variant
-// const apiUrl = import.meta.server ? config.apiBackendUrl : config.public.apiUrl;
-const apiUrl = 'http://localhost:8000/api';
+const apiUrl = import.meta.server ? config.apiBackendUrl : config.public.apiUrl;
+// const apiUrl = 'http://localhost:8000/api';
 const variantUrl = `${apiUrl}/variants/runtime/pregenerated`;
-
 const {
   data: variantData,
   pending: variantPending,
   error: variantError,
   refresh: refreshVariant,
-} = await useFetch<any>(variantUrl, {
-  lazy: true,
-  cache: 'no-store',
+} = useLazyFetch<any>(variantUrl, {
+  server: true,
+  default: () => null,
 });
 
 // State
@@ -29,16 +29,18 @@ const selectedExcerptId = ref('');
 const selectedChapter = ref('');
 const showAnswers = ref<Record<string, boolean>>({});
 const isRefreshing = ref(false);
-// Computed
-const works = computed(() => (kbStore.works || []) as Work[]);
-const poets = computed(() => kbStore.poets || []);
-const variant = computed(() => variantData.value?.variant || null);
-const isLoading = computed(() => kbPending.value || variantPending.value);
-const hasError = computed(() => kbError.value || variantError.value);
 
-const selectedWork = computed(() => {
-  return works.value.find((w: any) => w.id === selectedWorkId.value);
-});
+const works = computed(() => (kbStore.works ?? []) as Work[]);
+const poets = computed(() => kbStore.poets || []);
+const variant = computed(() => variantData.value?.variant ?? null);
+
+
+const isLoading = computed(() => kbPending.value || variantPending.value);
+const hasError = computed(() => !!kbError.value || !!variantError.value);
+
+const selectedWork = computed(() =>
+  works.value.find((w) => w.id === selectedWorkId.value),
+);
 
 const excerptChapters = computed(() => {
   if (!selectedWork.value) return [];
@@ -110,9 +112,8 @@ const getTaskNumber = (key: string) => {
 </script>
 
 <template>
-  <!-- Sidebar -->
   <VariantSidebar />
-  <!-- Page Header -->
+
   <div class="max-w-6xl w-full bg-white rounded-[10px] mb-3 p-4">
     <VariantFilters
       :works="works"
@@ -126,17 +127,17 @@ const getTaskNumber = (key: string) => {
       @update:selected-work-id="selectedWorkId = $event"
       @update:selected-chapter="selectedChapter = $event"
       @update:selected-excerpt-id="selectedExcerptId = $event"
-      @refresh-block-1="refreshBlock1"
+      @refresh-block-1="handleRefreshVariant"
     />
   </div>
 
   <div class="max-w-6xl mx-auto px-4 py-6">
     <div class="flex gap-6">
       <div class="flex-1 min-w-0">
-        <!-- Loading -->
+        <!-- Loading state — показывается и на сервере, и на клиенте -->
         <div v-if="isLoading" class="text-center py-20">
           <div
-            class="inline-block animate-spin rounded-full h-8 w-8 border-b-2"
+            class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"
           ></div>
           <p class="mt-4 text-gray-600">Подготовка варианта...</p>
         </div>
