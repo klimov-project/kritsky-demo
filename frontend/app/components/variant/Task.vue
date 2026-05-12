@@ -76,13 +76,12 @@ const showAnswerButton = computed(() => {
     <!-- Верхняя панель -->
     <div class="no-print flex items-start justify-between gap-4 mb-7 pt-3">
       <!-- Чекбоксы (только для task1 с isTermQuestion) -->
-      <TermQuestionToggles v-if="taskType === 'task1' && hasTermQuestion" />
-      <div v-else></div>
+      <TaskTermQuestionToggles v-if="taskType === 'task1' && hasTermQuestion" />
 
       <!-- Кнопки управления -->
       <div class="flex items-center gap-2">
-        <PayloadViewer :data="taskData" />
-        <VisibilityToggle @toggle="toggleVisibility" />
+        <TaskPayloadViewer :data="taskData" />
+        <TaskVisibilityToggle @toggle="toggleVisibility" />
       </div>
     </div>
 
@@ -100,7 +99,7 @@ const showAnswerButton = computed(() => {
           :pairs="taskData.pairs || []"
           :options="taskData.options || []"
         />
-        <AnswerStub />
+        <TaskAnswerStub />
       </template>
 
       <!-- TASK 3 / TASK 6 -->
@@ -109,8 +108,8 @@ const showAnswerButton = computed(() => {
           <TaskNumber :number="getTaskNumber(taskKey)" />
           <TaskText :part1="taskData.part1" :part2="taskData.part2" />
         </div>
-        <AnswerStub />
-        <AnswerToggle :answer="formattedAnswer" />
+        <TaskAnswerStub />
+        <TaskAnswerToggle :answer="formattedAnswer" />
       </template>
 
       <!-- TASK 8 -->
@@ -120,8 +119,8 @@ const showAnswerButton = computed(() => {
           <TaskText :prompt="taskData.prompt" />
         </div>
         <TaskOptionsList :options="variant?.task8Options || []" />
-        <AnswerStub />
-        <AnswerToggle :answer="formattedAnswer" />
+        <TaskAnswerStub />
+        <TaskAnswerToggle :answer="formattedAnswer" />
       </template>
 
       <!-- DEFAULT: task1, task4, task5, task7, task9, task10, task11 -->
@@ -130,8 +129,8 @@ const showAnswerButton = computed(() => {
           <TaskNumber :number="getTaskNumber(taskKey)" />
           <TaskText :text="taskData.text" />
         </div>
-        <AnswerStub v-if="showAnswerStub" />
-        <AnswerToggle v-if="showAnswerButton" :answer="formattedAnswer" />
+        <TaskAnswerStub v-if="showAnswerStub" />
+        <TaskAnswerToggle v-if="showAnswerButton" :answer="formattedAnswer" />
       </template>
     </div>
   </div>
