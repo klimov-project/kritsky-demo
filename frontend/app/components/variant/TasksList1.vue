@@ -1,23 +1,16 @@
 <script setup lang="ts">
 interface Props {
-  taskKeys: string[]
-  variant: any
-  showAnswers: Set<string> | Record<string, boolean>
+  taskKeys: string[];
+  variant: any;
+  showAnswers: Set<string> | Record<string, boolean>;
 }
 
-const props = defineProps<Props>()
-
-const emit = defineEmits<{
-  'toggle-answer': [taskKey: string]
-}>()
-
-const toggleAnswer = (taskKey: string) => {
-  emit('toggle-answer', taskKey)
-}
+const props = defineProps<Props>();
+const variant = useCurrentVariant();
 
 const getTaskNumber = (key: string) => {
-  return key.replace('task', '')
-}
+  return key.replace('task', '');
+};
 </script>
 
 <template>

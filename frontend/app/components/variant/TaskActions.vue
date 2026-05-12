@@ -1,7 +1,18 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div></div>
+  <div class="task-action-btns">
+    <VariantTaskPrevious />
+    <VariantTaskRefresh />
+  </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.task-action-btns {
+  position: absolute;
+  left: -73px;
+  display: flex;
+  gap: 4px;
+  transform: translateX(-100%);
+}
+</style>

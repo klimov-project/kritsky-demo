@@ -192,7 +192,6 @@ const manualUpdateChapter = (chapterTitle: string) => {
         <!-- Tasks Section -->
         <VariantTasksList1
           :task-keys="shortTasks"
-          :variant="variant"
           :show-answers="checkedAnswers"
           @toggle-answer="toggleAnswer"
         />

@@ -41,7 +41,6 @@ const formattedAnswer = computed(() => {
       backgroundColor: 'var(--ui-bg)',
     }"
   >
-    <TaskActions />
     <!-- Верхняя панель с действиями -->
     <div class="no-print flex items-start justify-between gap-4 mb-4">
       <!-- Группа чекбоксов-переключателей -->
@@ -151,9 +150,10 @@ const formattedAnswer = computed(() => {
       <div class="flex items-start gap-[10px]">
         <!-- Номер вопроса -->
         <div
-          class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-[5px]"
+          class="relative flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-[5px]"
           style="background-color: var(--ui-primary-bg);"
         >
+          <VariantTaskActions />
           <span
             class="font-['Gilroy',_sans-serif] text-base font-semibold leading-[20px] text-center"
             :style="{ color: 'var(--ui-text)' }"
