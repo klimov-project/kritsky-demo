@@ -81,34 +81,6 @@ const excerptDropdownOptions = computed(() => {
   );
 });
 
-// Task arrays
-const shortTasks = ['task1', 'task2', 'task3', 'task4', 'task5'];
-const longTasks = [
-  'task6',
-  'task7',
-  'task8',
-  'task9',
-  'task10',
-  'task11_1',
-  'task11_2_3',
-  'task11_4',
-  'task11_5',
-  'task12',
-  'task13',
-  'task14',
-  'task15',
-  'task16',
-];
-
-// Methods
-const toggleAnswer = (taskKey: string) => {
-  if (checkedAnswers.value.has(taskKey)) {
-    checkedAnswers.value.delete(taskKey);
-  } else {
-    checkedAnswers.value.add(taskKey);
-  }
-};
-
 const manualUpdateWork = (workId: string) => {
   selectedWorkId.value = workId;
   selectedChapter.value = '';
@@ -189,21 +161,11 @@ const manualUpdateChapter = (chapterTitle: string) => {
           :excerpt-work="variant.work?.title"
         />
 
-        <!-- Tasks Section -->
-        <VariantTasksList1
-          :task-keys="shortTasks"
-          :show-answers="checkedAnswers"
-          @toggle-answer="toggleAnswer"
-        />
+        <!-- Tasks Part 1 -->
+        <VariantTaskList1 />
 
-        <!-- Part 2 -->
-        <VariantTasks2
-          title="Часть 2. Задания с развёрнутым ответом"
-          :task-keys="longTasks"
-          :variant="variant"
-          :show-answers="checkedAnswers"
-          @toggle-answer="toggleAnswer"
-        />
+        <!-- Tasks Part 2 -->
+        <VariantTaskList2 />
       </div>
     </ClientOnly>
   </div>
