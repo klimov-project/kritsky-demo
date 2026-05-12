@@ -66,6 +66,7 @@ export const useNavigateScene = () => {
   };
 
   const nextTitle = computed(() => {
+    console.log('Computing nextTitle with variant:', variant.value);
     if (!variant.value) return null;
 
     const { hasNext, currentIndex, orderedExcerpts } = sceneNavigation.value;
@@ -74,6 +75,7 @@ export const useNavigateScene = () => {
   });
 
   const prevTitle = computed(() => {
+    console.log('Computing prevTitle with variant:', variant.value);
     if (!variant.value) return null;
 
     const {

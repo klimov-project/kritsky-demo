@@ -30,6 +30,11 @@ export default defineNuxtConfig({
 
   components: [
     {
+      path: '~/components/',
+      pattern: '**/*.vue',
+      prefix: '',
+    },
+    {
       path: '~/components/ui',
       pattern: '**/*.vue',
       prefix: '',

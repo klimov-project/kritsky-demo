@@ -18,7 +18,7 @@ const handleNav = (key: 'previous' | 'next') => {
 };
 </script>
 <template>
-  <div class="w-full bg-white rounded-[10px] mb-3 p-[30px_40px]">
+  <div class="w-full bg-white rounded-[10px] mb-3 p-[30px_40px_50px_30px]">
     <VariantTasks1Header />
     <div class="prose prose-sm max-w-none mb-4">
       <p
@@ -43,7 +43,9 @@ const handleNav = (key: 'previous' | 'next') => {
       </BaseButton>
     </div>
 
-    <div class="pt-2 flex justify-between items-center text-gray-500 text-base">
+    <div
+      class="pt-2 gap-2 flex justify-between items-center text-gray-500 text-base"
+    >
       <span v-if="scene.hasNext"> {{ nextTitle }}</span>
       <span v-if="scene.hasPrevious"> {{ prevTitle }}</span>
     </div>
