@@ -190,8 +190,7 @@ const manualUpdateChapter = (chapterTitle: string) => {
         />
 
         <!-- Tasks Section -->
-        <VariantTasks1
-          title="Задания 1–5"
+        <VariantTasksList1
           :task-keys="shortTasks"
           :variant="variant"
           :show-answers="checkedAnswers"

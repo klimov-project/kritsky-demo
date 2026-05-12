@@ -6,6 +6,7 @@
     --ui-text: #333;
     --ui-radius: 10px;
     --ui-primary-bg: #f6f6f6;
+    --ui-hover: #eeeeee;
 
     /* --- Палитра красного --- */
     --ui-color-red-50: #fdf2f2;
@@ -66,7 +67,7 @@
     /* --- Фон (Семантическая привязка) --- */
     --ui-bg: var(--ui-white);
     --ui-bg-muted: var(--ui-color-neutral-50);
-    --ui-bg-elevated: var(--ui-color-neutral-100);
+    --ui-bg-elevated: var(--ui-hover);
     --ui-button-bg: var(--ui-primary-bg);
 
     /* --- Границы (На основе документации) --- */

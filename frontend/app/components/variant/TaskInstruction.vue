@@ -2,10 +2,7 @@
 <template>
   <div class="task-instruction-wrapper text-default">
     <p class="task-instruction">
-      Прочитайте приведённый ниже фрагмент художественного произведения и
-    </p>
-    <p class="task-instruction">
-      выполните задания 1–3, 4.1 или 4.2 (на выбор) и задание 5.
+      <slot />
     </p>
   </div>
 </template>
