@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 <template>
   <div class="task-instruction-wrapper text-default">
-    <p class="task-instruction">
+    <p class="task-instruction leading-[23px]">
       <slot />
     </p>
   </div>
@@ -21,7 +21,7 @@
     border: 1px solid #333333;
     border-radius: 5px;
     padding: 14px 40px;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
   }
 }
 </style>

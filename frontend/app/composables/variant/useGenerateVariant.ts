@@ -19,13 +19,11 @@ export const useGenerateVariant = () => {
   } = useVariantState();
 
   const config = useRuntimeConfig();
-  // const apiUrl = import.meta.server
-  //   ? config.apiBackendUrl
-  //   : config.public.apiUrl;
-
   const apiUrl = import.meta.server
     ? config.apiBackendUrl
-    : 'http://localhost:8000/api';
+    : config.public.apiUrl;
+
+  console.log('API URL: ', apiUrl);
 
   const buildPayload = () => ({
     selectedWorkId: selectedWorkId.value,
@@ -37,6 +35,7 @@ export const useGenerateVariant = () => {
   });
 
   const pregenerateVariant = async () => {
+    console.log('pregenerateVariant: ', apiUrl);
     const pregeneratedUrl = `${apiUrl}/variants/runtime/pregenerated`;
     try {
       const data = await $fetch<{ variant: GeneratedVariant }>(pregeneratedUrl);
@@ -75,7 +74,7 @@ export const useGenerateVariant = () => {
     refreshLoadingByBlock.value[block] = true;
     try {
       const data = await $fetch<{ variant: GeneratedVariant }>(
-        '/api/variants/runtime/refresh-block',
+        `${apiUrl}/variants/runtime/refresh-block`,
         {
           method: 'POST',
           body: {
@@ -98,7 +97,7 @@ export const useGenerateVariant = () => {
     refreshLoadingByTask.value[taskKey] = true;
     try {
       const data = await $fetch<{ variant: GeneratedVariant }>(
-        '/api/variants/runtime/refresh-task',
+        `${apiUrl}/variants/runtime/refresh-task`,
         {
           method: 'POST',
           body: {

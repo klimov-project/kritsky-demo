@@ -1,12 +1,24 @@
 <script setup lang="ts">
-const someTasks4 = ['task4_1', 'task4_2'];
-const task5 = 'task5';
+const longTasks = [
+  'task4_1',
+  'task4_2',
+  'task5',
+  'task6',
+  'task7',
+  'task8',
+  'task9_1',
+  'task9_2',
+  'task10',
+  'task11_1',
+  'task11_2',
+  'task11_3',
+  'task11_4',
+  'task11_5',
+];
 </script>
 
 <template>
-  <section
-    class="tasks-section-3 w-full bg-white rounded-[10px] mb-3 p-[30px_40px_50px_30px]"
-  >
+  <section class="w-full bg-white rounded-[10px] mb-3 p-[30px_40px_50px_30px]">
     <VariantTaskInstruction>
       При написании развёрнутых ответов на задания 4 и 5 не искажайте автор ской
       позиции, приводите конкретные примеры из текста произведений (обращайтесь
@@ -27,25 +39,10 @@ const task5 = 'task5';
         </li>
       </ul>
     </TaskInstruction>
-
     <VariantTask
-      v-for="taskKey in someTasks4"
+      v-for="taskKey in longTasks"
       :key="taskKey"
       :task-key="taskKey"
     />
-
-    <TaskInstruction>
-      Дайте аргументированный связный ответ на вопрос задания: <br />
-      - укажите сходство ИЛИ различие произведений в соответствии с заданием;
-    </TaskInstruction>
-
-    <VariantTask :task-key="task5" />
   </section>
 </template>
-<style lang="scss">
-.tasks-section-3 {
-  .task-container + .task-info {
-    margin-top: 20px;
-  }
-}
-</style>

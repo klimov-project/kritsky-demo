@@ -124,12 +124,9 @@ const workOptions = computed(() => {
 <style lang="scss">
 .create-variant-filters {
   button[data-slot='base']:not(.update-variant-btn__filter) {
+    --tw-ring-color: #cfcfcf;
     padding: 15px 24px;
     background-color: #ffffff;
-
-    box-shadow: 0 0 0 1px #cfcfcf;
-    --tw-ring-color: #cfcfcf;
-
     border-radius: 10px;
     font-style: normal;
     font-weight: 400;

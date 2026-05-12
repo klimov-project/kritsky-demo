@@ -21,7 +21,7 @@ export const useNavigateScene = () => {
     const currentWork =
       works.value.find((work) => work.id === currentVariant.work?.id) ||
       currentVariant.work;
-    const orderedExcerpts = sortExcerptsByOrder(currentWork.excerpts || []);
+    const orderedExcerpts = sortExcerptsByOrder(currentWork?.excerpts || []);
     const currentIndex = orderedExcerpts.findIndex(
       (excerpt) => excerpt.id === currentVariant.excerpt.id,
     );

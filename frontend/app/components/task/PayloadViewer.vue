@@ -11,7 +11,7 @@ const toggle = () => {
 </script>
 
 <template>
-  <div>
+  <div class="flex items-center justify-center">
     <button
       type="button"
       class="icon-button flex-shrink-0 p-1 rounded-[5px] transition-all duration-200 hover:bg-[var(--ui-bg-elevated)] active:scale-95"
@@ -37,7 +37,7 @@ const toggle = () => {
     </button>
     <div
       v-if="isVisible"
-      class="mt-3 mb-5 p-4 bg-gray-100 rounded-lg overflow-auto max-h-96"
+      class="absolute top-[30px] right-0 w-full z-10 mt-3 mb-5 p-4 bg-gray-100 rounded-lg overflow-auto max-h-96"
     >
       <pre class="text-xs">{{ JSON.stringify(data, null, 2) }}</pre>
     </div>

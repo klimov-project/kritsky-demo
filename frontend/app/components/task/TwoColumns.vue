@@ -8,12 +8,11 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="grid grid-cols-2 gap-8 mb-6">
+  <div class="w-full grid grid-cols-2 gap-8 mb-6">
     <!-- Левая колонка -->
     <div>
       <div
-        class="text-center text-[28px] font-semibold mb-4"
-        :style="{ color: 'var(--ui-text)' }"
+        class="block text-base font-medium text-toned uppercase tracking-wider mb-2"
       >
         {{ leftLabel }}
       </div>
@@ -34,8 +33,7 @@ const props = defineProps<{
     <!-- Правая колонка -->
     <div>
       <div
-        class="text-center text-[28px] font-semibold mb-4"
-        :style="{ color: 'var(--ui-text)' }"
+        class="block text-base font-medium text-toned uppercase tracking-wider mb-2"
       >
         {{ rightLabel }}
       </div>

@@ -13,6 +13,8 @@ const {
   prevTitle,
 } = useNavigateScene();
 
+const { hasPrevious, hasNext } = scene.value;
+
 const handleNav = (key: 'previous' | 'next') => {
   navigate(key);
 };
@@ -32,26 +34,37 @@ const handleNav = (key: 'previous' | 'next') => {
       ></p>
     </div>
     <div class="flex justify-end">
-      <p class="text-sm font-semibold text-gray-600">
+      <p class="text-base font-semibold text-gray-600">
         {{ excerptAuthor }} — «{{ excerptWork }}»
       </p>
     </div>
 
-    <div class="pt-7 flex justify-between items-center">
-      <BaseButton v-if="scene.hasNext" previous @click="handleNav('next')">
+    <div class="prose-nav pt-7 flex justify-between items-center">
+      <BaseButton v-show="hasNext" previous @click="handleNav('next')">
         Предыдущая сцена
       </BaseButton>
 
-      <BaseButton v-if="scene.hasPrevious" next @click="handleNav('previous')">
+      <BaseButton v-show="hasPrevious" next @click="handleNav('previous')">
         Следующая сцена
       </BaseButton>
     </div>
 
     <div
-      class="pt-2 gap-2 flex justify-between items-center text-gray-500 text-base"
+      class="prose-nav pt-2 gap-2 flex justify-between items-center text-gray-500 text-base"
     >
       <span v-if="scene.hasNext" class="text-left"> {{ nextTitle }}</span>
       <span v-if="scene.hasPrevious" class="text-rigth"> {{ prevTitle }}</span>
     </div>
   </div>
 </template>
+<style lang="scss">
+.prose {
+  padding-top: 20px;
+
+  &-nav {
+    .text-rigth {
+      margin-inline-start: auto;
+    }
+  }
+}
+</style>

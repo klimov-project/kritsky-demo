@@ -5,7 +5,7 @@
     class="flex items-center gap-[10px] text-base leading-[19px] uppercase"
     :style="{ color: 'var(--ui-text)' }"
   >
-    <span class="font-['Gilroy',_sans-serif] font-semibold flex-shrink-0">
+    <span class="text-base font-medium uppercase tracking-wider">
       Ответ:
     </span>
     <div

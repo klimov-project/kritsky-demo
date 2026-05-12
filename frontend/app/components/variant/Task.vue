@@ -9,12 +9,27 @@ const getTaskNumber = (key: string) => {
   return key.replace('task', '').replace(/_/g, '.');
 };
 
-const toggleVisibility = () => {
-  console.log('Toggle visibility');
+const isOpen = ref(true);
+
+const isEmpty = (html?: string) => {
+  if (!html) return true;
+  const stripped = html.replace(/<[^>]*>/g, '').trim();
+  return stripped === '';
 };
+
+defineShortcuts({
+  o: () => (isOpen.value = !isOpen.value),
+});
 
 // Данные текущего задания
 const taskData = computed(() => variant.value?.[props.taskKey] || {});
+
+const hasContent = computed(() => {
+  if (taskData.value.part1 || taskData.value.part2) {
+    return !isEmpty(taskData.value.part1) || !isEmpty(taskData.value.part2);
+  }
+  return !isEmpty(taskData.value.text || taskData.value.prompt);
+});
 
 // Определяем тип задания
 const taskType = computed(() => {
@@ -32,7 +47,6 @@ const taskType = computed(() => {
   return 'default';
 });
 
-// Проверки
 const hasTermQuestion = computed(() => taskData.value?.isTermQuestion === true);
 
 const formattedAnswer = computed(() => {
@@ -67,77 +81,105 @@ const showAnswerButton = computed(() => {
 
 <template>
   <div
-    class="container-task rounded-[10px] border p-5 relative transition-all duration-300"
-    :style="{
-      borderColor: 'var(--ui-border)',
-      backgroundColor: 'var(--ui-bg)',
-    }"
+    class="task-container ring ring-inset ring-accented rounded-[10px] py-7 px-8 mb-3 relative"
   >
-    <!-- Верхняя панель -->
-    <div class="no-print flex items-start justify-between gap-4 mb-7 pt-3">
-      <!-- Чекбоксы (только для task1 с isTermQuestion) -->
-      <TaskTermQuestionToggles v-if="taskType === 'task1' && hasTermQuestion" />
-
-      <!-- Кнопки управления -->
-      <div class="flex items-center gap-2">
-        <TaskPayloadViewer :data="taskData" />
-        <TaskVisibilityToggle @toggle="toggleVisibility" />
+    <UCollapsible v-model:open="isOpen">
+      <div
+        class="absolute w-full top-0 left-0 p-[30px] flex items-center justify-between gap-4"
+      >
+        <TaskNumber :number="getTaskNumber(taskKey)" />
+        <TaskVisibilityToggle :is-task-open="isOpen" />
       </div>
-    </div>
 
-    <!-- Основной контент задания -->
-    <div class="flex-1 space-y-3">
-      <!-- TASK 2 -->
-      <template v-if="taskType === 'task2'">
-        <div class="flex items-start gap-[10px] mb-4">
-          <TaskNumber :number="getTaskNumber(taskKey)" />
-        </div>
-        <TaskText :prompt="taskData.prompt" />
-        <TaskTwoColumns
-          :left-label="taskData.leftLabel"
-          :right-label="taskData.rightLabel"
-          :pairs="taskData.pairs || []"
-          :options="taskData.options || []"
-        />
-        <TaskAnswerStub />
-      </template>
+      <div
+        v-if="!isOpen || !hasContent"
+        class="h-[40px] flex items-center justify-between"
+      >
+        <span
+          v-if="!isOpen && hasContent"
+          class="font-normal not-italic text-xl ml-[55px]"
+        >
+          Задание скрыто
+        </span>
+        <span
+          v-if="!hasContent"
+          class="font-normal not-italic text-xl ml-[55px]"
+        >
+          Вопрос не задан
+        </span>
+      </div>
+      <template #content>
+        <!-- Верхняя панель -->
+        <!-- Чекбоксы (только для task1 с isTermQuestion) -->
 
-      <!-- TASK 3 / TASK 6 -->
-      <template v-else-if="taskType === 'task3' || taskType === 'task6'">
-        <div class="flex items-start gap-[10px]">
-          <TaskNumber :number="getTaskNumber(taskKey)" />
-          <TaskText :part1="taskData.part1" :part2="taskData.part2" />
+        <div
+          v-if="taskType === 'task1' && hasTermQuestion"
+          class="flex items-start gap-[10px] ml-[55px] mr-[55px]"
+        >
+          <TaskTermQuestionToggles />
         </div>
-        <TaskAnswerStub />
-        <TaskAnswerToggle :answer="formattedAnswer" />
-      </template>
 
-      <!-- TASK 8 -->
-      <template v-else-if="taskType === 'task8'">
-        <div class="flex items-start gap-[10px]">
-          <TaskNumber :number="getTaskNumber(taskKey)" />
-          <TaskText :prompt="taskData.prompt" />
-        </div>
-        <TaskOptionsList :options="variant?.task8Options || []" />
-        <TaskAnswerStub />
-        <TaskAnswerToggle :answer="formattedAnswer" />
-      </template>
+        <!-- Основной контент задания -->
+        <div class="flex-1 space-y-3">
+          <!-- TASK 2 -->
+          <template v-if="taskType === 'task2'">
+            <div
+              class="flex flex-col items-start gap-[10px] mb-4 ml-[55px] mr-[55px]"
+            >
+              <TaskText :prompt="taskData.prompt" />
+              <TaskTwoColumns
+                :left-label="taskData.leftLabel"
+                :right-label="taskData.rightLabel"
+                :pairs="taskData.pairs || []"
+                :options="taskData.options || []"
+              />
+            </div>
+            <TaskAnswerStub />
+          </template>
 
-      <!-- DEFAULT: task1, task4, task5, task7, task9, task10, task11 -->
-      <template v-else>
-        <div class="flex items-start gap-[10px]">
-          <TaskNumber :number="getTaskNumber(taskKey)" />
-          <TaskText :text="taskData.text" />
+          <!-- TASK 3 / TASK 6 -->
+          <template v-else-if="taskType === 'task3' || taskType === 'task6'">
+            <div class="flex items-start gap-[10px] ml-[55px] mr-[55px]">
+              <TaskText :part1="taskData.part1" :part2="taskData.part2" />
+            </div>
+            <TaskAnswerStub />
+            <TaskAnswerToggle :answer="formattedAnswer" />
+          </template>
+
+          <!-- TASK 8 -->
+          <template v-else-if="taskType === 'task8'">
+            <div
+              class="flex flex-col items-start gap-[10px] ml-[55px] mr-[55px]"
+            >
+              <TaskText :prompt="taskData.prompt" />
+              <TaskOptionsList :options="variant?.task8Options || []" />
+            </div>
+            <TaskAnswerStub />
+            <TaskAnswerToggle :answer="formattedAnswer" />
+          </template>
+
+          <!-- DEFAULT: task1, task4, task5, task7, task9, task10, task11 -->
+          <template v-else>
+            <div class="flex items-start gap-[10px] ml-[55px] mr-[55px]">
+              <TaskText :text="taskData.text" />
+            </div>
+            <TaskAnswerStub v-if="showAnswerStub" />
+            <TaskAnswerToggle
+              v-if="showAnswerButton"
+              :answer="formattedAnswer"
+            />
+          </template>
+
+          <TaskPayloadViewer :data="taskData" />
         </div>
-        <TaskAnswerStub v-if="showAnswerStub" />
-        <TaskAnswerToggle v-if="showAnswerButton" :answer="formattedAnswer" />
       </template>
-    </div>
+    </UCollapsible>
   </div>
 </template>
 
 <style lang="scss">
-.container-task {
+.task-container {
+  --tw-ring-color: #cfcfcf;
   .rounded-md {
     border-radius: 5px;
   }
@@ -147,6 +189,8 @@ const showAnswerButton = computed(() => {
   }
   .text-base > p {
     font-size: 20px !important;
+  }
+  &.task__hided {
   }
 }
 </style>

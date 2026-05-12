@@ -4,7 +4,7 @@ const showTermQuestions = ref(true);
 </script>
 
 <template>
-  <div class="flex flex-row items-center gap-[10px]">
+  <div class="flex flex-row items-center gap-[50px]">
     <!-- Чекбокс "Вопросы о произведении" -->
     <label
       class="flex flex-row items-center gap-[10px] cursor-pointer select-none group"
@@ -17,7 +17,7 @@ const showTermQuestions = ref(true);
           class="sr-only peer"
         />
         <div
-          class="absolute inset-0 w-full h-full flex items-center justify-center rounded-[5px] border border-[var(--ui-border)] bg-[var(--ui-bg)] transition-all duration-200 peer-checked:bg-[var(--ui-primary-bg)] peer-checked:border-[var(--ui-primary-bg)] group-hover:border-[var(--ui-border-accented)]"
+          class="absolute inset-0 w-full h-full flex items-center justify-center rounded-[5px] border border-[var(--ui-border)] bg-[var(--ui-bg)] transition-all duration-200 peer-checked:border-[var(--ui-primary-bg)] group-hover:border-[var(--ui-border-accented)]"
         >
           <div
             class="w-[10px] h-[10px] rounded-full transition-all duration-200"
@@ -29,10 +29,7 @@ const showTermQuestions = ref(true);
           ></div>
         </div>
       </div>
-      <span
-        class="text-base leading-[19px]"
-        :style="{ color: 'var(--ui-text)' }"
-      >
+      <span class="text-sm leading-[19px]" :style="{ color: 'var(--ui-text)' }">
         Вопросы о произведении
       </span>
     </label>
@@ -49,7 +46,7 @@ const showTermQuestions = ref(true);
           class="sr-only peer"
         />
         <div
-          class="absolute inset-0 w-full h-full flex items-center justify-center rounded-[5px] border border-[var(--ui-border)] bg-[var(--ui-bg)] transition-all duration-200 peer-checked:bg-[var(--ui-primary-bg)] peer-checked:border-[var(--ui-primary-bg)] group-hover:border-[var(--ui-border-accented)]"
+          class="absolute inset-0 w-full h-full flex items-center justify-center rounded-[5px] border border-[var(--ui-border)] bg-[var(--ui-bg)] transition-all duration-200 peer-checked:border-[var(--ui-primary-bg)] group-hover:border-[var(--ui-border-accented)]"
         >
           <div
             class="w-[10px] h-[10px] rounded-full transition-all duration-200"
@@ -61,10 +58,7 @@ const showTermQuestions = ref(true);
           ></div>
         </div>
       </div>
-      <span
-        class="text-base leading-[19px]"
-        :style="{ color: 'var(--ui-text)' }"
-      >
+      <span class="text-sm leading-[19px]" :style="{ color: 'var(--ui-text)' }">
         Вопросы о терминах
       </span>
     </label>

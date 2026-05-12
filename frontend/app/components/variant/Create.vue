@@ -7,7 +7,6 @@ const {
   selectedWorkId,
   selectedExcerptId,
   selectedChapter,
-  checkedAnswers,
   refreshLoadingByBlock,
   statusMessage,
   isInitialLoading,
@@ -97,7 +96,7 @@ const manualUpdateChapter = (chapterTitle: string) => {
   <VariantSidebar />
 
   <div class="max-w-6xl w-full bg-white rounded-[10px] mb-3 p-4">
-    <VariantFilters
+    <VariantExcerptFilters
       :works="works"
       :selected-work-id="selectedWorkId"
       :selected-chapter="selectedChapter"
@@ -168,5 +167,22 @@ const manualUpdateChapter = (chapterTitle: string) => {
         <VariantTaskList2 />
       </div>
     </ClientOnly>
+
+    <div class="max-w-6xl w-full bg-white rounded-[10px] mb-3 p-4">
+      <VariantExcerptFilters
+        :works="works"
+        :selected-work-id="selectedWorkId"
+        :selected-chapter="selectedChapter"
+        :selected-excerpt-id="selectedExcerptId"
+        :selected-work="selectedWork"
+        :excerpt-chapters="excerptChaptersOptions"
+        :excerpt-dropdown-options="excerptDropdownOptions"
+        :is-loading="isLoading"
+        @update:selected-work-id="manualUpdateWork"
+        @update:selected-chapter="manualUpdateChapter"
+        @update:selected-excerpt-id="selectedExcerptId = $event"
+        @refresh-block-1="refreshBlock('block1')"
+      />
+    </div>
   </div>
 </template>
