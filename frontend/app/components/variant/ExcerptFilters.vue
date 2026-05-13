@@ -2,17 +2,15 @@
 import type { Work } from '@/types/knowledgeBaseTypes';
 
 interface Props {
-  works: Work[]
   selectedWorkId: string
   selectedChapter: string
   selectedExcerptId: string
-  selectedWork: any
-  excerptChapters: string[]
-  excerptDropdownOptions: { value: string; label: string }[]
   isLoading: boolean
 }
 
 const props = defineProps<Props>()
+
+const { store: kbStore } = useKnowledgeBase();
 
 const emit = defineEmits<{
   'update:selected-work-id': [value: string]
@@ -37,13 +35,43 @@ const selectedExcerptId = computed({
 })
 
 
-const disabledWorks = computed(() => props.works.length === 0)
-const disabledChapter = computed(() => props.excerptChapters.length === 0)
-const disabledExcerpt = computed(() => props.excerptDropdownOptions.length === 0)
+
+const works = computed(() => (kbStore.works ?? []) as Work[]);
+const selectedWork = computed(() =>
+  works.value.find((w) => w.id === selectedWorkId.value),
+);
+const disabledWorks = computed(() => works.value.length === 0)
+const disabledChapter = computed(() => excerptChaptersOptions.value.length === 0)
+const disabledExcerpt = computed(() => excerptDropdownOptions.value.length === 0)
+
+
+const excerptChaptersOptions = computed(() => {
+  if (!selectedWork.value) return [];
+  const chapters = new Set<string>();
+  selectedWork.value.excerpts?.forEach((excerpt: any) => {
+    if (excerpt.chapter) chapters.add(excerpt.chapter);
+  });
+  return Array.from(chapters);
+});
+
+const excerptDropdownOptions = computed(() => {
+  if (!selectedWork.value) return [];
+  const filteredExcerpts = selectedChapter.value
+    ? selectedWork.value.excerpts?.filter(
+        (excerpt: any) => excerpt.chapter === selectedChapter.value,
+      )
+    : selectedWork.value.excerpts;
+  return (
+    filteredExcerpts?.map((excerpt: any, i: number) => ({
+      value: excerpt?.title || excerpt.id,
+      label: excerpt?.title || `Отрывок ${i + 1} (${excerpt.chapter})`,
+    })) || []
+  );
+});
 
 // Преобразуем works в формат для USelect
 const workOptions = computed(() => {
-  const options = props.works.map(work => ({
+  const options =  works.value.map(work => ({
     value: work.id,
     label: `${work.author} — ${work.title}`,
     author: work.author,
@@ -76,10 +104,9 @@ const workOptions = computed(() => {
         >
           Глава
         </label>
-
         <USelect
           v-model="selectedChapter"
-          :items="excerptChapters"
+          :items="excerptChaptersOptions"
           :disabled="disabledChapter"
           placeholder="Нет глав"
           class="w-full"
@@ -106,7 +133,7 @@ const workOptions = computed(() => {
     <div v-if="false" class="mt-4 text-base text-gray-500">
       <div>Всего произведений: {{ works.length }}</div>
       <div>Выбранное произведение: {{ selectedWorkId }}</div>
-      <div v-if="selectedWork">Автор: {{ selectedWork.author }}</div>
+      <div v-if="selectedWork">Автор: {{ selectedWork?.author }}</div>
     </div>
 
     <div class="pt-7 flex justify-center items-center">

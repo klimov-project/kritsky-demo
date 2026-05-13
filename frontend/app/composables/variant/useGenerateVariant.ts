@@ -39,7 +39,7 @@ export const useGenerateVariant = () => {
     const pregeneratedUrl = `${apiUrl}/variants/runtime/pregenerated`;
     try {
       const data = await $fetch<{ variant: GeneratedVariant }>(pregeneratedUrl);
-      variant.value = data.variant;
+      variant.value = data.variant; // setVariant
       statusMessage.value = '';
       checkedAnswers.value.clear();
     } catch (e) {

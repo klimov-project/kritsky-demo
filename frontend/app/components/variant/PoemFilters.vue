@@ -1,7 +1,5 @@
 <script setup lang="ts">
 interface Props {
-  poets: { value: string; label: string }[]
-  poems: { value: string; label: string }[]
   selectedPoetId: string
   selectedPoemId: string
   selectedThemeId: string
@@ -9,6 +7,28 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const {
+  availablePoets,
+  availablePoems
+} = usePoem();
+
+  const { themes } = useKnowledgeBase();
+
+const poetsOptions = computed(() => {
+  return availablePoets.value?.map(poet => ({
+    label: poet.name,
+    value: poet.id
+  })) || [];
+});
+
+const poemsOptions = computed(() => {
+  return availablePoems.value?.map(poem => ({
+    label: poem.title,
+    value: poem.id,
+  })) || [];
+});
+
 
 const emit = defineEmits<{
   'update:selected-poet-id': [value: string]
@@ -32,8 +52,9 @@ const selectedThemeId = computed({
   set: (value) => emit('update:selected-theme-id', value)
 })
 
-const disabledPoets = computed(() => props.poets.length === 0)
-const disabledPoems = computed(() => props.poems.length === 0)
+const disabledPoets = computed(() => poetsOptions.value.length === 0)
+const disabledPoems = computed(() => poemsOptions.value.length === 0)
+console.log(poemsOptions.value)
 </script>
 
 <template>
@@ -47,11 +68,12 @@ const disabledPoems = computed(() => props.poems.length === 0)
         </label>
         <USelect
           v-model="selectedPoetId"
-          :items="poets"
+          :items="poetsOptions"
           :disabled="disabledPoets"
           placeholder="Выберите автора"
           class="w-full"
         />
+        <!-- poetsOptions : {{ poetsOptions }} -->
       </div>
 
       <div>
@@ -63,13 +85,18 @@ const disabledPoems = computed(() => props.poems.length === 0)
 
         <USelect
           v-model="selectedPoemId"
-          :items="poems"
+          :items="poemsOptions"
           :disabled="disabledPoems"
           placeholder="Выберите стихотворение"
           class="w-full"
         />
+        <!-- poemsOptions : {{ poemsOptions }} -->
       </div>
-
+      <div
+        class="md:col-span-2 flex flex-row items-center justify-center text-base font-medium text-toned uppercase tracking-wider"
+      >
+        ИЛИ
+      </div>
       <div class="md:col-span-2">
         <label
           class="block text-base font-medium text-toned uppercase tracking-wider mb-2"
@@ -78,17 +105,19 @@ const disabledPoems = computed(() => props.poems.length === 0)
         </label>
         <USelect
           v-model="selectedThemeId"
+          :items="themes"
           placeholder="Выберите тему"
           class="w-full"
         />
+        <!-- themes : {{ themes }} -->
       </div>
     </div>
 
     <!-- Отладочная информация -->
     <div v-if="false" class="mt-4 text-base text-gray-500">
-      <div>Всего поэтов: {{ poets.length }}</div>
+      <div>Всего поэтов: {{ poetsOptions.length }}</div>
       <div>Выбранный поэт: {{ selectedPoetId }}</div>
-      <div>Всего стихотворений: {{ poems.length }}</div>
+      <div>Всего стихотворений: {{ poemsOptions.length }}</div>
       <div>Выбранное стихотворение: {{ selectedPoemId }}</div>
     </div>
 

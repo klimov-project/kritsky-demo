@@ -9,38 +9,12 @@ const {
   selectedThemeId,
   refreshLoadingByBlock,
   isInitialLoading,
+  statusMessage,
 } = useVariantState();
 
-const {
-  store: kbStore,
-  pending: kbPending,
-  error: kbError,
-} = useKnowledgeBase();
+const { pending: kbPending, error: kbError } = useKnowledgeBase();
 
-const {
-  availablePoets: poetsOptions,
-  availablePoems: poemsOptions,
-} = usePoem();
-
-const { refreshBlock } = useGenerateVariant();
-
-// Преобразуем poets в формат для USelect
-// const poetsOptions = computed(() => {
-//   return poets.value.map((poet) => ({
-//     value: String(poet.id ?? poet.authorId ?? poet.name ?? ''),
-//     label: poet.name,
-//   }));
-// });
-
-// const poemsOptions = computed(() => {
-//   if (!selectedPoet.value) return [];
-//   return (
-//     selectedPoet.value.poems?.map((poem: any) => ({
-//       value: poem.poemId,
-//       label: poem.title,
-//     })) || []
-//   );
-// });
+const { generateVariant, refreshBlock } = useGenerateVariant();
 
 // Initial fetch logic
 onMounted(async () => {
@@ -61,11 +35,12 @@ watch(
       selectedExcerptId.value = excerpt?.title || '';
     }
 
-    if (newVariant?.poem && newVariant?.poet) {
+    console.log('newVariant: ', newVariant);
+    if (newVariant?.poem) {
       const { poem, poet } = newVariant;
-      console.log({ poem, poet });
-      selectedPoetId.value = poet?.authorId || '';
-      selectedPoemId.value = poem?.poemId || '';
+      console.log('poem: ', poem);
+      selectedPoetId.value = poet?.id || '';
+      selectedPoemId.value = poem?.title || '';
       selectedThemeId.value = poem?.themeInternalId || '';
     }
   },
@@ -78,7 +53,7 @@ const isLoading = computed(
     isInitialLoading.value ||
     refreshLoadingByBlock.value.block1,
 );
-// const hasError = computed(() => !!kbError.value || !!statusMessage.value);
+const hasError = computed(() => !!kbError.value || !!statusMessage.value);
 
 const manualUpdateWork = (workId: string) => {
   selectedWorkId.value = workId;
@@ -118,14 +93,14 @@ const manualUpdatePoem = (poemId: string) => {
   </div>
 
   <div class="max-w-6xl">
-    <!-- <div v-if="isLoading" class="text-center py-20">
+    <div v-if="isLoading" class="text-center py-20">
       <div
         class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"
       ></div>
       <p class="mt-4 text-gray-600">Подготовка варианта...</p>
     </div>
 
-    <ClientOnly v-else> 
+    <ClientOnly v-else>
       <div
         v-if="hasError"
         class="bg-red-50 border border-red-200 rounded-lg p-6 mb-3"
@@ -143,7 +118,7 @@ const manualUpdatePoem = (poemId: string) => {
           Повторить загрузку
         </button>
       </div>
- 
+
       <div
         v-else-if="!variant"
         class="bg-white rounded-lg shadow p-6 text-center"
@@ -152,24 +127,22 @@ const manualUpdatePoem = (poemId: string) => {
           Нет данных для отображения. Нажмите "Новый вариант" для генерации.
         </p>
       </div>
- 
-      <div v-else> 
+
+      <div v-else>
         <VariantExcerpt
           :excerpt-text="variant.excerpt?.text"
           :excerpt-author="variant.work?.author"
           :excerpt-work="variant.work?.title"
         />
- 
+
         <VariantTaskList1 />
- 
+
         <VariantTaskList2 />
       </div>
-    </ClientOnly> -->
+    </ClientOnly>
 
     <div class="max-w-6xl w-full bg-white rounded-[10px] mb-3 p-4">
       <VariantPoemFilters
-        :poets="poetsOptions"
-        :poems="poemsOptions"
         :selected-poet-id="selectedPoetId"
         :selected-poem-id="selectedPoemId"
         :selected-theme-id="selectedThemeId"
@@ -180,5 +153,18 @@ const manualUpdatePoem = (poemId: string) => {
         @refresh-block-2="refreshBlock('block2')"
       />
     </div>
+
+    <ClientOnly v-if="variant">
+      <VariantPoem
+        :poem-text="variant.poem?.text"
+        :poet-name="variant.poet?.name"
+        :poem-title="variant.poem?.title"
+      />
+      <VariantTaskList3 />
+      <VariantTaskList4 />
+    </ClientOnly>
+
+    <VariantCreatePartTwo />
+    <VariantTaskList5 />
   </div>
 </template>

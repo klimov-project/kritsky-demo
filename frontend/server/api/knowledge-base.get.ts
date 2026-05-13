@@ -1,4 +1,4 @@
-import type { KnowledgeBasePayload } from '~/stores/knowledgeBase';
+import type { KnowledgeBasePayload } from '~/types/knowledgeBaseTypes';
 import crypto from 'crypto';
 
 interface CacheMeta {

@@ -71,7 +71,7 @@ export function transformToKnowledgeBasePayload(
   // Формируем итоговый объект, готовый для сохранения в стор
   const result: KnowledgeBasePayload = {
     works,
-    poets,
+    poets: rawPayload.poets || poets, // Если в rawPayload есть poets, используем их, иначе используем извлечённые из works
     stats: rawPayload.stats || {},
     settings: rawPayload.settings || {},
   };

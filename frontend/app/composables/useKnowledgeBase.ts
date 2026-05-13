@@ -51,13 +51,15 @@ export function useKnowledgeBase() {
     return data.value?._metadata?.computed?.variantsCount ?? 0;
   });
 
-  const works = computed(() => data.value?.works || []);
-  const poets = computed(() => data.value?.poets || []);
+  const works = computed(() => store.works || []);
+  const poets = computed(() => store.poets || []);
+  const themes = computed(() => store.themes || []);
 
   return {
     data,
     works,
     poets,
+    themes,
     pending,
     error,
     refresh,

@@ -3,7 +3,7 @@ const isOpen = ref(true);
 </script>
 <template>
   <div
-    class="task-info relative rounded-[10px] p-[14px_40px] mb-[20px]"
+    class="task-info relative rounded-[10px] p-[14px_40px] mb-[20px] min-h-[56px]"
     :style="{
       backgroundColor: 'var(--ui-primary-bg)',
     }"
@@ -30,7 +30,7 @@ const isOpen = ref(true);
 .task-info {
   .icon-button {
     position: absolute;
-    top: 6px;
+    top: 14px;
     right: 20px;
   }
 
