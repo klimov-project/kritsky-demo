@@ -1,6 +1,6 @@
 import { EMPTY_BLOCK3, DEFAULT_KNOWLEDGE_BASE_SETTINGS } from '@/utils/const';
 import type { KnowledgeBasePayload } from '@/types/knowledgeBaseTypes';
-import { filterActiveItems } from '@/utils/variant/create';
+import { filterActiveItems } from '@/utils/variantUtils';
 
 /** HTML-тег */
 const HTML_TAG_PATTERN = /<[^>]*>/g;

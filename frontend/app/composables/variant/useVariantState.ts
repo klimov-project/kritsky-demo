@@ -11,7 +11,7 @@ import {
   createEmptyCycleHistory,
   createBlockBooleanFlags,
   createTaskBooleanFlags,
-} from '@/utils/variant/create';
+} from '@/utils/variantUtils';
 
 export const useVariantState = () => {
   const variant = useCurrentVariant();

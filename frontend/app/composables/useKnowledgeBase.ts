@@ -1,6 +1,12 @@
-import type { KnowledgeBasePayload } from '~/stores/knowledgeBase';
+import type {
+  KnowledgeBasePayload,
+  Poet,
+  Work,
+} from '~/types/knowledgeBaseTypes';
 
 interface KnowledgeBaseResponse extends KnowledgeBasePayload {
+  works?: Work[];
+  poets?: Poet[];
   _metadata?: {
     hash: string;
     fetchedAt: string;
@@ -45,8 +51,13 @@ export function useKnowledgeBase() {
     return data.value?._metadata?.computed?.variantsCount ?? 0;
   });
 
+  const works = computed(() => data.value?.works || []);
+  const poets = computed(() => data.value?.poets || []);
+
   return {
     data,
+    works,
+    poets,
     pending,
     error,
     refresh,
