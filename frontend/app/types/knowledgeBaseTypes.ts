@@ -97,6 +97,33 @@ export interface Character {
   facts: string[];
 }
 
+export interface PoemTasks {
+  task6: TwoGapQuestion[];
+  task7: ShortQuestion[];
+  task8: ShortQuestion[];
+  task9_1: MatchingQuestion[];
+  task9_2: MatchingQuestion[];
+  task10: EssayQuestion[];
+}
+
+export interface Poem {
+  id: Id;
+  title: string;
+  poemId: string;
+  text: string;
+  textColumns?: 1 | 2;
+  textSecondColumn?: string;
+  age18: boolean;
+  tasks: PoemTasks;
+}
+
+export interface Poet {
+  id: Id;
+  name: string;
+  authorId: string;
+  poems: Poem[];
+}
+
 export interface EssayQuestion {
   id: Id;
   text: string;
@@ -176,15 +203,6 @@ export interface MultiSelectQuestion {
   isActive?: boolean;
 }
 
-export interface PoemTasks {
-  task6: TwoGapQuestion[];
-  task7: ShortQuestion[];
-  task8: MultiSelectQuestion[];
-  task9_1: EssayQuestion[];
-  task9_2: EssayQuestion[];
-  task10: EssayQuestion[];
-}
-
 export interface Poem {
   id: Id;
   title: string;
@@ -237,4 +255,29 @@ export interface Block3Data {
   task11_2_3: Block3Question[];
   task11_4: Block3QuestionMultiAuthor[];
   task11_5: Block3Question[];
+}
+
+export interface ThemeOption {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+export interface KnowledgeBasePayload {
+  works?: Work[];
+  poets?: Poet[];
+  poems?: Poem[];
+  themes?: ThemeOption[];
+  stats?: Record<string, any>;
+  settings?: KnowledgeBaseSettings;
+  block3?: Block3Data;
+  _metadata?: {
+    hash: string;
+    fetchedAt: string;
+    computed: {
+      variantsCount: number;
+      poetsCount: number;
+      totalEntities: number;
+    };
+  };
 }

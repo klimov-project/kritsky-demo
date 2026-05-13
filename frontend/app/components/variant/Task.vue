@@ -83,32 +83,33 @@ const showAnswerButton = computed(() => {
   <div
     class="task-container ring ring-inset ring-accented rounded-[10px] py-7 px-8 mb-3 relative"
   >
+    <div
+      class="absolute w-auto left-0 top-0 p-[30px] flex items-center justify-center"
+    >
+      <TaskNumber :number="getTaskNumber(taskKey)" />
+    </div>
+    <div
+      v-if="!isOpen || !hasContent"
+      class="h-[40px] flex items-center justify-between"
+    >
+      <span
+        v-if="!isOpen && hasContent"
+        class="font-normal not-italic text-xl ml-[55px]"
+      >
+        Задание скрыто
+      </span>
+      <span v-if="!hasContent" class="font-normal not-italic text-xl ml-[55px]">
+        Вопрос не задан
+      </span>
+    </div>
     <UCollapsible v-model:open="isOpen">
       <div
-        class="absolute w-full top-0 left-0 p-[30px] flex items-center justify-between gap-4"
+        class="absolute w-auto top-0 right-0 p-[30px] flex items-center justify-center"
       >
-        <TaskNumber :number="getTaskNumber(taskKey)" />
         <TaskVisibilityToggle :is-task-open="isOpen" />
       </div>
 
-      <div
-        v-if="!isOpen || !hasContent"
-        class="h-[40px] flex items-center justify-between"
-      >
-        <span
-          v-if="!isOpen && hasContent"
-          class="font-normal not-italic text-xl ml-[55px]"
-        >
-          Задание скрыто
-        </span>
-        <span
-          v-if="!hasContent"
-          class="font-normal not-italic text-xl ml-[55px]"
-        >
-          Вопрос не задан
-        </span>
-      </div>
-      <template #content>
+      <template #content class="relative">
         <!-- Верхняя панель -->
         <!-- Чекбоксы (только для task1 с isTermQuestion) -->
 

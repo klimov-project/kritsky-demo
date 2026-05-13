@@ -1,5 +1,8 @@
 import type { LegalPageDocument } from '@/types/legalPage';
-import type { KnowledgeBaseSettings } from '@/types/knowledgeBaseTypes';
+import type {
+  KnowledgeBaseSettings,
+  Block3Data,
+} from '@/types/knowledgeBaseTypes';
 
 export const DEFAULT_KNOWLEDGE_BASE_SETTINGS: KnowledgeBaseSettings = {
   variantTexts: {
@@ -26,6 +29,13 @@ export const DEFAULT_KNOWLEDGE_BASE_SETTINGS: KnowledgeBaseSettings = {
       'Выберите одну из пяти тем сочинений (11.1–11.5) и напишите развёрнутый ответ.',
   },
   weeklyVariant: null,
+};
+
+export const EMPTY_BLOCK3: Block3Data = {
+  task11_1: [],
+  task11_2_3: [],
+  task11_4: [],
+  task11_5: [],
 };
 
 export const POLICY_PAGE_DOCUMENT: LegalPageDocument = {

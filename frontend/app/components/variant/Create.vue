@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Work } from '@/types/knowledgeBaseTypes';
+import type { Work, Poet } from '@/types/knowledgeBaseTypes';
 import { useKnowledgeBase } from '~/composables/useKnowledgeBase';
 
 const {
@@ -7,6 +7,9 @@ const {
   selectedWorkId,
   selectedExcerptId,
   selectedChapter,
+  selectedPoetId,
+  selectedPoemId,
+  selectedThemeId,
   refreshLoadingByBlock,
   statusMessage,
   isInitialLoading,
@@ -18,9 +21,32 @@ const {
   error: kbError,
 } = useKnowledgeBase();
 
-const { generateVariant, refreshBlock } = useGenerateVariant();
+const { refreshBlock } = useGenerateVariant();
 
 const works = computed(() => (kbStore.works ?? []) as Work[]);
+const poets = computed(() => (kbStore.poets ?? []) as Poet[]);
+const knowledgeBase = computed(() => kbStore.knowledgeBase ?? {});
+// Преобразуем poets в формат для USelect
+const poetsOptions = computed(() => {
+  return poets.value.map((poet) => ({
+    value: String(poet.id ?? poet.authorId ?? poet.name ?? ''),
+    label: poet.name,
+  }));
+});
+
+const selectedPoet = computed(() =>
+  poets.value.find((p) => p.authorId === selectedPoetId.value),
+);
+
+const poemsOptions = computed(() => {
+  if (!selectedPoet.value) return [];
+  return (
+    selectedPoet.value.poems?.map((poem: any) => ({
+      value: poem.poemId,
+      label: poem.title,
+    })) || []
+  );
+});
 
 // Initial fetch logic
 onMounted(async () => {
@@ -40,6 +66,16 @@ watch(
       selectedChapter.value = excerpt.chapter || '';
       selectedExcerptId.value = excerpt.title || '';
     }
+
+    if (newVariant?.poem && newVariant?.poet) {
+      const { poem, poet } = newVariant;
+      console.log({ poem, poet });
+      selectedPoetId.value = poet?.authorId || '';
+      selectedPoemId.value = poem.poemId || '';
+      selectedThemeId.value = poem?.themeInternalId || '';
+    }
+    console.log(knowledgeBase.value);
+    console.log(newVariant);
   },
   { immediate: true },
 );
@@ -50,7 +86,7 @@ const isLoading = computed(
     isInitialLoading.value ||
     refreshLoadingByBlock.value.block1,
 );
-const hasError = computed(() => !!kbError.value || !!statusMessage.value);
+// const hasError = computed(() => !!kbError.value || !!statusMessage.value);
 
 const selectedWork = computed(() =>
   works.value.find((w) => w.id === selectedWorkId.value),
@@ -90,6 +126,15 @@ const manualUpdateChapter = (chapterTitle: string) => {
   selectedChapter.value = chapterTitle;
   selectedExcerptId.value = '';
 };
+
+const manualUpdatePoet = (poetId: string) => {
+  selectedPoetId.value = poetId;
+  selectedPoemId.value = '';
+};
+
+const manualUpdatePoem = (poemId: string) => {
+  selectedPoemId.value = poemId;
+};
 </script>
 
 <template>
@@ -125,7 +170,7 @@ const manualUpdateChapter = (chapterTitle: string) => {
       <!-- Error -->
       <div
         v-if="hasError"
-        class="bg-red-50 border border-red-200 rounded-lg p-6"
+        class="bg-red-50 border border-red-200 rounded-lg p-6 mb-3"
       >
         <p class="text-red-700">
           {{
@@ -152,7 +197,7 @@ const manualUpdateChapter = (chapterTitle: string) => {
       </div>
 
       <!-- Variant Content -->
-      <div v-else class="space-y-8">
+      <div v-else>
         <!-- Excerpt  -->
         <VariantExcerpt
           :excerpt-text="variant.excerpt?.text"
@@ -169,19 +214,17 @@ const manualUpdateChapter = (chapterTitle: string) => {
     </ClientOnly>
 
     <div class="max-w-6xl w-full bg-white rounded-[10px] mb-3 p-4">
-      <VariantExcerptFilters
-        :works="works"
-        :selected-work-id="selectedWorkId"
-        :selected-chapter="selectedChapter"
-        :selected-excerpt-id="selectedExcerptId"
-        :selected-work="selectedWork"
-        :excerpt-chapters="excerptChaptersOptions"
-        :excerpt-dropdown-options="excerptDropdownOptions"
+      <VariantPoemFilters
+        :poets="poetsOptions"
+        :poems="poemsOptions"
+        :selected-poet-id="selectedPoetId"
+        :selected-poem-id="selectedPoemId"
+        :selected-theme-id="selectedThemeId"
         :is-loading="isLoading"
-        @update:selected-work-id="manualUpdateWork"
-        @update:selected-chapter="manualUpdateChapter"
-        @update:selected-excerpt-id="selectedExcerptId = $event"
-        @refresh-block-1="refreshBlock('block1')"
+        @update:selected-poet-id="manualUpdatePoet"
+        @update:selected-poem-id="manualUpdatePoem"
+        @update:selected-theme-id="selectedThemeId = $event"
+        @refresh-block-2="refreshBlock('block2')"
       />
     </div>
   </div>

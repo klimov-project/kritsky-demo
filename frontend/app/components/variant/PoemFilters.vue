@@ -1,55 +1,39 @@
 <script setup lang="ts">
-import type { Work } from '@/types/knowledgeBaseTypes';
-
 interface Props {
-  works: Work[]
-  selectedWorkId: string
-  selectedChapter: string
-  selectedExcerptId: string
-  selectedWork: any
-  excerptChapters: string[]
-  excerptDropdownOptions: { value: string; label: string }[]
+  poets: { value: string; label: string }[]
+  poems: { value: string; label: string }[]
+  selectedPoetId: string
+  selectedPoemId: string
+  selectedThemeId: string
   isLoading: boolean
 }
 
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  'update:selected-work-id': [value: string]
-  'update:selected-chapter': [value: string]
-  'update:selected-excerpt-id': [value: string]
-  'refresh-block-1': []
+  'update:selected-poet-id': [value: string]
+  'update:selected-poem-id': [value: string]
+  'update:selected-theme-id': [value: string]
+  'refresh-block-2': []
 }>()
 
-const selectedWorkId = computed({
-  get: () => props.selectedWorkId,
-  set: (value) => emit('update:selected-work-id', value)
+const selectedPoetId = computed({
+  get: () => props.selectedPoetId,
+  set: (value) => emit('update:selected-poet-id', value)
 })
 
-const selectedChapter = computed({
-  get: () => props.selectedChapter,
-  set: (value) => emit('update:selected-chapter', value)
+const selectedPoemId = computed({
+  get: () => props.selectedPoemId,
+  set: (value) => emit('update:selected-poem-id', value)
 })
 
-const selectedExcerptId = computed({
-  get: () => props.selectedExcerptId,
-  set: (value) => emit('update:selected-excerpt-id', value)
+const selectedThemeId = computed({
+  get: () => props.selectedThemeId,
+  set: (value) => emit('update:selected-theme-id', value)
 })
 
-
-const disabledWorks = computed(() => props.works.length === 0)
-const disabledChapter = computed(() => props.excerptChapters.length === 0)
-const disabledExcerpt = computed(() => props.excerptDropdownOptions.length === 0)
-
-// Преобразуем works в формат для USelect
-const workOptions = computed(() => {
-  const options = props.works.map(work => ({
-    value: work.id,
-    label: `${work.author} — ${work.title}`,
-    author: work.author,
-  }));
-  return options;
-})
+const disabledPoets = computed(() => props.poets.length === 0)
+const disabledPoems = computed(() => props.poems.length === 0)
 </script>
 
 <template>
@@ -59,13 +43,13 @@ const workOptions = computed(() => {
         <label
           class="block text-base font-medium uppercase tracking-wider mb-2 text-toned"
         >
-          Произведение
+          Автор
         </label>
         <USelect
-          v-model="selectedWorkId"
-          :items="workOptions"
-          :disabled="disabledWorks"
-          placeholder="Выберите произведение"
+          v-model="selectedPoetId"
+          :items="poets"
+          :disabled="disabledPoets"
+          placeholder="Выберите автора"
           class="w-full"
         />
       </div>
@@ -74,14 +58,14 @@ const workOptions = computed(() => {
         <label
           class="block text-base font-medium text-toned uppercase tracking-wider mb-2"
         >
-          Глава
+          Стихотворение
         </label>
 
         <USelect
-          v-model="selectedChapter"
-          :items="excerptChapters"
-          :disabled="disabledChapter"
-          placeholder="Нет глав"
+          v-model="selectedPoemId"
+          :items="poems"
+          :disabled="disabledPoems"
+          placeholder="Выберите стихотворение"
           class="w-full"
         />
       </div>
@@ -90,13 +74,11 @@ const workOptions = computed(() => {
         <label
           class="block text-base font-medium text-toned uppercase tracking-wider mb-2"
         >
-          Отрывок
+          Тема
         </label>
         <USelect
-          v-model="selectedExcerptId"
-          :items="excerptDropdownOptions"
-          :disabled="disabledExcerpt"
-          placeholder="Выберите отрывок"
+          v-model="selectedThemeId"
+          placeholder="Выберите тему"
           class="w-full"
         />
       </div>
@@ -104,19 +86,20 @@ const workOptions = computed(() => {
 
     <!-- Отладочная информация -->
     <div v-if="false" class="mt-4 text-base text-gray-500">
-      <div>Всего произведений: {{ works.length }}</div>
-      <div>Выбранное произведение: {{ selectedWorkId }}</div>
-      <div v-if="selectedWork">Автор: {{ selectedWork.author }}</div>
+      <div>Всего поэтов: {{ poets.length }}</div>
+      <div>Выбранный поэт: {{ selectedPoetId }}</div>
+      <div>Всего стихотворений: {{ poems.length }}</div>
+      <div>Выбранное стихотворение: {{ selectedPoemId }}</div>
     </div>
 
     <div class="pt-7 flex justify-center items-center">
       <BaseButton
-        @click="$emit('refresh-block-1')"
+        @click="$emit('refresh-block-2')"
         :loading="isLoading"
         :disabled="isLoading"
         class="update-variant-btn__filter"
       >
-        Обновить отрывок и задания 1–5
+        Обновить стихотворение и задания 6-10
       </BaseButton>
     </div>
   </div>

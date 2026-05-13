@@ -1,18 +1,4 @@
-export interface KnowledgeBasePayload {
-  works?: Array<Record<string, any>>;
-  poets?: Array<Record<string, any>>;
-  stats?: Record<string, any>;
-  settings?: Record<string, any>;
-  _metadata?: {
-    hash: string;
-    fetchedAt: string;
-    computed: {
-      variantsCount: number;
-      poetsCount: number;
-      totalEntities: number;
-    };
-  };
-}
+import type { KnowledgeBasePayload } from '@/types/knowledgeBaseTypes';
 
 export const useKnowledgeBaseStore = defineStore('knowledgeBase', {
   state: () => ({
@@ -26,6 +12,8 @@ export const useKnowledgeBaseStore = defineStore('knowledgeBase', {
   getters: {
     works: (state) => state.knowledgeBase?.works || [],
     poets: (state) => state.knowledgeBase?.poets || [],
+    poems: (state) => state.knowledgeBase?.poems || [],
+    themes: (state) => state.knowledgeBase?.themes || [],
     worksCount: (state) => state.knowledgeBase?.works?.length,
     poetsCount: (state) => state.knowledgeBase?.poets?.length,
     variantsCount: (state) =>
@@ -47,11 +35,12 @@ export const useKnowledgeBaseStore = defineStore('knowledgeBase', {
         return;
       }
 
-      this.knowledgeBase = payload;
+      const normalized = normalizeKnowledgeBasePayload(payload);
+      this.knowledgeBase = normalized;
       this.isHydrated = true;
-      this.stats = payload.stats ?? {};
-      this.settings = payload.settings || {};
-      this.lastKnownHash = payload._metadata?.hash || null;
+      this.stats = normalized.stats ?? {};
+      this.settings = normalized.settings || {};
+      this.lastKnownHash = normalized._metadata?.hash || null;
     },
   },
 });
