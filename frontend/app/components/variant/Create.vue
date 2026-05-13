@@ -92,7 +92,7 @@ const manualUpdatePoem = (poemId: string) => {
     />
   </div>
 
-  <div class="max-w-6xl">
+  <div class="max-w-6xl mb-[30px]">
     <div v-if="isLoading" class="text-center py-20">
       <div
         class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"
@@ -167,4 +167,5 @@ const manualUpdatePoem = (poemId: string) => {
     <VariantCreatePartTwo />
     <VariantTaskList5 />
   </div>
+  <VariantFooter />
 </template>
