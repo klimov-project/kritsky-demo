@@ -73,7 +73,6 @@ export const usePoem = () => {
    * с темами/автором выбранного отрывка.
    */
   const availablePoems = computed<Poem[]>(() => {
-    console.log('selectedPoet', selectedPoet.value);
     const allPoems = filterActiveItems(selectedPoet.value?.poems || []);
 
     const excerptThemeTokens = new Set(

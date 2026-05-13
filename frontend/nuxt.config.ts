@@ -9,7 +9,16 @@ export default defineNuxtConfig({
   ui: { fonts: false }, // disable the @nuxt/fonts module.
   icon: {
     serverBundle: false,
-    provider: 'none'
+    provider: 'none',
+    clientBundle: {
+      scan: true,
+      icons: [
+        'lucide:loader-circle',
+        'lucide:chevron-down',
+        'lucide:check',
+        'lucide:file',
+      ],
+    },
   },
 
   // Prerendering configuration
@@ -46,7 +55,10 @@ export default defineNuxtConfig({
     apiBackendUrl:
       process.env.NUXT_API_BACKEND_URL || 'http://localhost:8000/api',
     public: {
-      apiUrl: process.env.NUXT_PUBLIC_API_BASE || '/api',
+      apiUrl: process.env.NUXT_LOCAL_DEVELOPMENT
+        ? 'http://localhost:8000/api'
+        : process.env.NUXT_PUBLIC_API_BASE || '/api',
+      localMode: process.env.NUXT_LOCAL_DEVELOPMENT === 'true',
     },
     session: {
       password:

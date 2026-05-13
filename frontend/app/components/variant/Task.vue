@@ -2,7 +2,7 @@
 const props = defineProps<{
   taskKey: string;
 }>();
-
+const config = useRuntimeConfig();
 const variant = useCurrentVariant();
 
 const getTaskNumber = (key: string) => {
@@ -171,7 +171,7 @@ const showAnswerButton = computed(() => {
             />
           </template>
 
-          <TaskPayloadViewer :data="taskData" />
+          <TaskPayloadViewer v-if="config.public.localMode" :data="taskData" />
         </div>
       </template>
     </UCollapsible>
