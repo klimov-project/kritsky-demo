@@ -1,167 +1,134 @@
 import { EMPTY_BLOCK3, DEFAULT_KNOWLEDGE_BASE_SETTINGS } from '@/utils/const';
+import type { KnowledgeBasePayload } from '@/types/knowledgeBaseTypes';
 import { filterActiveItems } from '@/utils/variant/create';
-import type {
-  KnowledgeBasePayload,
-  ThemeOption,
-} from '@/types/knowledgeBaseTypes';
 
-import type {
-  Block3Data,
-  EssayQuestion,
-  KnowledgeBaseSettings,
-  Poem,
-  Poet,
-  VariantTextsSettings,
-} from '@/types/knowledgeBaseTypes';
+/** HTML-тег */
+const HTML_TAG_PATTERN = /<[^>]*>/g;
 
-const normalizeNbsp = (value: string): string =>
-  value.replace(/&nbsp;?/giu, ' ').replace(/\u00A0/gu, ' ');
+/** XML-комментарий */
+const XML_COMMENT_PATTERN = /<!--[\s\S]*?-->/g;
 
-const normalizeNbspDeep = (value: unknown): unknown => {
-  if (typeof value === 'string') {
-    return normalizeNbsp(value);
+/** Неразрывный пробел (HTML-entity или Unicode) */
+const NBSP_PATTERN = /&nbsp;?| /gi;
+
+/** Двойные и более пробелы */
+const MULTISPACE_PATTERN = / {2,}/g;
+
+/** Поля, которые нельзя очищать (идентификаторы) */
+const ID_LIKE_KEYS = new Set([
+  'id',
+  'authorId',
+  'termId',
+  'theme1Id',
+  'theme2Id',
+  'termId1',
+  'termId2',
+  'workId',
+  'excerptId',
+  'poemId',
+  'questionId',
+  'publicId',
+  'themeInternalId',
+  'similarityId',
+  'propertyIds',
+  'shuffledRightOptionIds',
+  'excludeTask1Ids',
+  'excludeTask1TermIds',
+  'excludeTask2Ids',
+  'excludeTask2TermIds',
+  'excludeTask3Ids',
+  'excludeTask3TermIds',
+  'authorIds',
+  'rodId',
+  'variantId',
+  'taskKey',
+]);
+
+/** Очищает строку от HTML-разметки и лишних пробелов */
+const sanitizeText = (value: string): string =>
+  value
+    .replace(NBSP_PATTERN, ' ')
+    .replace(XML_COMMENT_PATTERN, '')
+    .replace(HTML_TAG_PATTERN, ' ')
+    .replace(MULTISPACE_PATTERN, ' ')
+    .trim();
+
+/** Проверяет, похожа ли строка на HTML (содержит теги) */
+const looksLikeHtml = (value: string): boolean =>
+  HTML_TAG_PATTERN.test(value) ||
+  XML_COMMENT_PATTERN.test(value) ||
+  NBSP_PATTERN.test(value);
+
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+/**
+ * Глубокая нормализация данных из БЗ:
+ * - удаляет HTML-теги и XML-комментарии из всех строк, кроме ID-полей
+ * - нормализует пробелы
+ * - не трогает бинарные данные (Blob, File, ArrayBuffer и т.д.)
+ * - рекурсивно проходит по вложенным объектам/массивам
+ */
+export const normalizeKB = <T>(data: T): T => {
+  if (data === null || data === undefined) return data;
+
+  // Бинарные и специальные типы — не трогаем
+  if (
+    data instanceof Date ||
+    data instanceof RegExp ||
+    data instanceof Blob ||
+    data instanceof File ||
+    data instanceof ArrayBuffer ||
+    ArrayBuffer.isView(data) ||
+    data instanceof FormData ||
+    data instanceof URLSearchParams ||
+    data instanceof ReadableStream ||
+    data instanceof WeakMap ||
+    data instanceof WeakSet
+  ) {
+    return data;
   }
 
-  if (Array.isArray(value)) {
-    return value.map((entry) => normalizeNbspDeep(entry));
+  // Строки
+  if (typeof data === 'string') {
+    return looksLikeHtml(data) ? (sanitizeText(data) as T) : data;
   }
 
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, entry]) => [
-        key,
-        normalizeNbspDeep(entry),
-      ]),
-    );
+  // Массивы — рекурсивно
+  if (Array.isArray(data)) {
+    return data.map((item) => normalizeKB(item)) as T;
   }
 
-  return value;
-};
+  // Объекты
+  if (isObject(data)) {
+    const result: Record<string, unknown> = {};
 
-const normalizeSettings = (value: unknown): KnowledgeBaseSettings => {
-  const source =
-    value && typeof value === 'object'
-      ? (value as Partial<KnowledgeBaseSettings>)
-      : {};
-  const variantTexts: Partial<VariantTextsSettings> =
-    source.variantTexts && typeof source.variantTexts === 'object'
-      ? (source.variantTexts as Partial<VariantTextsSettings>)
-      : {};
+    for (const [key, value] of Object.entries(data)) {
+      // ID-поля не трогаем
+      if (ID_LIKE_KEYS.has(key)) {
+        result[key] = value;
+        continue;
+      }
 
-  return {
-    variantTexts: {
-      part1Intro:
-        typeof variantTexts.part1Intro === 'string'
-          ? variantTexts.part1Intro
-          : DEFAULT_KNOWLEDGE_BASE_SETTINGS.variantTexts.part1Intro,
-      part1QuestionsIntro:
-        typeof variantTexts.part1QuestionsIntro === 'string'
-          ? variantTexts.part1QuestionsIntro
-          : DEFAULT_KNOWLEDGE_BASE_SETTINGS.variantTexts.part1QuestionsIntro,
-      part1Task4Lead:
-        typeof variantTexts.part1Task4Lead === 'string'
-          ? variantTexts.part1Task4Lead
-          : DEFAULT_KNOWLEDGE_BASE_SETTINGS.variantTexts.part1Task4Lead,
-      part1Criteria:
-        typeof variantTexts.part1Criteria === 'string'
-          ? variantTexts.part1Criteria
-          : DEFAULT_KNOWLEDGE_BASE_SETTINGS.variantTexts.part1Criteria,
-      part1Task5Lead:
-        typeof variantTexts.part1Task5Lead === 'string'
-          ? variantTexts.part1Task5Lead
-          : DEFAULT_KNOWLEDGE_BASE_SETTINGS.variantTexts.part1Task5Lead,
-      part2Intro:
-        typeof variantTexts.part2Intro === 'string'
-          ? variantTexts.part2Intro
-          : DEFAULT_KNOWLEDGE_BASE_SETTINGS.variantTexts.part2Intro,
-      part2QuestionsIntro:
-        typeof variantTexts.part2QuestionsIntro === 'string'
-          ? variantTexts.part2QuestionsIntro
-          : DEFAULT_KNOWLEDGE_BASE_SETTINGS.variantTexts.part2QuestionsIntro,
-      part2Task9Lead:
-        typeof variantTexts.part2Task9Lead === 'string'
-          ? variantTexts.part2Task9Lead
-          : DEFAULT_KNOWLEDGE_BASE_SETTINGS.variantTexts.part2Task9Lead,
-      part2Task9Criteria:
-        typeof variantTexts.part2Task9Criteria === 'string'
-          ? variantTexts.part2Task9Criteria
-          : DEFAULT_KNOWLEDGE_BASE_SETTINGS.variantTexts.part2Task9Criteria,
-      part2Task10Lead:
-        typeof variantTexts.part2Task10Lead === 'string'
-          ? variantTexts.part2Task10Lead
-          : DEFAULT_KNOWLEDGE_BASE_SETTINGS.variantTexts.part2Task10Lead,
-      part3Intro:
-        typeof variantTexts.part3Intro === 'string'
-          ? variantTexts.part3Intro
-          : DEFAULT_KNOWLEDGE_BASE_SETTINGS.variantTexts.part3Intro,
-    },
-    weeklyVariant: source.weeklyVariant || null,
-    weeklyPins:
-      source.weeklyPins &&
-      typeof source.weeklyPins === 'object' &&
-      !Array.isArray(source.weeklyPins)
-        ? (source.weeklyPins as Record<string, string>)
-        : undefined,
-  };
-};
+      result[key] = normalizeKB(value);
+    }
 
-const normalizeBlock3 = (value: unknown): Block3Data => {
-  if (!value || typeof value !== 'object') {
-    return { ...EMPTY_BLOCK3 };
+    return result as T;
   }
 
-  const source = value as Partial<Block3Data>;
-  return {
-    task11_1: Array.isArray(source.task11_1) ? source.task11_1 : [],
-    task11_2_3: Array.isArray(source.task11_2_3) ? source.task11_2_3 : [],
-    task11_4: Array.isArray(source.task11_4) ? source.task11_4 : [],
-    task11_5: Array.isArray(source.task11_5) ? source.task11_5 : [],
-  };
-};
-
-const buildThemeOptions = (poets: Poet[] = []): ThemeOption[] => {
-  const theme1Set = new Set<string>();
-  const theme2Set = new Set<string>();
-
-  poets.forEach((poet) => {
-    if (!Array.isArray(poet.poems)) return;
-
-    poet.poems.forEach((poem: Poem) => {
-      const task10 = Array.isArray(poem.tasks.task10)
-        ? poem.tasks.task10
-        : ([] as EssayQuestion[]);
-      filterActiveItems<EssayQuestion>(task10).forEach((task) => {
-        if (task.theme1Id) theme1Set.add(task.theme1Id);
-        if (task.theme2Id) theme2Set.add(task.theme2Id);
-      });
-    });
-  });
-
-  const sortedTheme1 = Array.from(theme1Set).sort();
-  const sortedTheme2 = Array.from(theme2Set).sort();
-  const onlyTheme1 = sortedTheme1.filter((t) => !theme2Set.has(t));
-
-  const options: ThemeOption[] = [];
-  sortedTheme2.forEach((theme) => options.push({ value: theme, label: theme }));
-
-  if (sortedTheme2.length > 0 && onlyTheme1.length > 0) {
-    options.push({ value: '---', label: '──────────', disabled: true });
-  }
-
-  onlyTheme1.forEach((theme) => options.push({ value: theme, label: theme }));
-
-  return options;
+  // Примитивы (числа, булевы, символы и т.д.)
+  return data;
 };
 
 export const normalizeKnowledgeBasePayload = (
   value: unknown,
 ): KnowledgeBasePayload => {
-  const normalizedSource = normalizeNbspDeep(value);
+  const normalizedSource = normalizeKB(value);
+
   if (!normalizedSource || typeof normalizedSource !== 'object') {
     return {
       works: [],
       poets: [],
-      poems: [],
       themes: [],
       block3: { ...EMPTY_BLOCK3 },
       settings: DEFAULT_KNOWLEDGE_BASE_SETTINGS,
@@ -170,17 +137,46 @@ export const normalizeKnowledgeBasePayload = (
   }
 
   const source = normalizedSource as Partial<KnowledgeBasePayload>;
+
   const poets = Array.isArray(source.poets) ? source.poets : [];
+
+  const themes = (() => {
+    const theme1Set = new Set<string>();
+    const theme2Set = new Set<string>();
+
+    poets.forEach((poet) => {
+      poet.poems?.forEach((poem) => {
+        filterActiveItems(poem.tasks.task10).forEach((task) => {
+          if (task.theme1Id) theme1Set.add(task.theme1Id);
+          if (task.theme2Id) theme2Set.add(task.theme2Id);
+        });
+      });
+    });
+
+    const sortedTheme1 = Array.from(theme1Set).sort();
+    const sortedTheme2 = Array.from(theme2Set).sort();
+
+    const onlyTheme1 = sortedTheme1.filter((t) => !theme2Set.has(t));
+
+    const options: { value: string; label: string; disabled?: boolean }[] = [];
+
+    sortedTheme2.forEach((t) => options.push({ value: t, label: t }));
+
+    if (sortedTheme2.length > 0 && onlyTheme1.length > 0) {
+      options.push({ value: '---', label: '──────────', disabled: true });
+    }
+
+    onlyTheme1.forEach((t) => options.push({ value: t, label: t }));
+
+    return options;
+  })();
 
   return {
     works: Array.isArray(source.works) ? source.works : [],
     poets,
-    poems: poets.flatMap((poet) =>
-      Array.isArray(poet.poems) ? poet.poems : [],
-    ),
-    themes: buildThemeOptions(poets),
-    block3: normalizeBlock3(source.block3),
-    settings: normalizeSettings(source.settings),
+    themes,
+    block3: source.block3 || { ...EMPTY_BLOCK3 },
+    settings: source.settings || DEFAULT_KNOWLEDGE_BASE_SETTINGS,
     stats: source.stats ?? {},
     _metadata: source._metadata,
   };

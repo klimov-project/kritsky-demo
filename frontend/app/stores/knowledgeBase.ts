@@ -11,8 +11,7 @@ export const useKnowledgeBaseStore = defineStore('knowledgeBase', {
 
   getters: {
     works: (state) => state.knowledgeBase?.works || [],
-    poets: (state) => state.knowledgeBase?.poets || [],
-    poems: (state) => state.knowledgeBase?.poems || [],
+    poets: (state) => state.knowledgeBase?.poets || [], 
     themes: (state) => state.knowledgeBase?.themes || [],
     worksCount: (state) => state.knowledgeBase?.works?.length,
     poetsCount: (state) => state.knowledgeBase?.poets?.length,
