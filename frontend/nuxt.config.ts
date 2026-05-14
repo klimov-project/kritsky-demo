@@ -8,25 +8,17 @@ export default defineNuxtConfig({
   modules: ['nuxt-auth-utils', '@pinia/nuxt', '@nuxt/ui'],
   ui: { fonts: false }, // disable the @nuxt/fonts module.
   icon: {
-    serverBundle: false,
-    provider: 'none',
-    clientBundle: {
-      scan: true,
-      icons: [
-        'lucide:loader-circle',
-        'lucide:chevron-down',
-        'lucide:check',
-        'lucide:file',
-      ],
+    serverBundle: {
+      collections: ['lucide'],
     },
+    provider: 'iconify',
   },
 
   // Prerendering configuration
   routeRules: {
     '/': {
       prerender: true,
-      swr: 35,
-      // swr: 300,
+      swr: 300,
     },
     '/create-variant': {
       isr: false,
@@ -75,12 +67,12 @@ export default defineNuxtConfig({
         changeOrigin: true,
       },
     },
-    // storage: {
-    //   cache: {
-    //     driver: 'redis',
-    //     url: process.env.NITRO_STORAGE_CACHE || 'redis://redis-cache:6379/0',
-    //   },
-    // },
+    storage: {
+      cache: {
+        driver: 'redis',
+        url: process.env.NITRO_STORAGE_CACHE || 'redis://redis-cache:6379/0',
+      },
+    },
   },
 
   vite: {
