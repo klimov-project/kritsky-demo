@@ -21,7 +21,7 @@ const handleNav = (e: string) => console.log('click handle: ' + e);
         Обновить все задания в варианте
       </WhiteButton>
     </div>
-    <div class="flex items-center justify-between mb-3 gap-3">
+    <div v-if="false" class="flex items-center justify-between mb-3 gap-3">
       <WhiteButton previous @click="handleNav('next')">
         Предыдущий вариант
       </WhiteButton>
