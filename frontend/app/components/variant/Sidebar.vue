@@ -5,7 +5,7 @@
     class="hidden lg:block w-[250px] flex-shrink-0 absolute top-0 left-0 h-full -translate-x-full"
   >
     <div class="sticky top-12 bg-glass">
-      <div class="bg-white rounded-[10px] py-4 px-6 mr-5 mb-6">
+      <div class="hidden bg-white rounded-[10px] py-4 px-6 mr-5 mb-6">
         <button
           class="w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-gray-600 text-sm"
         >

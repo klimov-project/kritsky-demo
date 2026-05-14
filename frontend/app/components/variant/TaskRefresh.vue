@@ -1,8 +1,26 @@
 <script setup lang="ts">
+const props = defineProps<{
+  blockBtns: boolean;
+}>();
+
+const isRefreshing = ref(false);
+
 const isLocked = ref(false);
-const clickRefresh = () => {
-  console.log('clickRefresh');
-};
+
+const isLoading = computed(() => {
+  return props.blockBtns || isRefreshing.value;
+});
+
+async function handleRefresh() {
+  isRefreshing.value = true;
+
+  console.log('Имитация обновления ');
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+
+  console.log('обновлено ');
+
+  isRefreshing.value = false;
+}
 </script>
 
 <template>
@@ -11,31 +29,22 @@ const clickRefresh = () => {
     class="icon-button flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-[5px] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
     :style="{
       color: 'var(--ui-text)',
-      backgroundColor: 'var(--ui-bg)',
+      backgroundColor: isLoading ? 'transparent' : 'var(--ui-bg)',
     }"
     :aria-label="'Новый вариант задания'"
     :title="'Новый вариант задания'"
-  >
-    <!-- <button
-    type="button"
-    class="icon-button flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-[5px] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-    :style="{
-      color: 'var(--ui-text)',
-      backgroundColor:
-        disableRefresh || isRefreshing ? 'transparent' : 'var(--ui-bg)',
-    }"
-    :aria-label="'Новый вариант задания'"
-    :title="'Новый вариант задания'"
-    :disabled="disableRefresh || isRefreshing"
+    :disabled="isLoading"
     @click="handleRefresh"
-  > -->
+  >
     <!-- Иконка замка (если заблокировано) -->
-    <!-- <IconLock v-if="isLocked && !isRefreshing" />  -->
-    <IconLock v-if="isLocked" />
+    <IconLock v-if="isLocked && !isRefreshing" />
 
     <!-- Иконка обновления -->
-    <!-- <IconRefresh :class="{ 'animate-spin': isRefreshing }" /> -->
-    <IconRefresh v-else @click="clickRefresh" />
+    <IconRefresh
+      v-else
+      :class="{ 'animate-spin': isRefreshing }"
+      @click="handleRefresh"
+    />
   </button>
 </template>
 

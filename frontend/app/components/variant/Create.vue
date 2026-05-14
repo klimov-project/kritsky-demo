@@ -35,10 +35,8 @@ watch(
       selectedExcerptId.value = excerpt?.title || '';
     }
 
-    console.log('newVariant: ', newVariant);
     if (newVariant?.poem) {
       const { poem, poet } = newVariant;
-      console.log('poem: ', poem);
       selectedPoetId.value = poet?.id || '';
       selectedPoemId.value = poem?.title || '';
       selectedThemeId.value = poem?.themeInternalId || '';
@@ -77,7 +75,6 @@ const manualUpdatePoem = (poemId: string) => {
 </script>
 
 <template>
-  <VariantSidebar />
 
   <div class="max-w-6xl w-full bg-white rounded-[10px] mb-3 p-4">
     <VariantExcerptFilters
@@ -154,6 +151,13 @@ const manualUpdatePoem = (poemId: string) => {
       />
     </div>
 
+    <div v-if="isLoading" class="text-center py-20">
+      <div
+        class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"
+      ></div>
+      <p class="mt-4 text-gray-600">Подготовка варианта...</p>
+    </div>
+
     <ClientOnly v-if="variant">
       <VariantPoem
         :poem-text="variant.poem?.text"
@@ -163,9 +167,18 @@ const manualUpdatePoem = (poemId: string) => {
       <VariantTaskList3 />
       <VariantTaskList4 />
     </ClientOnly>
-
     <VariantCreatePartTwo />
-    <VariantTaskList5 />
+    <div v-if="isLoading" class="text-center py-20">
+      <div
+        class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"
+      ></div>
+      <p class="mt-4 text-gray-600">Подготовка варианта...</p>
+    </div>
+    <ClientOnly v-if="variant">
+      <VariantTaskList5 />
+    </ClientOnly>
   </div>
-  <VariantFooter />
+
+  <VariantSidebar />
+  <VariantFooter :block-btns="isLoading" />
 </template>

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+defineProps<{
+  blockBtns: boolean;
+}>();
 const handleNav = (e: string) => console.log('click handle: ' + e);
 </script>
 
@@ -8,6 +11,7 @@ const handleNav = (e: string) => console.log('click handle: ' + e);
       <WhiteButton
         icon="i-lucide-file"
         class="white-btn w-full h-[50px] whitespace-nowrap"
+        :disabled="blockBtns"
         @click="handleNav('next')"
       >
         Новый рандомный вариант
@@ -16,17 +20,18 @@ const handleNav = (e: string) => console.log('click handle: ' + e);
       <WhiteButton
         icon="i-lucide-rotate-cw"
         class="white-btn w-full h-[50px] whitespace-nowrap"
+        :disabled="blockBtns"
         @click="handleNav('next')"
       >
         Обновить все задания в варианте
       </WhiteButton>
     </div>
     <div v-if="false" class="flex items-center justify-between mb-3 gap-3">
-      <WhiteButton previous @click="handleNav('next')">
+      <WhiteButton previous @click="handleNav('next')" :disabled="blockBtns">
         Предыдущий вариант
       </WhiteButton>
 
-      <WhiteButton next @click="handleNav('previous')">
+      <WhiteButton next @click="handleNav('previous')" :disabled="blockBtns">
         Следующий вариант
       </WhiteButton>
     </div>

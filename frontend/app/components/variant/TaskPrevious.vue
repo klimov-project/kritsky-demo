@@ -1,4 +1,24 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const props = defineProps<{
+  blockBtns: boolean;
+}>();
+
+const manualDisable = ref(false);
+const isLoading = computed(() => {
+  return props.blockBtns || manualDisable.value;
+});
+
+async function handleBack() {
+  manualDisable.value = true;
+
+  console.log('Имитация загрузки ');
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+
+  console.log('Загружено ');
+
+  manualDisable.value = false;
+}
+</script>
 
 <template>
   <button
@@ -9,20 +29,10 @@
       backgroundColor: 'var(--ui-bg)',
     }"
     :aria-label="'Вернуть предыдущий вариант задания'"
-    :title="'Назад'"
+    :title="'Предыдущий вопрос'"
+    :disabled="isLoading"
+    @click="handleBack"
   >
-    <!-- <button
-      type="button"
-      class="icon-button flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-[5px] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-      :style="{
-        color: 'var(--ui-text)',
-        backgroundColor: disableBack ? 'transparent' : 'var(--ui-bg)',
-      }"
-      :aria-label="'Вернуть предыдущий вариант задания'"
-      :title="'Назад'"
-      :disabled="disableBack"
-      @click="handleBack"
-    > -->
     <svg
       stroke="currentColor"
       fill="none"

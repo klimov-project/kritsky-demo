@@ -83,7 +83,7 @@ const formattedMatches = computed(() => {
   });
 
   // return matches.map((m) => `${m.letter}-${m.number}`).join(', ');
-  return matches.map((m) => `${m.number}`).join(', ');
+  return matches.map((m) => `${m.number}`).join('');
 });
 
 defineExpose({

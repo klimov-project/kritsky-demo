@@ -49,11 +49,11 @@ const taskType = computed(() => {
 
 const hasTermQuestion = computed(() => taskData.value?.isTermQuestion === true);
 const taskColumnsRef = ref();
-const getAnswerFromTaske2 = () => taskColumnsRef.value?.answer;
+const getAnswerFromTask2 = () => taskColumnsRef.value?.answer;
 
 const formattedAnswer = computed(() => {
   if (taskType.value === 'task2') {
-    return getAnswerFromTaske2();
+    return getAnswerFromTask2() || 'Нет ответа';
   }
   if (taskType.value === 'task3' || taskType.value === 'task6') {
     return [taskData.value?.answer1, taskData.value?.answer2]
@@ -89,7 +89,7 @@ const showAnswerButton = computed(() => {
     class="task-container ring ring-inset ring-accented rounded-[10px] py-7 px-8 mb-3 relative"
   >
     <div
-      class="absolute w-auto left-0 top-0 p-[30px] flex items-center justify-center"
+      class="anchor-for-action absolute w-auto left-0 top-0 p-[30px] flex items-center justify-center"
     >
       <TaskNumber :number="getTaskNumber(taskKey)" />
     </div>
@@ -188,6 +188,7 @@ const showAnswerButton = computed(() => {
 <style lang="scss">
 .task-container {
   --tw-ring-color: #cfcfcf;
+  transition: box-shadow 0.3s ease;
   .rounded-md {
     border-radius: 5px;
   }
@@ -198,7 +199,24 @@ const showAnswerButton = computed(() => {
   .text-base > p {
     font-size: 20px !important;
   }
-  &.task__hided {
+  .anchor-for-action:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 200%;
+    width: 280px;
+  }
+  &:hover {
+    --tw-ring-inset: inset;
+    box-shadow: 0 0 0 2px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    .anchor-for-action {
+      z-index: 30;
+      .shadow-hover button {
+        box-shadow: 0 10px 15px -3px var(--tw-shadow-color, rgb(0 0 0 / 0.1)),
+          0 4px 6px -4px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+      }
+    }
   }
 }
 </style>
