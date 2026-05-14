@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const auth = useAuth();
-const { session, isAuthenticated, logout, isLoading: authLoading } = auth;
+const { isAuthenticated, logout, openLoginModal } = auth;
 const showMobileMenu = ref(false);
 
 const handleLogout = async () => {
@@ -9,6 +9,10 @@ const handleLogout = async () => {
   } catch (error) {
     console.error('Logout error:', error);
   }
+};
+
+const handleLogin = () => {
+  openLoginModal('login');
 };
 
 const toggleMobileMenu = () => {
@@ -121,8 +125,8 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
               ></NuxtLink>
             </template>
             <template v-else>
-              <NuxtLink
-                to="/login"
+              <button
+                @click="handleLogin"
                 class="text-[#333] hover:opacity-70 transition-opacity"
               >
                 <svg
@@ -139,7 +143,7 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
                   <polyline points="10 17 15 12 10 7" />
                   <line x1="15" y1="12" x2="3" y2="12" />
                 </svg>
-              </NuxtLink>
+              </button>
             </template>
           </div>
 
@@ -216,11 +220,12 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
             </button>
           </template>
           <template v-else>
-            <NuxtLink
-              to="/login"
+            <button
+              @click="handleLogin"
               class="w-full min-h-[56px] border border-[#cfcfcf] rounded-[10px] text-[#333] font-serif text-[13px] uppercase flex items-center justify-center gap-[10px]"
-              >Войти</NuxtLink
             >
+              Войти
+            </button>
           </template>
           <button
             class="w-full min-h-[56px] border border-[#cfcfcf] rounded-[10px] text-[#333] font-serif text-[13px] uppercase flex items-center justify-center gap-[10px]"
