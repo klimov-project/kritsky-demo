@@ -14,7 +14,7 @@ const handleNav = (e: string) => console.log('click handle: ' + e);
       </WhiteButton>
 
       <WhiteButton
-        icon="i-lucide-loader-circle"
+        icon="i-lucide-rotate-cw"
         class="white-btn w-full h-[50px] whitespace-nowrap"
         @click="handleNav('next')"
       >

@@ -48,8 +48,13 @@ const taskType = computed(() => {
 });
 
 const hasTermQuestion = computed(() => taskData.value?.isTermQuestion === true);
+const taskColumnsRef = ref();
+const getAnswerFromTaske2 = () => taskColumnsRef.value?.answer;
 
 const formattedAnswer = computed(() => {
+  if (taskType.value === 'task2') {
+    return getAnswerFromTaske2();
+  }
   if (taskType.value === 'task3' || taskType.value === 'task6') {
     return [taskData.value?.answer1, taskData.value?.answer2]
       .filter(Boolean)
@@ -115,13 +120,13 @@ const showAnswerButton = computed(() => {
 
         <div
           v-if="taskType === 'task1' && hasTermQuestion"
-          class="flex items-start gap-[10px] ml-[55px] mr-[55px]"
+          class="flex items-start gap-[10px] pt-1 ml-[55px] mr-[55px]"
         >
           <TaskTermQuestionToggles />
         </div>
 
         <!-- Основной контент задания -->
-        <div class="flex-1 space-y-3">
+        <div class="flex-1 space-y-3 min-h-[50px]">
           <!-- TASK 2 -->
           <template v-if="taskType === 'task2'">
             <div
@@ -129,6 +134,7 @@ const showAnswerButton = computed(() => {
             >
               <TaskText :prompt="taskData.prompt" />
               <TaskTwoColumns
+                ref="taskColumnsRef"
                 :left-label="taskData.leftLabel"
                 :right-label="taskData.rightLabel"
                 :pairs="taskData.pairs || []"
@@ -136,6 +142,7 @@ const showAnswerButton = computed(() => {
               />
             </div>
             <TaskAnswerStub />
+            <TaskAnswerToggle :answer="formattedAnswer" />
           </template>
 
           <!-- TASK 3 / TASK 6 -->

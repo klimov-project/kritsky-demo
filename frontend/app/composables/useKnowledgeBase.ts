@@ -38,12 +38,6 @@ export function useKnowledgeBase() {
         }
         return response;
       },
-      // Проверяем нужно ли обновление по хешу
-      onResponse: ({ response }) => {
-        if (response._data?._metadata?.hash === store.lastKnownHash) {
-          console.log('Данные не изменились, используем кеш');
-        }
-      },
     },
   );
 

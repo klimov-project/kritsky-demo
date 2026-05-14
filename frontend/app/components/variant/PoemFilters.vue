@@ -54,7 +54,6 @@ const selectedThemeId = computed({
 
 const disabledPoets = computed(() => poetsOptions.value.length === 0)
 const disabledPoems = computed(() => poemsOptions.value.length === 0)
-console.log(poemsOptions.value)
 </script>
 
 <template>

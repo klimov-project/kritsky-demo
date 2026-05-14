@@ -38,6 +38,8 @@ onMounted(async () => {
   <div class="relative min-h-screen w-full max-w-[956px]">
     <VariantCreate />
   </div>
+
+  <VariantPanel />
 </template>
 
 <style>
