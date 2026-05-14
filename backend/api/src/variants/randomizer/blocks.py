@@ -94,6 +94,8 @@ def populate_block2(poem_pools: dict[str, list[dict[str, Any]]], ctx: SelectionC
     task8_pool_final = task8_no_conflict if task8_no_conflict else task8_pool
     tasks["task8"] = _pick_best_from_pool(task8_pool_final, "task8", ctx)
     if tasks["task8"]:
+        import copy
+        tasks["task8"] = copy.deepcopy(tasks["task8"])
         tasks["task8Options"] = _build_task8_options(tasks["task8"], ctx)
         if isinstance(tasks["task8"], dict):
             tasks["task8"]["options"] = tasks["task8Options"]
