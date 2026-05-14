@@ -6,9 +6,10 @@ import random
 from .constants import ALL_TASK_KEYS, BLOCK11_KEYS
 from .tokens import _filter_active_items, _extract_author_tokens, _extract_theme_tokens
 from .context import SelectionContext, _pick_random, _pick_best_from_pool, _shuffle
-from .blocks import build_block1_pools, apply_task1_filters, populate_block1, populate_block2, populate_block3
+from .blocks import build_block1_pools, apply_task1_filters, populate_block1, populate_block2, populate_block3, _build_slot_pool
 from .tasks import (
     _rotate_rod_layout,
+    _generate_rod_layout,
     _build_runtime_task2,
     _build_runtime_two_gap_candidates,
     _task8_has_term_conflict,
@@ -124,23 +125,16 @@ def _compute_pool_sizes(variant: dict[str, Any], kb_payload: dict[str, Any]) -> 
 
     # --- Block 3 ---
     block3_payload = kb_payload.get("block3") or {}
-    b3_pool = (
-        (block3_payload.get("task11_1") or []) +
-        (block3_payload.get("task11_2_3") or []) +
-        (block3_payload.get("task11_4") or []) +
-        (block3_payload.get("task11_5") or [])
-    )
     rod_layout = variant.get("_rodLayout") or []
     if rod_layout:
-        rod_groups = _group_pool_by_rod(b3_pool)
         exclusive_slot = variant.get("_exclusiveSlot")
         for i, key in enumerate(BLOCK11_KEYS):
             rod = rod_layout[i] if i < len(rod_layout) else "проза"
-            pool = rod_groups.get(rod) or []
+            slot_pool = _build_slot_pool(block3_payload, i, rod)
             if i == exclusive_slot:
-                pool = [q for q in pool if _is_exclusive_question(q)]
+                pool = [q for q in slot_pool if _is_exclusive_question(q)]
             else:
-                pool = [q for q in pool if not _is_exclusive_question(q)]
+                pool = [q for q in slot_pool if not _is_exclusive_question(q)]
             sizes[key] = sum(1 for q in pool if _can_select_question(q, key, ctx))
     else:
         for key in BLOCK11_KEYS:
@@ -328,11 +322,27 @@ def refresh_all_block11_runtime2(kb_payload: dict[str, Any], payload: dict[str, 
     for key in ALL_TASK_KEYS:
         if key not in BLOCK11_KEYS:
             ctx.add_question_tokens(variant.get(key), key)
-            
-    old_layout = variant.get("_rodLayout") or []
-    new_layout = _rotate_rod_layout(old_layout)
+
+    pinned_tasks = payload.get("pinnedBlock3Tasks") or {}
+    rod_pref = payload.get("block11RodPreference")
     
-    tasks = populate_block3(kb_payload.get("block3") or {}, ctx, new_layout)
+    old_layout = variant.get("_rodLayout") or []
+    layout_step = variant.get("_rodLayoutStep", 0)
+
+    # Use frontend preference if provided (synced rotation), otherwise backend rotation.
+    if rod_pref and isinstance(rod_pref, dict):
+        new_layout = [rod_pref.get(k, "проза") for k in BLOCK11_KEYS]
+        new_step = (layout_step + 1) % 5
+    elif layout_step >= 4 or not old_layout:
+        new_layout = _generate_rod_layout()
+        new_step = 0
+    else:
+        new_layout = _rotate_rod_layout(old_layout)
+        new_step = layout_step + 1
+    
+    tasks = populate_block3(kb_payload.get("block3") or {}, ctx, new_layout, pinned_tasks)
+    # populate_block3 sets _rodLayoutStep = 0; override with the managed step value.
+    tasks["_rodLayoutStep"] = new_step
     variant.update(tasks)
     
     return {"variant": variant, "evaluation": evaluate_variant_rules2(variant), "pool_sizes": _compute_pool_sizes(variant, kb_payload)}
@@ -449,12 +459,25 @@ def refresh_task_runtime2(kb_payload: dict[str, Any], payload: dict[str, Any]) -
     # --- Block 3 tasks ---
     elif task_key in BLOCK11_KEYS:
         rod_layout = variant.get("_rodLayout") or []
+        exclusive_slot = variant.get("_exclusiveSlot")
+        task_idx = BLOCK11_KEYS.index(task_key)
+
         if not rod_layout:
+            # No layout yet — do a full fresh generation
             tasks = populate_block3(kb_payload.get("block3") or {}, ctx)
             variant.update(tasks)
         else:
-            tasks = populate_block3(kb_payload.get("block3") or {}, ctx, rod_layout)
-            variant[task_key] = tasks[task_key]
+            rod = rod_layout[task_idx] if task_idx < len(rod_layout) else "проза"
+            block3_payload = kb_payload.get("block3") or {}
+            slot_pool = _build_slot_pool(block3_payload, task_idx, rod)
+
+            if task_idx == exclusive_slot:
+                # Mandatory: must find an exclusive question with the correct rod.
+                pool = [q for q in slot_pool if _is_exclusive_question(q)]
+            else:
+                pool = [q for q in slot_pool if not _is_exclusive_question(q)]
+
+            variant[task_key] = _pick_best_from_pool(pool, task_key, ctx, excluded_ids)
 
     return {
         "variant": variant,
