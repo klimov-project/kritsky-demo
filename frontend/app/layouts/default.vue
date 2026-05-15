@@ -69,7 +69,7 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
             class="absolute left-1/2 -translate-x-1/2 hidden lg:inline-flex items-center gap-[50px] whitespace-nowrap"
           >
             <NuxtLink
-              to="/new_test"
+              to="/create-variant"
               class="nav-link-animated text-[#333] font-serif text-[18px] uppercase"
             >
               Конструктор
@@ -190,7 +190,7 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
         <h2 class="text-center font-serif text-[28px] mt-[18px]">Меню</h2>
         <nav class="mt-[24px] flex flex-col gap-[8px]">
           <NuxtLink
-            to="/new_test"
+            to="/create-variant"
             class="w-full min-h-[58px] rounded-[10px] bg-[#f6f6f6] text-[#333] font-serif text-[18px] uppercase flex items-center px-[24px]"
             >Конструктор</NuxtLink
           >

@@ -8,6 +8,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isLocked: {
+    type: Boolean,
+    default: false,
+  },
   previous: {
     type: Boolean,
     default: false,
@@ -31,6 +35,7 @@ defineEmits(['click']);
 const computedIcon = computed(() => {
   if (props.icon) return props.icon;
   if (props.previous) return 'i-lucide:arrow-left';
+  if (props.isLocked) return 'i-lucide:lock';
   return '';
 });
 

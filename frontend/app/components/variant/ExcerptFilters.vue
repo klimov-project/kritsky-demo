@@ -12,6 +12,12 @@ const props = defineProps<Props>()
 
 const { store: kbStore } = useKnowledgeBase();
 
+const { isAuthenticated, openLoginModal } = useAuth();
+
+const isAuthLock = computed(() => !isAuthenticated.value)
+
+const isLockIcon = computed(()=> isAuthLock.value ? "i-lucide:lock" : '')
+
 const emit = defineEmits<{
   'update:selected-work-id': [value: string]
   'update:selected-chapter': [value: string]
@@ -42,7 +48,7 @@ const selectedWork = computed(() =>
 );
 const disabledWorks = computed(() => works.value.length === 0)
 const disabledChapter = computed(() => excerptChaptersOptions.value.length === 0)
-const disabledExcerpt = computed(() => excerptDropdownOptions.value.length === 0)
+const disabledExcerpt = computed(() => excerptDropdownOptions.value.length === 0 || isAuthLock.value)
 
 
 const excerptChaptersOptions = computed(() => {
@@ -119,13 +125,16 @@ const workOptions = computed(() => {
         >
           Отрывок
         </label>
-        <USelect
-          v-model="selectedExcerptId"
-          :items="excerptDropdownOptions"
-          :disabled="disabledExcerpt"
-          placeholder="Выберите отрывок"
-          class="w-full"
-        />
+        <AuthBtnWrap>
+          <USelect
+            v-model="selectedExcerptId"
+            :items="excerptDropdownOptions"
+            :disabled="disabledExcerpt"
+            :icon="isLockIcon"
+            placeholder="Выберите отрывок"
+            class="w-full"
+          />
+        </AuthBtnWrap>
       </div>
     </div>
 
@@ -141,6 +150,7 @@ const workOptions = computed(() => {
         @click="$emit('refresh-block-1')"
         :loading="isLoading"
         :disabled="isLoading"
+        :isLocked="isAuthLock"
         class="update-variant-btn__filter"
       >
         Обновить отрывок и задания 1–5
@@ -159,6 +169,12 @@ const workOptions = computed(() => {
     font-weight: 400;
     font-size: 16px;
     line-height: 19px;
+    [data-slot='leading'] {
+      padding: 0 24px;
+    }
+    [data-slot='leading'] + [data-slot='value'] {
+      margin-left: 36px;
+    }
   }
 }
 </style>

@@ -26,8 +26,6 @@ export const useGenerateVariant = () => {
     ? config.apiBackendUrl
     : config.public.apiUrl;
 
-  console.log('API URL: ', apiUrl);
-
   const buildPayload = () => ({
     selectedWorkId: selectedWorkId.value,
     selectedExcerptId: selectedExcerptId.value,
@@ -58,12 +56,13 @@ export const useGenerateVariant = () => {
     }
 
     // Public request (no auth)
-    const fullUrl = url.startsWith('/') ? `${apiUrl}${url}` : `${apiUrl}/${url}`;
+    const fullUrl = url.startsWith('/')
+      ? `${apiUrl}${url}`
+      : `${apiUrl}/${url}`;
     return $fetch<T>(fullUrl, options);
   };
 
   const pregenerateVariant = async () => {
-    console.log('pregenerateVariant: ', apiUrl);
     const pregeneratedUrl = `${apiUrl}/variants/runtime/pregenerated`;
     try {
       const data = await $fetch<{ variant: GeneratedVariant }>(pregeneratedUrl);
@@ -104,7 +103,8 @@ export const useGenerateVariant = () => {
       checkedAnswers.value.clear();
     } catch (e) {
       if ((e as Error).message !== 'Требуется авторизация') {
-        statusMessage.value = (e as Error).message || 'Ошибка генерации варианта';
+        statusMessage.value =
+          (e as Error).message || 'Ошибка генерации варианта';
       }
     } finally {
       refreshLoadingByBlock.value.block1 = false;
@@ -142,7 +142,8 @@ export const useGenerateVariant = () => {
       checkedAnswers.value.clear();
     } catch (e) {
       if ((e as Error).message !== 'Требуется авторизация') {
-        statusMessage.value = (e as Error).message || `Ошибка обновления блока ${block}`;
+        statusMessage.value =
+          (e as Error).message || `Ошибка обновления блока ${block}`;
       }
     } finally {
       refreshLoadingByBlock.value[block] = false;
@@ -178,7 +179,8 @@ export const useGenerateVariant = () => {
       checkedAnswers.value.delete(taskKey);
     } catch (e) {
       if ((e as Error).message !== 'Требуется авторизация') {
-        statusMessage.value = (e as Error).message || `Ошибка обновления задания ${taskKey}`;
+        statusMessage.value =
+          (e as Error).message || `Ошибка обновления задания ${taskKey}`;
       }
     } finally {
       refreshLoadingByTask.value[taskKey] = false;
