@@ -214,7 +214,7 @@ const handleLogout = async () => {
             Управляйте подпиской на премиум функции
           </p>
           <NuxtLink
-            to="/shop"
+            to="/subscriptions"
             class="text-blue-600 hover:text-blue-700 font-medium"
             >Посмотреть план →</NuxtLink
           >

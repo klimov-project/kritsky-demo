@@ -15,7 +15,7 @@ const handleWrapperClick = () => {
     role="button"
     :tabindex="isAuthLock ? 0 : -1"
     @keydown.enter="handleWrapperClick"
-    class="auth-btn-wrapper"
+    class="auth-btn-wrapper interactive-element"
     :class="{ 'is-locked': isAuthLock }"
   >
     <slot />

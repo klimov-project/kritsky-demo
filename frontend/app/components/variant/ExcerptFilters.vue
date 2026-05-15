@@ -100,7 +100,7 @@ const workOptions = computed(() => {
           :items="workOptions"
           :disabled="disabledWorks"
           placeholder="Выберите произведение"
-          class="w-full"
+          class="w-full interactive-element"
         />
       </div>
 
@@ -115,7 +115,7 @@ const workOptions = computed(() => {
           :items="excerptChaptersOptions"
           :disabled="disabledChapter"
           placeholder="Нет глав"
-          class="w-full"
+          class="w-full interactive-element"
         />
       </div>
 

@@ -55,7 +55,7 @@ const computedTrailingIcon = computed(() => {
     :trailing-icon="computedTrailingIcon"
     block
     size="lg"
-    class="base-btn w-auto h-[50px] whitespace-nowrap"
+    class="base-btn interactive-element w-auto h-[50px] whitespace-nowrap"
   >
     <slot />
   </UButton>
