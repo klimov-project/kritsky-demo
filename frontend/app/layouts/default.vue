@@ -94,36 +94,19 @@ const zclass = computed(() =>
             <template v-if="isAuthenticated">
               <NuxtLink
                 to="/my-variants"
-                class="text-[#333] hover:opacity-70 transition-opacity"
-                ><span class="sr-only">Мои варианты</span
-                ><i class="icon-list"></i
-              ></NuxtLink>
-              <!-- <span class="w-[1px] h-[26px] bg-[#cfcfcf]"></span>
-               <NuxtLink
-                to="/my-books"
-                class="text-[#333] hover:opacity-70 transition-opacity"
-                ><span class="sr-only">Мои покупки</span
-                ><i class="icon-book"></i
-              ></NuxtLink> -->
-              <span class="w-[1px] h-[26px] bg-[#cfcfcf]"></span>
-              <NuxtLink
-                to="/subscriptions"
-                class="text-[#333] hover:opacity-70 transition-opacity"
-                ><span class="sr-only">Корзина</span><i class="icon-cart"></i
-              ></NuxtLink>
-              <span class="w-[1px] h-[26px] bg-[#cfcfcf]"></span>
-              <NuxtLink
-                to="/saved"
-                class="text-[#333] hover:opacity-70 transition-opacity"
-                ><span class="sr-only">Избранное</span
-                ><i class="icon-bookmark"></i
-              ></NuxtLink>
-              <span class="w-[1px] h-[26px] bg-[#cfcfcf]"></span>
+                class="text-default hover:opacity-70 transition-opacity size-[24px]"
+              >
+                <span class="sr-only"> Мои варианты </span>
+                <UIcon name="i-lucide-layers" class="size-full" />
+              </NuxtLink>
+              <!-- <span class="w-[1px] h-[26px] bg-[#cfcfcf]"></span> -->
               <NuxtLink
                 to="/profile"
-                class="text-[#333] hover:opacity-70 transition-opacity"
-                ><span class="sr-only">Профиль</span><i class="icon-profile"></i
-              ></NuxtLink>
+                class="text-default hover:opacity-70 transition-opacity size-[24px]"
+              >
+                <span class="sr-only"> Профиль </span>
+                <UIcon name="i-lucide-circle-user-round" class="size-full" />
+              </NuxtLink>
             </template>
             <template v-else>
               <button
@@ -193,26 +176,36 @@ const zclass = computed(() =>
           <NuxtLink
             to="/create-variant"
             class="w-full min-h-[58px] rounded-[10px] bg-[#f6f6f6] text-[#333] font-serif text-[18px] uppercase flex items-center px-[24px]"
-            >Конструктор</NuxtLink
           >
+            Конструктор
+          </NuxtLink>
           <NuxtLink
             to="/author-variant"
             class="w-full min-h-[58px] rounded-[10px] bg-[#f6f6f6] text-[#333] font-serif text-[18px] uppercase flex items-center px-[24px]"
-            >Вариант недели</NuxtLink
           >
+            Вариант недели
+          </NuxtLink>
           <NuxtLink
             to="/subscriptions"
             class="w-full min-h-[58px] rounded-[10px] bg-[#f6f6f6] text-[#333] font-serif text-[18px] uppercase flex items-center px-[24px]"
-            >Магазин</NuxtLink
           >
+            Магазин
+          </NuxtLink>
         </nav>
         <div class="mt-[60px] flex flex-col gap-[5px]">
           <template v-if="isAuthenticated">
             <NuxtLink
+              to="/my-variants"
+              class="w-full min-h-[56px] border border-[#cfcfcf] rounded-[10px] text-[#333] font-serif text-[13px] uppercase flex items-center justify-center gap-[10px]"
+            >
+              Мои варианты
+            </NuxtLink>
+            <NuxtLink
               to="/profile"
               class="w-full min-h-[56px] border border-[#cfcfcf] rounded-[10px] text-[#333] font-serif text-[13px] uppercase flex items-center justify-center gap-[10px]"
-              >Мой профиль</NuxtLink
             >
+              Мой профиль
+            </NuxtLink>
             <button
               @click="handleLogout"
               class="w-full min-h-[56px] border border-[#cfcfcf] rounded-[10px] text-[#333] font-serif text-[13px] uppercase flex items-center justify-center gap-[10px]"
@@ -337,7 +330,7 @@ const zclass = computed(() =>
 .bg-default {
   background-color: var(--home-color-bg);
   position: relative;
-  overflow: hidden;
+  // overflow: hidden;
 }
 
 .bg-default:before {

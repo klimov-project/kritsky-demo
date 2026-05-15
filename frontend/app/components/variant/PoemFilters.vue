@@ -13,7 +13,10 @@ const {
   availablePoems
 } = usePoem();
 
-  const { themes } = useKnowledgeBase();
+const { themes } = useKnowledgeBase();
+const { isLocked } = useAuth();
+
+const isLockIcon = computed(()=> isLocked.value ? "i-lucide:lock" : '')
 
 const poetsOptions = computed(() => {
   return availablePoets.value?.map(poet => ({
@@ -72,7 +75,6 @@ const disabledPoems = computed(() => poemsOptions.value.length === 0)
           placeholder="Выберите автора"
           class="w-full"
         />
-        <!-- poetsOptions : {{ poetsOptions }} -->
       </div>
 
       <div>
@@ -82,14 +84,16 @@ const disabledPoems = computed(() => poemsOptions.value.length === 0)
           Стихотворение
         </label>
 
-        <USelect
-          v-model="selectedPoemId"
-          :items="poemsOptions"
-          :disabled="disabledPoems"
-          placeholder="Выберите стихотворение"
-          class="w-full"
-        />
-        <!-- poemsOptions : {{ poemsOptions }} -->
+        <AuthBtnWrap>
+          <USelect
+            v-model="selectedPoemId"
+            :items="poemsOptions"
+            :disabled="disabledPoems"
+            :icon="isLockIcon"
+            placeholder="Выберите стихотворение"
+            class="w-full"
+          />
+        </AuthBtnWrap>
       </div>
       <div
         class="md:col-span-2 flex flex-row items-center justify-center text-base font-medium text-toned uppercase tracking-wider"
@@ -108,7 +112,6 @@ const disabledPoems = computed(() => poemsOptions.value.length === 0)
           placeholder="Выберите тему"
           class="w-full"
         />
-        <!-- themes : {{ themes }} -->
       </div>
     </div>
 
@@ -126,6 +129,7 @@ const disabledPoems = computed(() => poemsOptions.value.length === 0)
         :loading="isLoading"
         :disabled="isLoading"
         class="update-variant-btn__filter"
+        :isLocked="isLocked"
       >
         Обновить стихотворение и задания 6-10
       </BaseButton>

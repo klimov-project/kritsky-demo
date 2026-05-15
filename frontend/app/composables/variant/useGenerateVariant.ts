@@ -16,10 +16,13 @@ export const useGenerateVariant = () => {
     refreshLoadingByTask,
     statusMessage,
     checkedAnswers,
+    useSelected,
   } = useVariantState();
 
   const config = useRuntimeConfig();
-  const { isAuthenticated, openLoginModal } = useAuth();
+  const { isAuthenticated, openLoginModal, isLocked } = useAuth();
+  const { showPaywall } = useSubscription();
+
   const { apiWithAuth } = useAuthApi();
 
   const apiUrl = import.meta.server
@@ -33,6 +36,7 @@ export const useGenerateVariant = () => {
     selectedPoemId: selectedPoemId.value,
     selectedThemeId: selectedThemeId.value,
     selectedBlock3AuthorId: '',
+    useSelected: useSelected.value,
   });
 
   /**
@@ -79,11 +83,7 @@ export const useGenerateVariant = () => {
    */
   const generateVariant = async () => {
     // Check auth first
-    if (!isAuthenticated.value) {
-      openLoginModal();
-      statusMessage.value = 'Для генерации варианта необходимо войти';
-      return;
-    }
+    if (!checkSubscription()) return;
 
     refreshLoadingByBlock.value.block1 = true;
     refreshLoadingByBlock.value.block2 = true;
@@ -118,11 +118,7 @@ export const useGenerateVariant = () => {
    */
   const refreshBlock = async (block: RuntimeVariantBlockKey) => {
     // Check auth first
-    if (!isAuthenticated.value) {
-      openLoginModal();
-      statusMessage.value = 'Для обновления блока необходимо войти';
-      return;
-    }
+    if (!checkSubscription()) return;
 
     refreshLoadingByBlock.value[block] = true;
     try {
@@ -155,11 +151,7 @@ export const useGenerateVariant = () => {
    */
   const refreshTask = async (taskKey: VariantTaskKey) => {
     // Check auth first
-    if (!isAuthenticated.value) {
-      openLoginModal();
-      statusMessage.value = 'Для обновления задания необходимо войти';
-      return;
-    }
+    if (!checkSubscription()) return;
 
     refreshLoadingByTask.value[taskKey] = true;
     try {
@@ -185,6 +177,20 @@ export const useGenerateVariant = () => {
     } finally {
       refreshLoadingByTask.value[taskKey] = false;
     }
+  };
+
+  const checkSubscription = () => { 
+    if (!isAuthenticated.value) {
+      openLoginModal();
+      statusMessage.value = 'Для обновления блока необходимо войти';
+      return false;
+    } else if (isLocked.value) {
+      showPaywall();
+      statusMessage.value =
+        'Обновления варианта ограничены. Пожалуйста, оформите подписку.';
+      return false;
+    }
+    return true;
   };
 
   return {

@@ -158,6 +158,7 @@ const workOptions = computed(() => {
 </template>
 <style lang="scss">
 .create-variant-filters {
+
   button[data-slot='base']:not(.update-variant-btn__filter) {
     --tw-ring-color: #cfcfcf;
     padding: 15px 24px;
@@ -167,10 +168,13 @@ const workOptions = computed(() => {
     font-weight: 400;
     font-size: 16px;
     line-height: 20px;
+
     [data-slot='leading'] {
       padding: 0 24px;
     }
-    [data-slot='leading'] + [data-slot='value'] {
+
+    [data-slot='leading'] + [data-slot='value'],
+    [data-slot='leading'] + [data-slot='placeholder'] {
       margin-left: 36px;
     }
   }

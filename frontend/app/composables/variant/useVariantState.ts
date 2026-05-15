@@ -76,6 +76,8 @@ export const useVariantState = () => {
     () => '',
   );
 
+  const useSelected = useState<boolean>('use-selected', () => false);
+
   return {
     variant,
     taskHistory,
@@ -96,5 +98,6 @@ export const useVariantState = () => {
     selectedPoemId,
     selectedThemeId,
     selectedChapter,
+    useSelected,
   };
 };
