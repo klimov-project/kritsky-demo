@@ -1,11 +1,9 @@
 <script setup lang="ts">
-const { isAuthenticated, openLoginModal } = useAuth();
-const isAuthLock = computed(() => !isAuthenticated.value);
+const { isLocked } = useAuth();
+const { showPaywall } = useSubscription();
 
 const handleWrapperClick = () => {
-  if (isAuthLock.value) {
-    openLoginModal();
-  }
+  showPaywall();
 };
 </script>
 
@@ -13,10 +11,10 @@ const handleWrapperClick = () => {
   <div
     @click="handleWrapperClick"
     role="button"
-    :tabindex="isAuthLock ? 0 : -1"
+    :tabindex="isLocked ? 0 : -1"
     @keydown.enter="handleWrapperClick"
     class="auth-btn-wrapper interactive-element"
-    :class="{ 'is-locked': isAuthLock }"
+    :class="{ 'is-locked': isLocked }"
   >
     <slot />
   </div>

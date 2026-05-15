@@ -1,7 +1,5 @@
 <script setup lang="ts">
 const route = useRoute();
-const router = useRouter();
-const auth = useAuth();
 const {
   login,
   register,
@@ -9,9 +7,8 @@ const {
   error: authError,
   isLoginModalOpen,
   closeLoginModal,
-} = auth;
+} = useAuth();
 
-// State
 const email = ref('');
 const password = ref('');
 const name = ref('');
@@ -20,7 +17,7 @@ const isSubmitting = ref(false);
 
 const consentOffer = ref(true);
 const consentPrivacy = ref(true);
-const consentAds = ref(true);
+const consentAds = ref(true); 
 
 const activeTab = computed<'login' | 'register'>(
   () => (route.query.modal as 'login' | 'register') || 'login',
@@ -91,21 +88,12 @@ const handleClose = () => {
   password.value = '';
   name.value = '';
   localError.value = null;
-  router.replace({
-    path: route.path,
-    query: { ...route.query, modal: undefined },
-  });
 };
-
-// Сбрасываем ошибку при смене таба
-watch(activeTab, () => {
-  localError.value = '';
-});
 </script>
 
 <template>
   <BaseModal
-    v-model:open="isLoginModalOpen"
+    :open="isLoginModalOpen"
     :error="localError"
     @close="handleClose"
     :title="activeTab === 'login' ? 'Вход в аккаунт' : 'Регистрация'"

@@ -45,7 +45,7 @@ export const useAuth = () => {
       // Refresh session after login to get tokens
       await fetchSession();
       return result;
-    } catch (err: unknown) {
+    } catch (err) {
       const fetchError = err as {
         data?: { message?: string };
         statusMessage?: string;
@@ -74,7 +74,7 @@ export const useAuth = () => {
       // Refresh session after registration to get tokens
       await fetchSession();
       return result;
-    } catch (err: unknown) {
+    } catch (err) {
       const fetchError = err as {
         data?: { message?: string };
         statusMessage?: string;
@@ -101,13 +101,15 @@ export const useAuth = () => {
       });
       await clearSession();
       await router.push('/');
-    } catch (err: unknown) {
+    } catch (err) {
       const fetchError = err as {
         data?: { message?: string };
         statusMessage?: string;
       };
       error.value =
-        fetchError?.data?.message || fetchError?.statusMessage || 'Ошибка при выходе';
+        fetchError?.data?.message ||
+        fetchError?.statusMessage ||
+        'Ошибка при выходе';
       throw err;
     } finally {
       isLoading.value = false;
@@ -132,7 +134,7 @@ export const useAuth = () => {
       // Refresh session to get updated user data
       await fetchSession();
       return result;
-    } catch (err: unknown) {
+    } catch (err) {
       const fetchError = err as {
         data?: { message?: string };
         statusMessage?: string;
@@ -164,7 +166,7 @@ export const useAuth = () => {
           newPassword,
         },
       });
-    } catch (err: unknown) {
+    } catch (err) {
       const fetchError = err as {
         data?: { message?: string };
         statusMessage?: string;
@@ -214,6 +216,8 @@ export const useAuth = () => {
     return route.query.modal === 'register' ? 'register' : 'login';
   });
 
+  const isPro = computed(() => (user.value as AuthUser | null)?.isPro || false);
+
   return {
     // Session state from nuxt-auth-utils
     session: computed(() => ({
@@ -225,10 +229,8 @@ export const useAuth = () => {
     isLoading: readonly(isLoading),
     error: readonly(error),
     isAuthenticated: computed(() => loggedIn.value),
-    isAdmin: computed(
-      () => (user.value as AuthUser | null)?.role === 'admin',
-    ),
-    isPro: computed(() => (user.value as AuthUser | null)?.isPro || false),
+    isLocked: computed(() => !loggedIn.value || !isPro.value),
+    isAdmin: computed(() => (user.value as AuthUser | null)?.role === 'admin'),
 
     // Auth methods
     login,

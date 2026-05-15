@@ -26,7 +26,7 @@ const handleAddToCart = async () => {
   isAdding.value = true;
   try {
     await new Promise((resolve) => setTimeout(resolve, 500));
-    router.push('/cart');
+    router.push('/');
   } finally {
     isAdding.value = false;
   }

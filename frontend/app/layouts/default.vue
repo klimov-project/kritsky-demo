@@ -31,7 +31,7 @@ watch(
 const isIndexPage = computed(() => route.path === '/');
 const isVariantPage = computed(() => route.path === '/create-variant');
 const hasBackgroundLayer = computed(() => isIndexPage.value);
-const hasTransparentShell = computed(() => hasBackgroundLayer.value);
+const hasOverflowHidden = computed(() => !isVariantPage.value);
 const zclass = computed(() =>
   isVariantPage.value ? 'z-0 no-interactive' : 'z-15',
 );
@@ -42,7 +42,9 @@ const zclass = computed(() =>
     <div
       :class="[
         'w-full min-h-screen flex flex-col relative',
-        hasTransparentShell ? 'bg-transparent z-10' : 'bg-default',
+        hasOverflowHidden
+          ? 'bg-transparent z-10 overflow-hidden'
+          : 'bg-default',
       ]"
     >
       <!-- Header -->
@@ -105,7 +107,7 @@ const zclass = computed(() =>
               ></NuxtLink> -->
               <span class="w-[1px] h-[26px] bg-[#cfcfcf]"></span>
               <NuxtLink
-                to="/cart"
+                to="/subscriptions"
                 class="text-[#333] hover:opacity-70 transition-opacity"
                 ><span class="sr-only">Корзина</span><i class="icon-cart"></i
               ></NuxtLink>
@@ -148,7 +150,7 @@ const zclass = computed(() =>
 
           <!-- Mobile Actions Toggle -->
           <div class="ml-auto flex lg:hidden items-center gap-[12px]">
-            <NuxtLink to="/cart" class="text-[#333]">
+            <NuxtLink to="/subscriptions" class="text-[#333]">
               <IconShoppingBag />
             </NuxtLink>
             <button
@@ -347,6 +349,7 @@ const zclass = computed(() =>
   background: url('/periya-full-x2-compress.svg') repeat-y 0 159px / 100%;
   opacity: 0.015;
   pointer-events: none;
+  display: none;
 }
 .icon-list::before {
   content: '📋';

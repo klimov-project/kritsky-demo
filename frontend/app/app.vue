@@ -1,7 +1,8 @@
 <template>
   <NuxtLayout>
     <NuxtPage />
-    <!-- Global Auth Modal -->
+    
     <AuthModal />
+    <ModalPaywall />
   </NuxtLayout>
 </template>

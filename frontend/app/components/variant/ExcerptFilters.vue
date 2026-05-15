@@ -12,11 +12,9 @@ const props = defineProps<Props>()
 
 const { store: kbStore } = useKnowledgeBase();
 
-const { isAuthenticated, openLoginModal } = useAuth();
+const { isLocked } = useAuth();
 
-const isAuthLock = computed(() => !isAuthenticated.value)
-
-const isLockIcon = computed(()=> isAuthLock.value ? "i-lucide:lock" : '')
+const isLockIcon = computed(()=> isLocked.value ? "i-lucide:lock" : '')
 
 const emit = defineEmits<{
   'update:selected-work-id': [value: string]
@@ -48,7 +46,7 @@ const selectedWork = computed(() =>
 );
 const disabledWorks = computed(() => works.value.length === 0)
 const disabledChapter = computed(() => excerptChaptersOptions.value.length === 0)
-const disabledExcerpt = computed(() => excerptDropdownOptions.value.length === 0 || isAuthLock.value)
+const disabledExcerpt = computed(() => excerptDropdownOptions.value.length === 0 || isLocked.value)
 
 
 const excerptChaptersOptions = computed(() => {
@@ -150,7 +148,7 @@ const workOptions = computed(() => {
         @click="$emit('refresh-block-1')"
         :loading="isLoading"
         :disabled="isLoading"
-        :isLocked="isAuthLock"
+        :isLocked="isLocked"
         class="update-variant-btn__filter"
       >
         Обновить отрывок и задания 1–5
