@@ -69,7 +69,7 @@ const computedTrailingIcon = computed(() => {
   border-radius: 10px;
 
   &:hover:not(:disabled) {
-    background-color: var(--ui-bg-elevated);
+    background-color: var(--ui-bg-muted);
   }
 
   &:disabled {

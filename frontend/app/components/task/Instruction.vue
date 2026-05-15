@@ -10,7 +10,7 @@ const isOpen = ref(true);
   >
     <UCollapsible v-model:open="isOpen">
       <UButton
-        class="icon-button flex-shrink-0 p-1 rounded-[5px] transition-all duration-200 hover:bg-[var(--ui-bg-elevated)] active:scale-95"
+        class="icon-button flex-shrink-0 p-1 rounded-[5px] transition-all duration-200 hover:bg-[var(--ui-bg-muted)] active:scale-95"
         trailing-icon="i-lucide-chevron-down"
         :style="{
           backgroundColor: 'var(--ui-bg)',

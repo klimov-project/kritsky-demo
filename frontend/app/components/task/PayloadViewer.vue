@@ -14,7 +14,7 @@ const toggle = () => {
   <div class="flex items-center justify-center">
     <button
       type="button"
-      class="icon-button flex-shrink-0 p-1 rounded-[5px] transition-all duration-200 hover:bg-[var(--ui-bg-elevated)] active:scale-95"
+      class="icon-button flex-shrink-0 p-1 rounded-[5px] transition-all duration-200 hover:bg-[var(--ui-bg-muted)] active:scale-95"
       :style="{ color: 'var(--ui-text)' }"
       aria-label="Показать payload"
       title="Показать данные задания"

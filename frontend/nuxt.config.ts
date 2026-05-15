@@ -6,7 +6,7 @@ export default defineNuxtConfig({
 
   css: ['~/assets/styles/main.scss', '~/assets/styles/nuxt-ui.css'],
   modules: ['nuxt-auth-utils', '@pinia/nuxt', '@nuxt/ui'],
-  ui: { fonts: false }, // disable the @nuxt/fonts module.
+  ui: { fonts: false },
   icon: {
     serverBundle: {
       collections: ['lucide'],

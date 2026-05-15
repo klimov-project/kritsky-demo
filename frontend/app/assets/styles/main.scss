@@ -73,6 +73,18 @@ body {
     background-color: var(--ui-primary-bg) !important;
 }
 
+.no-interactive * {
+    pointer-events: none;
+
+}
+
+.interactive-element {
+    // position: relative;
+    // z-index: 1;
+    pointer-events: auto;
+}
+
+
 // from react realisation
 
 .rich-content p {

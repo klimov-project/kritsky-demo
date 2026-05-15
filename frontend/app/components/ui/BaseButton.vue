@@ -64,7 +64,7 @@ const computedTrailingIcon = computed(() => {
 <style scoped lang="scss">
 .base-btn {
   background-color: #f6f6f6;
-  font-size: 12px;
+  // font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ui-text);

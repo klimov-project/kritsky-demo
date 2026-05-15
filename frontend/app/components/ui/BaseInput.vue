@@ -6,23 +6,42 @@ defineProps<{
 }>();
 
 const model = defineModel<string>({ required: true });
+
+const id = useId();
 </script>
 
 <template>
-  <div>
+  <div class="base-input w-full">
     <label
-      class="block text-gray-400 text-[13px] font-medium uppercase tracking-wide mb-2"
+      :for="id"
+      class="block text-base font-medium uppercase tracking-wider mb-2 text-toned"
     >
       {{ label }}
     </label>
     <UInput
+      :id="id"
       v-model="model"
       :placeholder="placeholder"
       :type="type || 'text'"
-      class="w-full sm:px-5"
+      class="w-full"
       :ui="{
-        base: 'h-[54px] rounded-[12px] border-[#E5E5E5]',
+        base: ' ',
       }"
     />
   </div>
 </template>
+
+<style lang="scss">
+.base-input {
+  input[data-slot='base'] {
+    --tw-ring-color: #cfcfcf;
+    padding: 15px 24px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 20px;
+  }
+}
+</style>

@@ -168,7 +168,7 @@ const workOptions = computed(() => {
     font-style: normal;
     font-weight: 400;
     font-size: 16px;
-    line-height: 19px;
+    line-height: 20px;
     [data-slot='leading'] {
       padding: 0 24px;
     }

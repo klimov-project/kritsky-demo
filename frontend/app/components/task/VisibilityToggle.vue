@@ -10,7 +10,7 @@ const text = computed(() =>
 <template>
   <button
     type="button"
-    class="icon-button flex-shrink-0 p-1 rounded-[5px] transition-all duration-200 hover:bg-[var(--ui-bg-elevated)] active:scale-95"
+    class="icon-button flex-shrink-0 p-1 rounded-[5px] transition-all duration-200 hover:bg-[var(--ui-bg-muted)] active:scale-95"
     :aria-label="text"
     :title="text"
   >

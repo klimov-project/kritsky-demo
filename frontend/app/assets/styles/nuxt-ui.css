@@ -66,8 +66,8 @@
 
     /* --- Фон (Семантическая привязка) --- */
     --ui-bg: var(--ui-white);
-    --ui-bg-muted: var(--ui-color-neutral-50);
-    --ui-bg-elevated: var(--ui-hover);
+    --ui-bg-muted: var(--ui-hover);
+    --ui-bg-elevated: var(--ui-color-charcoal-950);
     --ui-button-bg: var(--ui-primary-bg);
 
     /* --- Границы (На основе документации) --- */

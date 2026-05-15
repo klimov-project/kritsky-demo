@@ -29,17 +29,16 @@ watch(
 );
 
 const isIndexPage = computed(() => route.path === '/');
+const isVariantPage = computed(() => route.path === '/create-variant');
 const hasBackgroundLayer = computed(() => isIndexPage.value);
 const hasTransparentShell = computed(() => hasBackgroundLayer.value);
+const zclass = computed(() =>
+  isVariantPage.value ? 'z-0 no-interactive' : 'z-15',
+);
 </script>
 
 <template>
-  <div
-    :class="[
-      'min-h-screen',
-      { 'relative overflow-hidden': hasBackgroundLayer },
-    ]"
-  >
+  <div class="min-h-screen">
     <div
       :class="[
         'w-full min-h-screen flex flex-col relative',
@@ -97,13 +96,13 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
                 ><span class="sr-only">Мои варианты</span
                 ><i class="icon-list"></i
               ></NuxtLink>
-              <span class="w-[1px] h-[26px] bg-[#cfcfcf]"></span>
-              <NuxtLink
+              <!-- <span class="w-[1px] h-[26px] bg-[#cfcfcf]"></span>
+               <NuxtLink
                 to="/my-books"
                 class="text-[#333] hover:opacity-70 transition-opacity"
                 ><span class="sr-only">Мои покупки</span
                 ><i class="icon-book"></i
-              ></NuxtLink>
+              ></NuxtLink> -->
               <span class="w-[1px] h-[26px] bg-[#cfcfcf]"></span>
               <NuxtLink
                 to="/cart"
@@ -238,6 +237,7 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
       <!-- Main Content -->
       <main
         class="min-h-screen mx-auto max-w-[1440px] w-full px-3 lg:px-0 flex-1 flex flex-col flex items-center justify-center"
+        :class="zclass"
       >
         <slot />
       </main>
@@ -335,6 +335,7 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
 .bg-default {
   background-color: var(--home-color-bg);
   position: relative;
+  overflow: hidden;
 }
 
 .bg-default:before {
@@ -342,9 +343,10 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
   position: absolute;
   width: 100%;
   height: 100%;
-  z-index: 0;
-  background: url('/periya-full-x2-compress.svg') no-repeat 0 159px / 100%;
-  opacity: 0.02;
+  z-index: 10;
+  background: url('/periya-full-x2-compress.svg') repeat-y 0 159px / 100%;
+  opacity: 0.015;
+  pointer-events: none;
 }
 .icon-list::before {
   content: '📋';
