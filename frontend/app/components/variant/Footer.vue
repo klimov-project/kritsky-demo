@@ -16,9 +16,6 @@ const handleNav = (e: string) => console.log('click handle: ' + e);
 
 <template>
   <div class="w-full">
-    <!-- Action Panel for download/print/save/share -->
-    <VariantActionPanel :disabled="blockBtns" class="mb-5" />
-    
     <div class="flex items-center justify-between mb-[20px] gap-3">
       <WhiteButton
         icon="i-lucide-file"

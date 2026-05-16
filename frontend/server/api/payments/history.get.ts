@@ -1,21 +1,20 @@
 interface PaymentHistoryResponse {
   items: Array<{
-    id: string
-    date: string
-    amount: number
-    currency: string
-    description: string
-    status: 'completed' | 'pending' | 'failed'
-  }>
+    id: string;
+    date: string;
+    amount: number;
+    currency: string;
+    description: string;
+    status: 'completed' | 'pending' | 'failed';
+  }>;
 }
 
 export default defineEventHandler(async (event) => {
   try {
     // Get the session to verify authentication
-    const { user } = await requireAuth(event)
+    const session = await getUserSession(event);
 
-    const config = useRuntimeConfig()
-    const session = await useAuthSession(event)
+    const config = useRuntimeConfig();
 
     // Forward payment history request to backend with auth token
     const response = await fetch(
@@ -24,10 +23,10 @@ export default defineEventHandler(async (event) => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.accessToken}`,
+          Authorization: `Bearer ${session.accessToken}`,
         },
       },
-    )
+    );
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -43,18 +42,18 @@ export default defineEventHandler(async (event) => {
               status: 'completed',
             },
           ],
-        } as PaymentHistoryResponse
+        } as PaymentHistoryResponse;
       }
       throw createError({
         statusCode: response.status,
         statusMessage: 'Failed to fetch payment history',
-      })
+      });
     }
 
-    const result = await response.json() as PaymentHistoryResponse
-    return result
+    const result = (await response.json()) as PaymentHistoryResponse;
+    return result;
   } catch (error) {
-    console.error('[v0] Fetch payment history error:', error)
+    console.error('[v0] Fetch payment history error:', error);
     // Return mock data as fallback
     return {
       items: [
@@ -75,6 +74,6 @@ export default defineEventHandler(async (event) => {
           status: 'completed',
         },
       ],
-    } as PaymentHistoryResponse
+    } as PaymentHistoryResponse;
   }
-})
+});

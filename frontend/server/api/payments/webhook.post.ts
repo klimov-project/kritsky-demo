@@ -58,7 +58,9 @@ export default defineEventHandler(async (event) => {
         // Still return 200 to YooKassa to prevent retries
         // We should handle this with alerting in production
       } else {
-        console.log(`Subscription activated for user ${userId}, plan ${planId}`);
+        console.log(
+          `Subscription activated for user ${userId}, plan ${planId}`,
+        );
       }
     }
 

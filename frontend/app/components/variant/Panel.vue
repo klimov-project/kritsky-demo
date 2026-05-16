@@ -1,21 +1,60 @@
 <script setup lang="ts">
-const handleDownload = () => onSubmit();
-const handlePrint = () => console.log('click handlePrint');
-const handleSave = () => console.log('click handleSave');
-const handleShare = () => console.log('click handleShare');
+/**
+ * Constructor action panel with download, print, save, and share buttons
+ */
+defineProps<{
+  disabled?: boolean;
+}>();
 
-const isLoading = ref(false);
+const { variant } = useVariantState();
+const { isAuthenticated, openLoginModal } = useAuth();
+const {
+  downloadVariantPdf,
+  printVariant,
+  saveVariantToProfile,
+  shareVariant,
+  isDownloadingPdf,
+} = useVariantExport();
 
-async function onSubmit() {
-  isLoading.value = true;
+const isSaving = ref(false);
+const isLoading = computed(() => isSaving.value || isDownloadingPdf.value);
 
-  console.log('Имитация загрузки ');
-  await new Promise((resolve) => setTimeout(resolve, 7000));
+const handleDownload = async () => {
+  if (!isAuthenticated.value) {
+    openLoginModal();
+    return;
+  }
+  await downloadVariantPdf('variant-content');
+};
 
-  console.log('Загружено ');
+const handlePrint = () => {
+  if (!isAuthenticated.value) {
+    openLoginModal();
+    return;
+  }
+  printVariant('variant-content');
+};
 
-  isLoading.value = false;
-}
+const handleSave = async () => {
+  if (!variant.value) return;
+
+  isSaving.value = true;
+  try {
+    await saveVariantToProfile(variant.value);
+  } finally {
+    isSaving.value = false;
+  }
+};
+
+const handleShare = async () => {
+  if (!variant.value) return;
+  await shareVariant(variant.value);
+};
+
+// const handleDownload = () => onSubmit();
+// const handlePrint = () => console.log('click handlePrint');
+// const handleSave = () => console.log('click handleSave');
+// const handleShare = () => console.log('click handleShare');
 </script>
 
 <template>
@@ -55,33 +94,47 @@ async function onSubmit() {
 
       <!-- Правая группа кнопок -->
       <div class="flex flex-wrap gap-3">
+        <!-- Download PDF -->
         <BaseButton
           icon="i-lucide-download"
+          :disabled="disabled || isDownloadingPdf || !variant"
+          :loading="isDownloadingPdf"
           @click="handleDownload"
-          :disabled="isLoading"
         >
-          {{ isLoading ? 'ЗАГРУЗКА...' : 'СКАЧАТЬ' }}
+          {{ isDownloadingPdf ? 'ЗАГРУЗКА...' : 'СКАЧАТЬ' }}
         </BaseButton>
+
+        <!-- Print -->
         <BaseButton
           icon="i-lucide-printer"
+          :disabled="disabled || !variant"
           @click="handlePrint"
-          :disabled="isLoading"
         >
-          ПЕЧАТЬ
+          <span class="hidden sm:inline">Печать</span>
+          <span class="sm:hidden">Печать</span>
         </BaseButton>
+
+        <!-- Save to Profile -->
+        <!-- icon="i-lucide-bookmark" -->
         <BaseButton
           icon="i-lucide-save"
+          :disabled="disabled || isSaving || !variant"
+          :loading="isSaving"
           @click="handleSave"
-          :disabled="isLoading"
         >
-          СОХРАНИТЬ
+          <span class="hidden sm:inline">Сохранить</span>
+          <span class="sm:hidden">Сохранить</span>
         </BaseButton>
+
+        <!-- Share -->
+        <!-- icon="i-lucide-share-2" -->
         <BaseButton
           icon="i-lucide-forward"
+          :disabled="disabled || !variant"
           @click="handleShare"
-          :disabled="isLoading"
         >
-          ПОДЕЛИТЬСЯ
+          <span class="hidden sm:inline">Поделиться</span>
+          <span class="sm:hidden">Поделиться</span>
         </BaseButton>
       </div>
     </div>

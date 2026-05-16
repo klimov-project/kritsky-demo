@@ -33,7 +33,7 @@ const isVariantPage = computed(() => route.path === '/create-variant');
 const hasBackgroundLayer = computed(() => isIndexPage.value);
 const hasOverflowHidden = computed(() => !isVariantPage.value);
 const zclass = computed(() =>
-  isVariantPage.value ? 'z-0 no-interactive' : 'z-15',
+  isVariantPage.value ? 'z-5 no-interactive' : 'z-15',
 );
 </script>
 
@@ -82,7 +82,7 @@ const zclass = computed(() =>
               Вариант недели
             </NuxtLink>
             <NuxtLink
-              to="/subscriptions"
+              to="/shop"
               class="nav-link-animated text-[#333] font-serif text-[18px] uppercase"
             >
               Магазин
@@ -93,7 +93,7 @@ const zclass = computed(() =>
           <div class="ml-auto hidden lg:inline-flex items-center gap-[15px]">
             <template v-if="isAuthenticated">
               <NuxtLink
-                to="/my-variants"
+                to="/profile/my-variants"
                 class="text-default hover:opacity-70 transition-opacity size-[24px]"
               >
                 <span class="sr-only"> Мои варианты </span>
@@ -195,7 +195,7 @@ const zclass = computed(() =>
         <div class="mt-[60px] flex flex-col gap-[5px]">
           <template v-if="isAuthenticated">
             <NuxtLink
-              to="/my-variants"
+              to="/profile/my-variants"
               class="w-full min-h-[56px] border border-[#cfcfcf] rounded-[10px] text-[#333] font-serif text-[13px] uppercase flex items-center justify-center gap-[10px]"
             >
               Мои варианты

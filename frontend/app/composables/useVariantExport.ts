@@ -21,17 +21,19 @@ export const useVariantExport = () => {
 
     try {
       // Dynamic imports for client-side only
-      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
-        import('html2canvas'),
-        import('jspdf'),
-      ]);
+
+      const html2canvas = (await import('html2canvas')).default;
+      const jsPDF = (await import('jspdf')).default;
 
       const element = document.getElementById(elementId);
       if (!element) {
         throw new Error('Variant content element not found');
       }
 
-      // Create canvas from HTML element
+      // --- ФИКС ЦВЕТОВ ---
+      // fixOklchColors(element);
+      // fixOklchInStyles(element);
+
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
@@ -39,7 +41,7 @@ export const useVariantExport = () => {
         backgroundColor: '#ffffff',
       });
 
-      // Create PDF
+      // Остальной код остаётся без изменений
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -47,17 +49,15 @@ export const useVariantExport = () => {
         format: 'a4',
       });
 
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
+      const imgWidth = 210;
+      const pageHeight = 297;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;
       let position = 0;
 
-      // Add first page
       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
-      // Add more pages if needed
       while (heightLeft >= 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
@@ -65,10 +65,8 @@ export const useVariantExport = () => {
         heightLeft -= pageHeight;
       }
 
-      // Generate filename with timestamp
       const timestamp = new Date().toISOString().slice(0, 10);
       const filename = `variant_${timestamp}.pdf`;
-
       pdf.save(filename);
 
       toast.add({
@@ -228,7 +226,10 @@ export const useVariantExport = () => {
   /**
    * Share variant via Web Share API (mobile)
    */
-  const shareVariant = async (variant: GeneratedVariant, variantId?: number) => {
+  const shareVariant = async (
+    variant: GeneratedVariant,
+    variantId?: number,
+  ) => {
     if (!import.meta.client) return;
 
     const title = variant.work?.title

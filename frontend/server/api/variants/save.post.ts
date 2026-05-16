@@ -19,7 +19,7 @@ interface SaveVariantResponse {
 export default defineEventHandler(async (event) => {
   try {
     // Get the session to verify authentication
-    const { user } = await requireAuth(event)
+    const session = await getUserSession(event);
 
     // Parse request body
     const body = await readBody<SaveVariantRequest>(event)
@@ -32,8 +32,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const config = useRuntimeConfig()
-    const session = await useAuthSession(event)
+    const config = useRuntimeConfig() 
 
     // Forward save request to backend with auth token
     const response = await fetch(`${config.apiBackendUrl}/variants`, {

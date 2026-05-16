@@ -1,18 +1,17 @@
 interface QuotaResponse {
-  generatedVariants: number
-  maxVariants: number
-  generationsRemaining: number
-  maxGenerations: number
-  isPro: boolean
+  generatedVariants: number;
+  maxVariants: number;
+  generationsRemaining: number;
+  maxGenerations: number;
+  isPro: boolean;
 }
 
 export default defineEventHandler(async (event) => {
   try {
     // Get the session to verify authentication
-    const { user } = await requireAuth(event)
+    const session = await getUserSession(event);
 
-    const config = useRuntimeConfig()
-    const session = await useAuthSession(event)
+    const config = useRuntimeConfig();
 
     // Forward quota request to backend with auth token
     const response = await fetch(
@@ -21,10 +20,10 @@ export default defineEventHandler(async (event) => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.accessToken}`,
+          Authorization: `Bearer ${session.accessToken}`,
         },
       },
-    )
+    );
 
     if (!response.ok) {
       // Return default quota for free users
@@ -34,13 +33,13 @@ export default defineEventHandler(async (event) => {
         generationsRemaining: 3,
         maxGenerations: 10,
         isPro: false,
-      } as QuotaResponse
+      } as QuotaResponse;
     }
 
-    const result = await response.json() as QuotaResponse
-    return result
+    const result = (await response.json()) as QuotaResponse;
+    return result;
   } catch (error) {
-    console.error('[v0] Fetch quota error:', error)
+    console.error('[v0] Fetch quota error:', error);
     // Return default quota as fallback
     return {
       generatedVariants: 0,
@@ -48,6 +47,6 @@ export default defineEventHandler(async (event) => {
       generationsRemaining: 3,
       maxGenerations: 10,
       isPro: false,
-    } as QuotaResponse
+    } as QuotaResponse;
   }
-})
+});

@@ -59,7 +59,9 @@ export default defineEventHandler(async (event) => {
       headers: {
         'Content-Type': 'application/json',
         'Idempotence-Key': idempotenceKey,
-        Authorization: `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`,
+        Authorization: `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString(
+          'base64',
+        )}`,
       },
       body: JSON.stringify({
         amount: {

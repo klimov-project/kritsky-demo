@@ -52,7 +52,7 @@ const removeItem = (id: string) => {
 
 const openItem = (item: any) => {
   if (item.type === 'variant') {
-    router.push(`/my-variants/${item.id}`);
+    router.push(`/profile/my-variants/${item.id}`);
   } else {
     // For excerpts and poems, could navigate to a detail page
     console.log('Opening item:', item);
