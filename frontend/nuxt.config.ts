@@ -7,14 +7,14 @@ export default defineNuxtConfig({
   css: ['~/assets/styles/main.scss', '~/assets/styles/nuxt-ui.css'],
   modules: ['nuxt-auth-utils', '@pinia/nuxt', '@nuxt/ui'],
   ui: { fonts: false },
-  // icon: {
-  //   serverBundle: {
-  //     collections: ['lucide'],
-  //   },
-  //   provider: 'iconify',
-  // },
+  icon: {
+    serverBundle: {
+      collections: ['lucide'],
+    },
+    provider: 'iconify',
+  },
   // Отключаем автоматическую загрузку иконок
-  icon: false,
+  // icon: false,
 
   // Отключаем client bundle чтобы не тащить лишнее
 
@@ -31,6 +31,10 @@ export default defineNuxtConfig({
 
   devServer: {
     port: 3003,
+  },
+ 
+  auth: {
+    basePath: '/_auth', // или любой другой путь, который не конфликтует
   },
 
   components: [
