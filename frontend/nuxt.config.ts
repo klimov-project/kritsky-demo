@@ -7,11 +7,24 @@ export default defineNuxtConfig({
   css: ['~/assets/styles/main.scss', '~/assets/styles/nuxt-ui.css'],
   modules: ['nuxt-auth-utils', '@pinia/nuxt', '@nuxt/ui'],
   ui: { fonts: false },
+  // icon: {
+  //   serverBundle: {
+  //     collections: ['lucide'],
+  //   },
+  //   provider: 'iconify',
+  // },
   icon: {
     serverBundle: {
       collections: ['lucide'],
     },
-    provider: 'iconify',
+    clientBundle: {
+      // Не собирать иконки в клиентский бандл при билде
+      scan: false,
+      // Иконки будут загружаться динамически через API
+      sizeLimitKb: 0,
+    },
+    // Отключаем предзагрузку иконок на сервере
+    mode: 'iconify',
   },
 
   // Prerendering configuration
