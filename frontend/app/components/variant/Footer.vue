@@ -2,6 +2,15 @@
 defineProps<{
   blockBtns: boolean;
 }>();
+
+const { useSelected } = useVariantState();
+const { generateVariant } = useGenerateVariant();
+
+const generateWithSelected = async () => {
+  useSelected.value = true;
+  await generateVariant();
+  useSelected.value = false;
+};
 const handleNav = (e: string) => console.log('click handle: ' + e);
 </script>
 
@@ -12,7 +21,7 @@ const handleNav = (e: string) => console.log('click handle: ' + e);
         icon="i-lucide-file"
         class="white-btn w-full h-[50px] whitespace-nowrap"
         :disabled="blockBtns"
-        @click="handleNav('next')"
+        @click="generateVariant"
       >
         Новый рандомный вариант
       </WhiteButton>
@@ -21,7 +30,7 @@ const handleNav = (e: string) => console.log('click handle: ' + e);
         icon="i-lucide-rotate-cw"
         class="white-btn w-full h-[50px] whitespace-nowrap"
         :disabled="blockBtns"
-        @click="handleNav('next')"
+        @click="generateWithSelected"
       >
         Обновить все задания в варианте
       </WhiteButton>

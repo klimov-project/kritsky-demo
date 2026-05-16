@@ -25,7 +25,7 @@
       <div class="bg-white rounded-[10px] py-4 px-7 mr-5">
         <a
           href="mailto:support@kritsky.academy"
-          class="font-normal text-xs leading-[14px] tracking-[0.1em] uppercase text-[#333333] px-3 flex items-center gap-2"
+          class="interactive-element font-normal text-xs leading-[14px] tracking-[0.1em] uppercase text-[#333333] px-3 flex items-center gap-2"
         >
           <IconEmail />
           Обратная связь

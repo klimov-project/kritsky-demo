@@ -71,7 +71,7 @@
           Ознакомиться с условиями и стоимостью можно на странице тарифа:
         </p>
         <NuxtLink
-          to="/shop"
+          to="/subscriptions"
           class="inline-flex items-center gap-2 font-semibold transition-opacity hover:opacity-80 text-[#BD5343]"
         >
           <span>Перейти к тарифу</span>

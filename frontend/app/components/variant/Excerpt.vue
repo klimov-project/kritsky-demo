@@ -43,7 +43,7 @@ const handleNav = (key: 'previous' | 'next') => {
       <BaseButton v-show="hasNext" previous @click="handleNav('next')">
         Предыдущая сцена
       </BaseButton>
-
+      <div class="opacity-0"><span>_</span></div>
       <BaseButton v-show="hasPrevious" next @click="handleNav('previous')">
         Следующая сцена
       </BaseButton>

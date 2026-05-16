@@ -1,13 +1,35 @@
 <script setup lang="ts">
+/**
+ * Login page - redirects to modal or shows standalone form
+ *
+ * Supports both:
+ * - /login route (standalone page)
+ * - ?modal=login (modal overlay from any page)
+ */
 definePageMeta({
   layout: 'default',
 });
 
 const router = useRouter();
-const { login, register, isLoading, error: authError } = useAuth();
+const route = useRoute();
+const { login, register, isLoading, error: authError, isAuthenticated } = useAuth();
+
+// Redirect if already authenticated
+watch(
+  isAuthenticated,
+  (authenticated) => {
+    if (authenticated) {
+      const redirect = route.query.redirect as string;
+      router.push(redirect || '/');
+    }
+  },
+  { immediate: true },
+);
 
 // State
-const activeTab = ref<'login' | 'register'>('login');
+const activeTab = ref<'login' | 'register'>(
+  (route.query.tab as 'login' | 'register') || 'login',
+);
 const email = ref('');
 const password = ref('');
 const name = ref('');
@@ -51,7 +73,8 @@ const handleSubmit = async (e: Event) => {
     } else {
       await register(email.value, password.value, name.value);
     }
-    router.push('/');
+    const redirect = route.query.redirect as string;
+    router.push(redirect || '/');
   } catch (err) {
     error.value =
       (authError.value as string) ||
@@ -209,8 +232,8 @@ const toggleTab = () => {
                 isSubmitting
                   ? 'Загрузка...'
                   : activeTab === 'login'
-                  ? 'Войти'
-                  : 'Создать аккаунт'
+                    ? 'Войти'
+                    : 'Создать аккаунт'
               }}
             </button>
           </div>

@@ -4,47 +4,43 @@ definePageMeta({
   middleware: 'auth',
 });
 
+const route = useRoute();
 const auth = useAuth();
-const { session } = auth;
+const { session, isPro } = auth;
+const { plans, purchaseSubscription, isProcessing, error: paymentError } = usePayment();
 
-// Mock subscription data
+// Check for success/error from payment callback
+const paymentSuccess = computed(() => route.query.success === 'true');
+const paymentErrorMessage = computed(() => {
+  if (route.query.error === 'user_mismatch') {
+    return 'Ошибка: несоответствие пользователя';
+  }
+  if (route.query.error === 'activation_failed') {
+    return route.query.message
+      ? decodeURIComponent(route.query.message as string)
+      : 'Ошибка активации подписки';
+  }
+  if (route.query.error === 'callback_failed') {
+    return 'Ошибка обработки платежа';
+  }
+  return null;
+});
+
+// Mock subscription data (replace with real data from backend)
 const subscription = ref({
-  plan: 'free',
-  expiresAt: null,
+  plan: isPro.value ? 'premium' : 'free',
+  expiresAt: null as string | null,
   features: {
-    variantsPerDay: 3,
-    downloadsPerDay: 0,
-    savedVariants: 5,
+    variantsPerDay: isPro.value ? -1 : 3, // -1 = unlimited
+    downloadsPerDay: isPro.value ? 5 : 0,
+    savedVariants: isPro.value ? -1 : 5,
   },
 });
 
-const plans = [
-  {
-    id: 'monthly',
-    name: 'Месячная подписка',
-    price: 99,
-    period: 'месяц',
-    features: [
-      'Безлимитная генерация',
-      '3 скачивания в день',
-      'Сохранение вариантов',
-    ],
-  },
-  {
-    id: 'yearly',
-    name: 'Годовая подписка',
-    price: 990,
-    period: 'год',
-    discount: '16%',
-    features: [
-      'Безлимитная генерация',
-      '5 скачиваний в день',
-      'Сохранение вариантов',
-    ],
-  },
-];
-
-const isPro = computed(() => session.value?.user?.isPro || false);
+// Handle plan purchase
+const handlePurchase = async (planId: string) => {
+  await purchaseSubscription(planId);
+};
 </script>
 
 <template>
@@ -66,6 +62,25 @@ const isPro = computed(() => session.value?.user?.isPro || false);
 
     <!-- Content -->
     <main class="max-w-4xl mx-auto px-4 py-8">
+      <!-- Success Message -->
+      <UAlert
+        v-if="paymentSuccess"
+        color="success"
+        icon="i-lucide-check-circle"
+        title="Подписка успешно активирована!"
+        description="Теперь вам доступны все премиум функции."
+        class="mb-6"
+      />
+
+      <!-- Error Message -->
+      <UAlert
+        v-if="paymentErrorMessage || paymentError"
+        color="error"
+        icon="i-lucide-alert-circle"
+        :title="paymentErrorMessage || paymentError || 'Ошибка'"
+        class="mb-6"
+      />
+
       <!-- Current Plan -->
       <div class="bg-white rounded-lg shadow p-6 mb-8">
         <h2 class="text-xl font-bold text-gray-900 mb-4">Текущий тариф</h2>
@@ -83,14 +98,13 @@ const isPro = computed(() => session.value?.user?.isPro || false);
               {{ new Date(subscription.expiresAt).toLocaleDateString('ru-RU') }}
             </p>
           </div>
-          <span v-if="isPro" class="text-4xl">🎖️</span>
-          <span v-else class="text-4xl">⭐</span>
+          <span class="text-4xl">{{ isPro ? '🎖️' : '⭐' }}</span>
         </div>
 
         <div class="mt-6 grid grid-cols-3 gap-4 text-center">
           <div class="bg-gray-50 rounded-lg p-4">
             <p class="text-2xl font-bold text-gray-900">
-              {{ subscription.features.variantsPerDay }}
+              {{ subscription.features.variantsPerDay === -1 ? '∞' : subscription.features.variantsPerDay }}
             </p>
             <p class="text-xs text-gray-500 mt-1">Генераций в день</p>
           </div>
@@ -102,7 +116,7 @@ const isPro = computed(() => session.value?.user?.isPro || false);
           </div>
           <div class="bg-gray-50 rounded-lg p-4">
             <p class="text-2xl font-bold text-gray-900">
-              {{ subscription.features.savedVariants }}
+              {{ subscription.features.savedVariants === -1 ? '∞' : subscription.features.savedVariants }}
             </p>
             <p class="text-xs text-gray-500 mt-1">Сохранённых вариантов</p>
           </div>
@@ -147,13 +161,23 @@ const isPro = computed(() => session.value?.user?.isPro || false);
               </li>
             </ul>
 
-            <NuxtLink
-              :to="`/shop/${plan.id}`"
-              class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium"
+            <UButton
+              :loading="isProcessing"
+              :disabled="isProcessing"
+              block
+              @click="handlePurchase(plan.id)"
             >
-              Выбрать
-            </NuxtLink>
+              Оплатить через YooKassa
+            </UButton>
           </div>
+        </div>
+
+        <!-- Payment info -->
+        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+          <p class="text-sm text-blue-800">
+            <strong>Безопасная оплата:</strong> Платежи обрабатываются через YooKassa (ЮKassa).
+            Мы не храним данные ваших карт.
+          </p>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const auth = useAuth();
-const { session, isAuthenticated, logout, isLoading: authLoading } = auth;
+const { isAuthenticated, logout, openLoginModal } = auth;
 const showMobileMenu = ref(false);
 
 const handleLogout = async () => {
@@ -9,6 +9,10 @@ const handleLogout = async () => {
   } catch (error) {
     console.error('Logout error:', error);
   }
+};
+
+const handleLogin = () => {
+  openLoginModal('login');
 };
 
 const toggleMobileMenu = () => {
@@ -25,21 +29,22 @@ watch(
 );
 
 const isIndexPage = computed(() => route.path === '/');
+const isVariantPage = computed(() => route.path === '/create-variant');
 const hasBackgroundLayer = computed(() => isIndexPage.value);
-const hasTransparentShell = computed(() => hasBackgroundLayer.value);
+const hasOverflowHidden = computed(() => !isVariantPage.value);
+const zclass = computed(() =>
+  isVariantPage.value ? 'z-5 no-interactive' : 'z-15',
+);
 </script>
 
 <template>
-  <div
-    :class="[
-      'min-h-screen',
-      { 'relative overflow-hidden': hasBackgroundLayer },
-    ]"
-  >
+  <div class="min-h-screen">
     <div
       :class="[
         'w-full min-h-screen flex flex-col relative',
-        hasTransparentShell ? 'bg-transparent z-10' : 'bg-default',
+        hasOverflowHidden
+          ? 'bg-transparent z-10 overflow-hidden'
+          : 'bg-default',
       ]"
     >
       <!-- Header -->
@@ -65,7 +70,7 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
             class="absolute left-1/2 -translate-x-1/2 hidden lg:inline-flex items-center gap-[50px] whitespace-nowrap"
           >
             <NuxtLink
-              to="/new_test"
+              to="/create-variant"
               class="nav-link-animated text-[#333] font-serif text-[18px] uppercase"
             >
               Конструктор
@@ -88,41 +93,24 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
           <div class="ml-auto hidden lg:inline-flex items-center gap-[15px]">
             <template v-if="isAuthenticated">
               <NuxtLink
-                to="/my-variants"
-                class="text-[#333] hover:opacity-70 transition-opacity"
-                ><span class="sr-only">Мои варианты</span
-                ><i class="icon-list"></i
-              ></NuxtLink>
-              <span class="w-[1px] h-[26px] bg-[#cfcfcf]"></span>
-              <NuxtLink
-                to="/my-books"
-                class="text-[#333] hover:opacity-70 transition-opacity"
-                ><span class="sr-only">Мои покупки</span
-                ><i class="icon-book"></i
-              ></NuxtLink>
-              <span class="w-[1px] h-[26px] bg-[#cfcfcf]"></span>
-              <NuxtLink
-                to="/cart"
-                class="text-[#333] hover:opacity-70 transition-opacity"
-                ><span class="sr-only">Корзина</span><i class="icon-cart"></i
-              ></NuxtLink>
-              <span class="w-[1px] h-[26px] bg-[#cfcfcf]"></span>
-              <NuxtLink
-                to="/saved"
-                class="text-[#333] hover:opacity-70 transition-opacity"
-                ><span class="sr-only">Избранное</span
-                ><i class="icon-bookmark"></i
-              ></NuxtLink>
-              <span class="w-[1px] h-[26px] bg-[#cfcfcf]"></span>
+                to="/profile/my-variants"
+                class="text-default hover:opacity-70 transition-opacity size-[24px]"
+              >
+                <span class="sr-only"> Мои варианты </span>
+                <UIcon name="i-lucide-layers" class="size-full" />
+              </NuxtLink>
+              <!-- <span class="w-[1px] h-[26px] bg-[#cfcfcf]"></span> -->
               <NuxtLink
                 to="/profile"
-                class="text-[#333] hover:opacity-70 transition-opacity"
-                ><span class="sr-only">Профиль</span><i class="icon-profile"></i
-              ></NuxtLink>
+                class="text-default hover:opacity-70 transition-opacity size-[24px]"
+              >
+                <span class="sr-only"> Профиль </span>
+                <UIcon name="i-lucide-circle-user-round" class="size-full" />
+              </NuxtLink>
             </template>
             <template v-else>
-              <NuxtLink
-                to="/login"
+              <button
+                @click="handleLogin"
                 class="text-[#333] hover:opacity-70 transition-opacity"
               >
                 <svg
@@ -139,13 +127,13 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
                   <polyline points="10 17 15 12 10 7" />
                   <line x1="15" y1="12" x2="3" y2="12" />
                 </svg>
-              </NuxtLink>
+              </button>
             </template>
           </div>
 
           <!-- Mobile Actions Toggle -->
           <div class="ml-auto flex lg:hidden items-center gap-[12px]">
-            <NuxtLink to="/cart" class="text-[#333]">
+            <NuxtLink to="/subscriptions" class="text-[#333]">
               <IconShoppingBag />
             </NuxtLink>
             <button
@@ -186,28 +174,38 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
         <h2 class="text-center font-serif text-[28px] mt-[18px]">Меню</h2>
         <nav class="mt-[24px] flex flex-col gap-[8px]">
           <NuxtLink
-            to="/new_test"
+            to="/create-variant"
             class="w-full min-h-[58px] rounded-[10px] bg-[#f6f6f6] text-[#333] font-serif text-[18px] uppercase flex items-center px-[24px]"
-            >Конструктор</NuxtLink
           >
+            Конструктор
+          </NuxtLink>
           <NuxtLink
             to="/author-variant"
             class="w-full min-h-[58px] rounded-[10px] bg-[#f6f6f6] text-[#333] font-serif text-[18px] uppercase flex items-center px-[24px]"
-            >Вариант недели</NuxtLink
           >
+            Вариант недели
+          </NuxtLink>
           <NuxtLink
-            to="/shop"
+            to="/subscriptions"
             class="w-full min-h-[58px] rounded-[10px] bg-[#f6f6f6] text-[#333] font-serif text-[18px] uppercase flex items-center px-[24px]"
-            >Магазин</NuxtLink
           >
+            Магазин
+          </NuxtLink>
         </nav>
         <div class="mt-[60px] flex flex-col gap-[5px]">
           <template v-if="isAuthenticated">
             <NuxtLink
+              to="/profile/my-variants"
+              class="w-full min-h-[56px] border border-[#cfcfcf] rounded-[10px] text-[#333] font-serif text-[13px] uppercase flex items-center justify-center gap-[10px]"
+            >
+              Мои варианты
+            </NuxtLink>
+            <NuxtLink
               to="/profile"
               class="w-full min-h-[56px] border border-[#cfcfcf] rounded-[10px] text-[#333] font-serif text-[13px] uppercase flex items-center justify-center gap-[10px]"
-              >Мой профиль</NuxtLink
             >
+              Мой профиль
+            </NuxtLink>
             <button
               @click="handleLogout"
               class="w-full min-h-[56px] border border-[#cfcfcf] rounded-[10px] text-[#333] font-serif text-[13px] uppercase flex items-center justify-center gap-[10px]"
@@ -216,11 +214,12 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
             </button>
           </template>
           <template v-else>
-            <NuxtLink
-              to="/login"
+            <button
+              @click="handleLogin"
               class="w-full min-h-[56px] border border-[#cfcfcf] rounded-[10px] text-[#333] font-serif text-[13px] uppercase flex items-center justify-center gap-[10px]"
-              >Войти</NuxtLink
             >
+              Войти
+            </button>
           </template>
           <button
             class="w-full min-h-[56px] border border-[#cfcfcf] rounded-[10px] text-[#333] font-serif text-[13px] uppercase flex items-center justify-center gap-[10px]"
@@ -233,6 +232,7 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
       <!-- Main Content -->
       <main
         class="min-h-screen mx-auto max-w-[1440px] w-full px-3 lg:px-0 flex-1 flex flex-col flex items-center justify-center"
+        :class="zclass"
       >
         <slot />
       </main>
@@ -330,6 +330,7 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
 .bg-default {
   background-color: var(--home-color-bg);
   position: relative;
+  // overflow: hidden;
 }
 
 .bg-default:before {
@@ -337,9 +338,11 @@ const hasTransparentShell = computed(() => hasBackgroundLayer.value);
   position: absolute;
   width: 100%;
   height: 100%;
-  z-index: 0;
-  background: url('/periya-full-x2-compress.svg') no-repeat 0 159px / 100%;
-  opacity: 0.02;
+  z-index: 10;
+  background: url('/periya-full-x2-compress.svg') repeat-y 0 159px / 100%;
+  opacity: 0.015;
+  pointer-events: none;
+  display: none;
 }
 .icon-list::before {
   content: '📋';

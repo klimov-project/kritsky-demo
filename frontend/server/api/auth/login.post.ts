@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event);
 
     // Proxy login request to backend
-    const response = await fetch(`${config.apiBackendBase}/auth/login`, {
+    const response = await fetch(`${config.apiBackendUrl}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

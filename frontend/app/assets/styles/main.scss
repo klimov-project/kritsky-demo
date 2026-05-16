@@ -73,6 +73,59 @@ body {
     background-color: var(--ui-primary-bg) !important;
 }
 
+.no-interactive1 * {
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+
+    /* Запрещаем drag & drop */
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+
+    /* Отключаем контекстное меню (правая кнопка) */
+    -webkit-touch-callout: none;
+
+    /* На всякий случай убираем курсор */
+    cursor: default;
+}
+
+.interactive-element {
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+    user-select: auto;
+    -webkit-user-select: auto;
+    -moz-user-select: auto;
+    -ms-user-select: auto;
+
+    /* Возвращаем drag для интерактивных элементов, если нужно */
+    -webkit-user-drag: auto;
+    user-drag: auto;
+
+    /* Возвращаем touch callout для мобильных */
+    -webkit-touch-callout: default;
+
+    /* Возвращаем нормальный курсор */
+    cursor: auto;
+}
+
+/* Убедитесь, что input и textarea можно выделять и редактировать */
+.interactive-element input,
+.interactive-element textarea,
+.interactive-element [contenteditable="true"] {
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+}
+
+
+
 // from react realisation
 
 .rich-content p {

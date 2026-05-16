@@ -55,8 +55,8 @@ const hasError = computed(() => !!kbError.value || !!statusMessage.value);
 
 const manualUpdateWork = (workId: string) => {
   selectedWorkId.value = workId;
-  selectedChapter.value = '';
-  selectedExcerptId.value = '';
+  selectedChapter.value = 'Выберите главу';
+  selectedExcerptId.value = 'Выберите отрывок';
 };
 
 const manualUpdateChapter = (chapterTitle: string) => {
@@ -75,7 +75,6 @@ const manualUpdatePoem = (poemId: string) => {
 </script>
 
 <template>
-
   <div class="max-w-6xl w-full bg-white rounded-[10px] mb-3 p-4">
     <VariantExcerptFilters
       :selected-work-id="selectedWorkId"
@@ -89,7 +88,7 @@ const manualUpdatePoem = (poemId: string) => {
     />
   </div>
 
-  <div class="max-w-6xl mb-[30px]">
+  <div id="variant-content" class="max-w-6xl mb-[30px]">
     <div v-if="isLoading" class="text-center py-20">
       <div
         class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"

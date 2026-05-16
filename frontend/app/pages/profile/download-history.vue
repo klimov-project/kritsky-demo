@@ -56,7 +56,7 @@ const downloadAgain = (download: any) => {
         <h2 class="text-2xl font-bold text-gray-900 mb-2">Скачиваний нет</h2>
         <p class="text-gray-600 mb-6">Вы ещё не скачивали варианты</p>
         <NuxtLink
-          to="/new_test"
+          to="/create-variant"
           class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium"
         >
           Создать вариант

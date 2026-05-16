@@ -6,7 +6,7 @@ export default defineNuxtConfig({
 
   css: ['~/assets/styles/main.scss', '~/assets/styles/nuxt-ui.css'],
   modules: ['nuxt-auth-utils', '@pinia/nuxt', '@nuxt/ui'],
-  ui: { fonts: false }, // disable the @nuxt/fonts module.
+  ui: { fonts: false },
   icon: {
     serverBundle: {
       collections: ['lucide'],
@@ -46,6 +46,9 @@ export default defineNuxtConfig({
     // Server-only runtime config
     apiBackendUrl:
       process.env.NUXT_API_BACKEND_URL || 'http://localhost:8000/api',
+    // YooKassa credentials (server-only)
+    yookassaShopId: process.env.YOOKASSA_SHOP_ID || '',
+    yookassaSecretKey: process.env.YOOKASSA_SECRET_KEY || '',
     public: {
       apiUrl: process.env.NUXT_LOCAL_DEVELOPMENT
         ? 'http://localhost:8000/api'

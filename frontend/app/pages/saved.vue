@@ -52,7 +52,7 @@ const removeItem = (id: string) => {
 
 const openItem = (item: any) => {
   if (item.type === 'variant') {
-    router.push(`/my-variants/${item.id}`);
+    router.push(`/profile/my-variants/${item.id}`);
   } else {
     // For excerpts and poems, could navigate to a detail page
     console.log('Opening item:', item);
@@ -95,7 +95,7 @@ const openItem = (item: any) => {
           Сохраняйте варианты, отрывки и стихотворения для быстрого доступа
         </p>
         <NuxtLink
-          to="/new_test"
+          to="/create-variant"
           class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium"
         >
           Перейти к конструктору

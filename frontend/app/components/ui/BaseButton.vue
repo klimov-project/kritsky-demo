@@ -8,6 +8,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isLocked: {
+    type: Boolean,
+    default: false,
+  },
   previous: {
     type: Boolean,
     default: false,
@@ -31,6 +35,7 @@ defineEmits(['click']);
 const computedIcon = computed(() => {
   if (props.icon) return props.icon;
   if (props.previous) return 'i-lucide:arrow-left';
+  if (props.isLocked) return 'i-lucide:lock';
   return '';
 });
 
@@ -50,7 +55,7 @@ const computedTrailingIcon = computed(() => {
     :trailing-icon="computedTrailingIcon"
     block
     size="lg"
-    class="base-btn w-auto h-[50px] whitespace-nowrap"
+    class="base-btn interactive-element w-auto h-[50px] whitespace-nowrap"
   >
     <slot />
   </UButton>
@@ -59,7 +64,7 @@ const computedTrailingIcon = computed(() => {
 <style scoped lang="scss">
 .base-btn {
   background-color: #f6f6f6;
-  font-size: 12px;
+  // font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ui-text);

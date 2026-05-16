@@ -1,5 +1,17 @@
 <script setup lang="ts">
+const { pending: kbPending } = useKnowledgeBase();
+const { refreshLoadingByBlock, isInitialLoading } = useVariantState();
+const { refreshBlock } = useGenerateVariant();
+
+const isLoading = computed(
+  () =>
+    kbPending.value ||
+    isInitialLoading.value ||
+    refreshLoadingByBlock.value.block1,
+);
 const lastTasks = ['task11_1', 'task11_2', 'task11_3', 'task11_4', 'task11_5'];
+
+const { isLocked } = useAuth();
 </script>
 
 <template>
@@ -41,7 +53,13 @@ const lastTasks = ['task11_1', 'task11_2', 'task11_3', 'task11_4', 'task11_5'];
     </VariantTaskInstruction>
 
     <div class="flex justify-center items-center mb-7">
-      <BaseButton @click="$emit('refresh-block-2')" class="update-tasks-11">
+      <BaseButton
+        @click="refreshBlock('block3')"
+        :loading="isLoading"
+        :disabled="isLoading"
+        class="update-variant-btn__filter"
+        :isLocked="isLocked"
+      >
         обновить все 11-ые задания
       </BaseButton>
     </div>

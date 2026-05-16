@@ -12,6 +12,10 @@ const props = defineProps<Props>()
 
 const { store: kbStore } = useKnowledgeBase();
 
+const { isLocked } = useAuth();
+
+const isLockIcon = computed(()=> isLocked.value ? "i-lucide:lock" : '')
+
 const emit = defineEmits<{
   'update:selected-work-id': [value: string]
   'update:selected-chapter': [value: string]
@@ -42,7 +46,7 @@ const selectedWork = computed(() =>
 );
 const disabledWorks = computed(() => works.value.length === 0)
 const disabledChapter = computed(() => excerptChaptersOptions.value.length === 0)
-const disabledExcerpt = computed(() => excerptDropdownOptions.value.length === 0)
+const disabledExcerpt = computed(() => excerptDropdownOptions.value.length === 0 || isLocked.value)
 
 
 const excerptChaptersOptions = computed(() => {
@@ -94,7 +98,7 @@ const workOptions = computed(() => {
           :items="workOptions"
           :disabled="disabledWorks"
           placeholder="Выберите произведение"
-          class="w-full"
+          class="w-full interactive-element"
         />
       </div>
 
@@ -109,7 +113,7 @@ const workOptions = computed(() => {
           :items="excerptChaptersOptions"
           :disabled="disabledChapter"
           placeholder="Нет глав"
-          class="w-full"
+          class="w-full interactive-element"
         />
       </div>
 
@@ -119,13 +123,16 @@ const workOptions = computed(() => {
         >
           Отрывок
         </label>
-        <USelect
-          v-model="selectedExcerptId"
-          :items="excerptDropdownOptions"
-          :disabled="disabledExcerpt"
-          placeholder="Выберите отрывок"
-          class="w-full"
-        />
+        <AuthBtnWrap>
+          <USelect
+            v-model="selectedExcerptId"
+            :items="excerptDropdownOptions"
+            :disabled="disabledExcerpt"
+            :icon="isLockIcon"
+            placeholder="Выберите отрывок"
+            class="w-full"
+          />
+        </AuthBtnWrap>
       </div>
     </div>
 
@@ -141,6 +148,7 @@ const workOptions = computed(() => {
         @click="$emit('refresh-block-1')"
         :loading="isLoading"
         :disabled="isLoading"
+        :isLocked="isLocked"
         class="update-variant-btn__filter"
       >
         Обновить отрывок и задания 1–5
@@ -150,6 +158,7 @@ const workOptions = computed(() => {
 </template>
 <style lang="scss">
 .create-variant-filters {
+
   button[data-slot='base']:not(.update-variant-btn__filter) {
     --tw-ring-color: #cfcfcf;
     padding: 15px 24px;
@@ -158,7 +167,16 @@ const workOptions = computed(() => {
     font-style: normal;
     font-weight: 400;
     font-size: 16px;
-    line-height: 19px;
+    line-height: 20px;
+
+    [data-slot='leading'] {
+      padding: 0 24px;
+    }
+
+    [data-slot='leading'] + [data-slot='value'],
+    [data-slot='leading'] + [data-slot='placeholder'] {
+      margin-left: 36px;
+    }
   }
 }
 </style>
