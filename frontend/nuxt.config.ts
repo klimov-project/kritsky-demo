@@ -19,13 +19,11 @@ export default defineNuxtConfig({
       collections: ['lucide'],
     },
     clientBundle: {
-      // Не собирать иконки в клиентский бандл при билде
       scan: false,
-      // Иконки будут загружаться динамически через API
-      sizeLimitKb: 0,
+      // Полностью отключаем клиентский бандл
+      includeCustomCollections: false,
     },
-    // Отключаем предзагрузку иконок на сервере
-    mode: 'iconify',
+    customCollections: [],
   },
 
   // Prerendering configuration
