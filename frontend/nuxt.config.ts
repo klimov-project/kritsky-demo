@@ -32,9 +32,9 @@ export default defineNuxtConfig({
   devServer: {
     port: 3003,
   },
- 
+
   auth: {
-    basePath: '/_auth', // или любой другой путь, который не конфликтует
+    baseURL: '/_auth',
   },
 
   components: [
