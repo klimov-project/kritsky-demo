@@ -13,18 +13,30 @@ export default defineNuxtConfig({
   //   },
   //   provider: 'iconify',
   // },
-  icon: {
-    provider: 'iconify',
+   icon: { // Отключаем провайдера по умолчанию
+    provider: 'server',
+    
+    // Бандлим только нужные иконки локально
     serverBundle: {
       collections: ['lucide'],
+      // Это важно — указываем конкретные иконки
+      icons: [
+        'lucide:search',
+        'lucide:menu',
+        'lucide:x',
+        'lucide:chevron-down',
+        'lucide:chevron-right',
+        // ... все используемые иконки
+      ],
+      // Отключаем fallback на внешний API
+      fallbackToApi: false,
     },
+    
+    // Отключаем client bundle чтобы не тащить лишнее
     clientBundle: {
       scan: false,
-      // Полностью отключаем клиентский бандл
-      includeCustomCollections: false,
+      icons: [],
     },
-    customCollections: [],
-  },
 
   // Prerendering configuration
   routeRules: {
