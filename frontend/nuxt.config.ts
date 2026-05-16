@@ -14,6 +14,7 @@ export default defineNuxtConfig({
   //   provider: 'iconify',
   // },
   icon: {
+    provider: 'iconify',
     serverBundle: {
       collections: ['lucide'],
     },
@@ -74,15 +75,15 @@ export default defineNuxtConfig({
     },
   },
 
-  // Proxy configuration for local development
   nitro: {
-    devProxy: {
-      '/api': {
-        target:
-          process.env.NUXT_API_BACKEND_BASE || 'http://localhost:8000/api',
-        changeOrigin: true,
-      },
-    },
+    // Proxy configuration for local development
+    // devProxy: {
+    //   '/api': {
+    //     target:
+    //       process.env.NUXT_API_BACKEND_BASE || 'http://localhost:8000/api',
+    //     changeOrigin: true,
+    //   },
+    // },
     storage: {
       cache: {
         driver: 'redis',
@@ -94,6 +95,12 @@ export default defineNuxtConfig({
   vite: {
     optimizeDeps: {
       include: ['@vue/devtools-core', '@vue/devtools-kit', 'pinia'],
+      exclude: ['html2canvas', 'jspdf'],
+    },
+    build: {
+      rollupOptions: {
+        external: ['html2canvas', 'jspdf'],
+      },
     },
   },
 });

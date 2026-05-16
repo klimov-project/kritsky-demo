@@ -16,7 +16,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   // If still not logged in after fetching, redirect to login
   if (!loggedIn.value) {
     return navigateTo({
-      path: '/login',
+      path: '/?modal=login',
       query: { redirect: to.fullPath },
     });
   }
