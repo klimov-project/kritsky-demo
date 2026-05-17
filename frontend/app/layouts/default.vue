@@ -91,6 +91,7 @@ const zclass = computed(() =>
 
           <!-- Desktop Actions -->
           <div class="ml-auto hidden lg:inline-flex items-center gap-[15px]">
+            isAuthenticated : {{ isAuthenticated }}
             <template v-if="isAuthenticated">
               <NuxtLink
                 to="/profile/my-variants"

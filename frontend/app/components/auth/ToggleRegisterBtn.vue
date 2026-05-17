@@ -18,13 +18,11 @@ const toggleTab = () => {
 </script>
 
 <template>
-  <div class="text-center pt-3">
-    <button
-      type="button"
-      class="text-[#666] text-sm hover:text-gray-900 hover:underline transition-colors"
-      @click="toggleTab"
-    >
-      {{ isLoginTab ? 'У меня нет аккаунта' : 'У меня есть аккаунт' }}
+  <div class="text-center pt-3 mb-5">
+    <button type="button" @click="toggleTab">
+      <a rel="noopener noreferrer">
+        {{ isLoginTab ? 'У меня нет аккаунта' : 'У меня есть аккаунт' }}
+      </a>
     </button>
   </div>
 </template>

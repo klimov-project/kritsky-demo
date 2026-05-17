@@ -38,11 +38,14 @@ export const useAuth = () => {
     isLoading.value = true;
     error.value = null;
     try {
+      console.log('Attempting login for:', email);
       const result = await $fetch('/api/auth/login', {
         method: 'POST',
         body: { email, password },
       });
-      // Refresh session after login to get tokens
+      //
+
+      console.log('Refresh session after login to get tokens');
       await fetchSession();
       return result;
     } catch (err) {
@@ -56,6 +59,7 @@ export const useAuth = () => {
         'Ошибка входа';
       throw err;
     } finally {
+      console.log('Login attempt finished');
       isLoading.value = false;
     }
   };

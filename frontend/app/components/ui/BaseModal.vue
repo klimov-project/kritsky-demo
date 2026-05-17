@@ -41,7 +41,6 @@ watch(isOpen, (newVal, oldVal) => {
       content: 'base-modal overflow-visible',
       close: 'base-modal-close',
     }"
-    close-icon="i-lucide:circle-x size-full"
   >
     <button
       class="absolute -top-[100px] -right-[100px] text-gray-400 hover:text-gray-600"
