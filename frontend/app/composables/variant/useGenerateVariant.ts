@@ -27,7 +27,7 @@ export const useGenerateVariant = () => {
 
   const apiUrl = import.meta.server
     ? config.apiBackendUrl
-    : config.public.apiUrl;
+    : config.public.apiUrl + '/v1';
 
   const buildPayload = () => ({
     selectedWorkId: selectedWorkId.value,
