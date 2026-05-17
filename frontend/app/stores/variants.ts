@@ -18,36 +18,34 @@ export const useVariantsStore = defineStore('variants', () => {
   const isLoading = ref(false);
   const error = ref<string | null>(null);
 
-  const config = useRuntimeConfig()
-
   /**
    * Fetch saved variants from /api/variants/list
    */
   const fetchSavedVariants = async () => {
-    isLoading.value = true
-    error.value = null
+    isLoading.value = true;
+    error.value = null;
     try {
-      const data = await $fetch<SavedVariantsResponse>('/api/variants/list')
-      savedVariants.value = data.items || []
-      return data.items
+      const data = await $fetch<SavedVariantsResponse>('/api/variants/list');
+      savedVariants.value = data.items || [];
+      return data.items;
     } catch (err) {
-      const fetchError = err as { data?: { message?: string } }
+      const fetchError = err as { data?: { message?: string } };
       error.value =
-        fetchError?.data?.message || 'Ошибка загрузки сохраненных вариантов'
-      console.error('[v0] Fetch saved variants error:', err)
-      throw err
+        fetchError?.data?.message || 'Ошибка загрузки сохраненных вариантов';
+      console.error('[v0] Fetch saved variants error:', err);
+      throw err;
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
-  }
+  };
 
   /**
    * Save current variant to profile
    * POST /api/variants/save
    */
   const saveVariant = async (variant: GeneratedVariant) => {
-    isLoading.value = true
-    error.value = null
+    isLoading.value = true;
+    error.value = null;
     try {
       const response = await $fetch('/api/variants/save', {
         method: 'POST',
@@ -56,7 +54,7 @@ export const useVariantsStore = defineStore('variants', () => {
           description: `Generated variant`,
           variant,
         },
-      })
+      });
       // Transform response to SavedVariant format
       const newVariant: SavedVariant = {
         id: parseInt(response.id) || Date.now(),
@@ -64,42 +62,42 @@ export const useVariantsStore = defineStore('variants', () => {
         createdAt: response.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         variant,
-      }
-      savedVariants.value.unshift(newVariant)
-      return newVariant
+      };
+      savedVariants.value.unshift(newVariant);
+      return newVariant;
     } catch (err) {
-      const fetchError = err as { data?: { message?: string } }
-      error.value =
-        fetchError?.data?.message || 'Ошибка сохранения варианта'
-      console.error('[v0] Save variant error:', err)
-      throw err
+      const fetchError = err as { data?: { message?: string } };
+      error.value = fetchError?.data?.message || 'Ошибка сохранения варианта';
+      console.error('[v0] Save variant error:', err);
+      throw err;
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
-  }
+  };
 
   /**
    * Delete variant
    */
   const deleteVariant = async (variantId: number) => {
-    isLoading.value = true
-    error.value = null
+    isLoading.value = true;
+    error.value = null;
     try {
       await $fetch(`/api/variants/${variantId}`, {
         method: 'DELETE',
-      })
+      });
       // Remove from local list
-      savedVariants.value = savedVariants.value.filter((v) => v.id !== variantId)
+      savedVariants.value = savedVariants.value.filter(
+        (v) => v.id !== variantId,
+      );
     } catch (err) {
-      const fetchError = err as { data?: { message?: string } }
-      error.value =
-        fetchError?.data?.message || 'Ошибка удаления варианта'
-      console.error('[v0] Delete variant error:', err)
-      throw err
+      const fetchError = err as { data?: { message?: string } };
+      error.value = fetchError?.data?.message || 'Ошибка удаления варианта';
+      console.error('[v0] Delete variant error:', err);
+      throw err;
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
-  }
+  };
 
   /**
    * Get variant by ID
