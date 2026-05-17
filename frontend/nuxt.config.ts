@@ -53,7 +53,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Server-only runtime config
     apiBackendUrl:
-      process.env.NUXT_API_BACKEND_URL || 'http://localhost:8000/api',
+      process.env.NUXT_API_BACKEND_URL || 'http://localhost:8000/api/v1',
     // YooKassa credentials (server-only)
     yookassaShopId: process.env.YOOKASSA_SHOP_ID || '',
     yookassaSecretKey: process.env.YOOKASSA_SECRET_KEY || '',
