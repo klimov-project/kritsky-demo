@@ -36,15 +36,15 @@ export default defineCachedEventHandler(
 
     console.log('currentFingerprint: ', currentFingerprint);
     // 2. Проверяем сохранённый кеш в Redis
-    // const cached = await useStorage('cache').getItem<{
-    //   payload: KnowledgeBasePayload;
-    //   fingerprint: string;
-    // }>('knowledge-base');
+    const cached = await useStorage('cache').getItem<{
+      payload: KnowledgeBasePayload;
+      fingerprint: string;
+    }>('knowledge-base');
 
     // 3. Если фингерпринт совпадает — отдаём кеш
-    // if (cached && cached.fingerprint === currentFingerprint) {
-    //   return cached.payload;
-    // }
+    if (cached && cached.fingerprint === currentFingerprint) {
+      return cached.payload;
+    }
 
     // 4. Данные изменились — полный запрос к бэкенду
     console.log('[KB] Cache miss, fetching full data...');
@@ -55,12 +55,16 @@ export default defineCachedEventHandler(
     // 5. Преобразуем тяжёлый backend payload в лёгкий frontend payload
     const lightPayload = transformToKnowledgeBasePayload(rawPayload);
     const enrichedPayload = enrichPayload(lightPayload, rawPayload);
+    console.log(
+      'enrichedPayload computed: ',
+      enrichedPayload._metadata.computed,
+    );
 
     // 6. Сохраняем в Redis
-    // await useStorage('cache').setItem('knowledge-base', {
-    //   payload: enrichedPayload,
-    //   fingerprint: currentFingerprint,
-    // });
+    await useStorage('cache').setItem('knowledge-base', {
+      payload: enrichedPayload,
+      fingerprint: currentFingerprint,
+    });
 
     console.log('[KB] Cache updated');
     return enrichedPayload;
