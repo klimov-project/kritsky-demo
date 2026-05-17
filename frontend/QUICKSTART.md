@@ -13,16 +13,19 @@ The application will start on `http://localhost:3003`
 ### Key Pages Implemented
 
 1. **Profile Page** - `/profile/`
+
    - Main profile dashboard
    - Tab navigation (Personal Data, Subscription, Payment History)
    - Displays user info, subscription status, email
 
 2. **My Variants** - `/profile/my-variants/`
+
    - Lists all saved test variants
    - Actions: Open, Download, Print, Delete
    - Fetches from GET /api/variants/list
 
 3. **Subscription** - `/profile/subscription/`
+
    - Current subscription status
    - Mock activate/deactivate buttons
    - Plans display
@@ -30,6 +33,7 @@ The application will start on `http://localhost:3003`
    - POST /api/subscription/reset-mock
 
 4. **Payment History** - `/profile/payment-history/`
+
    - Displays payment records
    - Mock data fallback
    - GET /api/payments/history
@@ -42,6 +46,7 @@ The application will start on `http://localhost:3003`
 ### Constructor Panel Features
 
 Located at bottom of variant creation pages:
+
 - **Download**: Generates PDF of variant
 - **Print**: Opens browser print dialog
 - **Save**: Saves variant to profile (POST /api/variants/save)
@@ -52,20 +57,22 @@ Located at bottom of variant creation pages:
 Two Pinia stores handle app state:
 
 **User Store** (`app/stores/user.ts`)
+
 ```javascript
-const userStore = useUserStore()
-await userStore.fetchUser()           // GET /api/auth/me
-await userStore.fetchQuota()          // GET /api/variants/quota
-userStore.user                        // Current user data
-userStore.subscriptionExpiryFormatted // Formatted date
+const userStore = useUserStore();
+await userStore.fetchUser(); // GET /api/auth/me
+await userStore.fetchQuota(); // GET /api/variants/quota
+userStore.user; // Current user data
+userStore.subscriptionExpiryFormatted; // Formatted date
 ```
 
 **Variants Store** (`app/stores/variants.ts`)
+
 ```javascript
-const variantsStore = useVariantsStore()
-await variantsStore.fetchSavedVariants()  // GET /api/variants/list
-await variantsStore.saveVariant(variant)  // POST /api/variants/save
-variantsStore.savedVariants               // All saved variants
+const variantsStore = useVariantsStore();
+await variantsStore.fetchSavedVariants(); // GET /api/variants/list
+await variantsStore.saveVariant(variant); // POST /api/variants/save
+variantsStore.savedVariants; // All saved variants
 ```
 
 ### Testing Workflow
@@ -81,6 +88,7 @@ variantsStore.savedVariants               // All saved variants
 ### Environment Setup
 
 Create `.env.local` file:
+
 ```
 NUXT_API_BACKEND_URL=http://62.113.99.250:8000/api
 NUXT_SESSION_PASSWORD=your-32-character-password-here
@@ -122,31 +130,35 @@ server/api/
 ### Common Tasks
 
 **Fetch current user:**
+
 ```javascript
-const userStore = useUserStore()
-const user = await userStore.fetchUser()
+const userStore = useUserStore();
+const user = await userStore.fetchUser();
 ```
 
 **Get saved variants:**
+
 ```javascript
-const variantsStore = useVariantsStore()
-const variants = await variantsStore.fetchSavedVariants()
+const variantsStore = useVariantsStore();
+const variants = await variantsStore.fetchSavedVariants();
 ```
 
 **Save a variant:**
+
 ```javascript
-const variantsStore = useVariantsStore()
-const savedVariant = await variantsStore.saveVariant(generatedVariant)
+const variantsStore = useVariantsStore();
+const savedVariant = await variantsStore.saveVariant(generatedVariant);
 ```
 
 **Show toast notification:**
+
 ```javascript
-const toast = useToast()
+const toast = useToast();
 toast.add({
   title: 'Success',
   description: 'Operation completed',
-  color: 'green'
-})
+  color: 'green',
+});
 ```
 
 ### Troubleshooting

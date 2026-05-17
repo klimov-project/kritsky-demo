@@ -36,6 +36,30 @@ const clearAll = async () => {
   await refreshSession();
 };
 
+// Watch for session changes for debugging
+watch(loggedIn, (newValue, oldValue) => {
+  console.log('[useAuth] loggedIn changed:', {
+    from: oldValue,
+    to: newValue,
+  });
+});
+
+watch(user, (newValue, oldValue) => {
+  console.log('[useAuth] user changed:', {
+    from: oldValue?.id,
+    to: newValue?.id,
+    newUserData: newValue,
+  });
+});
+
+watch(session, (newValue, oldValue) => {
+  console.log('[useAuth] session changed:');
+  const { user: sessionUser, accessToken, refreshToken } = newValue || {};
+  console.log(' session sessionUser: ', sessionUser);
+  console.log(' session accessToken: ', accessToken);
+  console.log(' session refreshToken: ', refreshToken);
+});
+
 // Auto-refresh on mount
 onMounted(() => {
   refreshSession();

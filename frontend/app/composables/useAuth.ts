@@ -31,30 +31,6 @@ export const useAuth = () => {
   const isLoading = ref(false);
   const error = ref<string | null>(null);
 
-  // Watch for session changes for debugging
-  watch(loggedIn, (newValue, oldValue) => {
-    console.log('[useAuth] loggedIn changed:', {
-      from: oldValue,
-      to: newValue,
-    });
-  });
-
-  watch(user, (newValue, oldValue) => {
-    console.log('[useAuth] user changed:', {
-      from: oldValue?.id,
-      to: newValue?.id,
-      newUserData: newValue,
-    });
-  });
-
-  watch(session, (newValue, oldValue) => {
-    console.log('[useAuth] session changed:', {
-      hasUser: !!newValue?.user,
-      hasAccessToken: !!newValue?.accessToken,
-      previousHasUser: !!oldValue?.user,
-    });
-  });
-
   /**
    * Login - calls our API which proxies to backend and sets JWT tokens in session
    */

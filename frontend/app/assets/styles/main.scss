@@ -41,7 +41,7 @@ body {
     font-family: var(--font-pt-serif) !important;
 }
 
-a:not(.nav-link-animated) {
+a:not(.nav-link-animated, .text-white) {
     color: var(--color-text-muted);
     font-size: 0.875rem;
     transition-property: color;
@@ -49,7 +49,7 @@ a:not(.nav-link-animated) {
     transition-duration: 150ms;
 }
 
-a:not(.nav-link-animated):hover {
+a:not(.nav-link-animated, .text-white):hover {
     color: var(--color-text-primary);
     text-decoration: underline;
 }
