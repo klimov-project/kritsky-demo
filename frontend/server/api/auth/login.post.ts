@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
 
   console.log('[Login endpoint] Start', {
     timestamp: new Date().toISOString(),
-    backendUrl: config.apiBackendUrl,
+    backendUrl: config.apiBackendBase,
   });
 
   try {
@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     });
 
     // Proxy login request to backend
-    const backendUrl = `${config.apiBackendUrl}/auth/login`;
+    const backendUrl = `${config.apiBackendBase}/auth/login`;
     console.log('[Login endpoint] Proxying to backend:', backendUrl);
 
     const response = await fetch(backendUrl, {

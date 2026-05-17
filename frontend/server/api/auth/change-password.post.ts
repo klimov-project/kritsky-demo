@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
 
     // Proxy change password request to backend
     const response = await fetch(
-      `${config.apiBackendUrl}/auth/change-password`,
+      `${config.apiBackendBase}/auth/change-password`,
       {
         method: 'POST',
         headers: {

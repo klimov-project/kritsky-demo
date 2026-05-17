@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event);
 
     // Proxy update profile request to backend
-    const response = await fetch(`${config.apiBackendUrl}/auth/profile`, {
+    const response = await fetch(`${config.apiBackendBase}/auth/profile`, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${session.accessToken}`,

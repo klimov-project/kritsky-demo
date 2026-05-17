@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig();
 
     // Fetch variants list from backend
-    const response = await fetch(`${config.apiBackendUrl}/variants`, {
+    const response = await fetch(`${config.apiBackendBase}/variants`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

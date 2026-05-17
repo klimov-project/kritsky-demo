@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
 
     // Forward quota request to backend with auth token
     const response = await fetch(
-      `${config.apiBackendUrl}/variants/export/quota`,
+      `${config.apiBackendBase}/variants/export/quota`,
       {
         method: 'GET',
         headers: {

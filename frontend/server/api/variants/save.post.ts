@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig() 
 
     // Forward save request to backend with auth token
-    const response = await fetch(`${config.apiBackendUrl}/variants`, {
+    const response = await fetch(`${config.apiBackendBase}/variants`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

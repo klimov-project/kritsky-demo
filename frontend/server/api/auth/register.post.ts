@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event);
 
     // Proxy register request to backend
-    const response = await fetch(`${config.apiBackendUrl}/auth/register`, {
+    const response = await fetch(`${config.apiBackendBase}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

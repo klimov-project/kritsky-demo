@@ -24,7 +24,7 @@ export function useKnowledgeBase() {
 
   const apiUrl = import.meta.server
     ? config.apiBackendUrl
-    : config.public.apiUrl + '/v1';
+    : config.public.apiUrl;
 
   const { data, pending, error, refresh } = useFetch<KnowledgeBaseResponse>(
     `${apiUrl}/knowledge-base`,

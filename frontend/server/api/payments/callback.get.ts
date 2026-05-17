@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
   try {
     // Call backend to activate subscription (mock endpoint)
     const response = await fetch(
-      `${config.apiBackendUrl}/subscription/activate-mock`,
+      `${config.apiBackendBase}/subscription/activate-mock`,
       {
         method: 'POST',
         headers: {

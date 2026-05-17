@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
 
     // Forward activate-mock request to backend with auth token
     const response = await fetch(
-      `${config.apiBackendUrl}/subscription/activate-mock`,
+      `${config.apiBackendBase}/subscription/activate-mock`,
       {
         method: 'POST',
         headers: {

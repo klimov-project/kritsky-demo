@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
 
     // Forward reset-mock request to backend with auth token
     const response = await fetch(
-      `${config.apiBackendUrl}/subscription/reset-mock`,
+      `${config.apiBackendBase}/subscription/reset-mock`,
       {
         method: 'POST',
         headers: {

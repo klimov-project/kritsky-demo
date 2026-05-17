@@ -13,7 +13,7 @@ const maxAgeNitro = 360;
 async function getBackendFingerprint(config: any): Promise<string | null> {
   try {
     const cacheMeta = await $fetch<CacheMeta>(
-      `${config.apiBackendUrl}/knowledge-base/cache/meta`,
+      `${config.apiBackendBase}/knowledge-base/cache/meta`,
       { ignoreResponseError: true },
     );
 
@@ -49,7 +49,7 @@ export default defineCachedEventHandler(
     // 4. Данные изменились — полный запрос к бэкенду
     console.log('[KB] Cache miss, fetching full data...');
     const rawPayload = await $fetch<any>(
-      `${config.apiBackendUrl}/knowledge-base`,
+      `${config.apiBackendBase}/knowledge-base`,
     );
 
     // 5. Преобразуем тяжёлый backend payload в лёгкий frontend payload

@@ -52,6 +52,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     // Server-only runtime config
+    apiBackendBase:
+      process.env.NUXT_API_BACKEND_BASE || 'http://localhost:8000/api/',
     apiBackendUrl:
       process.env.NUXT_API_BACKEND_URL || 'http://localhost:8000/api/v1',
     // YooKassa credentials (server-only)

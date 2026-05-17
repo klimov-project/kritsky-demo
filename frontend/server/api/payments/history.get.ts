@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
     // Forward payment history request to backend with auth token
     const response = await fetch(
-      `${config.apiBackendUrl}/shop/payments/history`,
+      `${config.apiBackendBase}/shop/payments/history`,
       {
         method: 'GET',
         headers: {
