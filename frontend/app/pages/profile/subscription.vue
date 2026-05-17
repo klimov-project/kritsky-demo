@@ -6,30 +6,33 @@ definePageMeta({
   middleware: 'auth',
 });
 
-const toast = useToast()
+const toast = useToast();
 
-const userStore = useUserStore()
-const { user, subscriptionExpiryFormatted, hasActiveSubscription } =
-  storeToRefs(userStore)
+const userStore = useUserStore();
+const {
+  user,
+  subscriptionExpiryFormatted,
+  hasActiveSubscription,
+} = storeToRefs(userStore);
 
-const isActivating = ref(false)
-const isDeactivating = ref(false)
+const isActivating = ref(false);
+const isDeactivating = ref(false);
 
 // Fetch user data on mount
 onMounted(async () => {
-  await userStore.fetchUser()
-})
+  await userStore.fetchUser();
+});
 
 /**
  * Activate mock subscription
  * POST /api/subscription/activate-mock
  */
 const activateSubscription = async () => {
-  isActivating.value = true
+  isActivating.value = true;
   try {
-    const response = await $fetch('/api/subscription/activate-mock', {
+    const response = await $fetch('/api/subscription/activate', {
       method: 'POST',
-    })
+    });
 
     // Update user store with new subscription status
     if (userStore.user) {
@@ -37,7 +40,7 @@ const activateSubscription = async () => {
         ...userStore.user,
         isPro: response.isPro,
         subscriptionExpiresAt: response.subscriptionExpiresAt,
-      })
+      });
     }
 
     toast.add({
@@ -45,30 +48,30 @@ const activateSubscription = async () => {
       description: 'Теперь у вас есть доступ ко всем функциям',
       color: 'success',
       icon: 'i-lucide-crown',
-    })
+    });
   } catch (error) {
-    console.error('[v0] Failed to activate subscription:', error)
+    console.error('[v0] Failed to activate subscription:', error);
     toast.add({
       title: 'Ошибка',
       description: 'Не удалось активировать подписку',
       color: 'error',
       icon: 'i-lucide-alert-circle',
-    })
+    });
   } finally {
-    isActivating.value = false
+    isActivating.value = false;
   }
-}
+};
 
 /**
  * Reset mock subscription (deactivate)
  * POST /api/subscription/reset-mock
  */
 const deactivateSubscription = async () => {
-  isDeactivating.value = true
+  isDeactivating.value = true;
   try {
-    await $fetch('/api/subscription/reset-mock', {
+    await $fetch('/api/subscription/reset', {
       method: 'POST',
-    })
+    });
 
     // Update user store with reset subscription status
     if (userStore.user) {
@@ -76,7 +79,7 @@ const deactivateSubscription = async () => {
         ...userStore.user,
         isPro: false,
         subscriptionExpiresAt: null,
-      })
+      });
     }
 
     toast.add({
@@ -84,19 +87,19 @@ const deactivateSubscription = async () => {
       description: 'Подписка успешно отменена (тестовый режим)',
       color: 'warning',
       icon: 'i-lucide-alert-triangle',
-    })
+    });
   } catch (error) {
-    console.error('[v0] Failed to deactivate subscription:', error)
+    console.error('[v0] Failed to deactivate subscription:', error);
     toast.add({
       title: 'Ошибка',
       description: 'Не удалось деактивировать подписку',
       color: 'error',
       icon: 'i-lucide-alert-circle',
-    })
+    });
   } finally {
-    isDeactivating.value = false
+    isDeactivating.value = false;
   }
-}
+};
 
 // Subscription plans
 const plans = [
@@ -183,10 +186,7 @@ const plans = [
                           : 'Нет активной подписки'
                       }}
                     </h2>
-                    <p
-                      v-if="hasActiveSubscription"
-                      class="text-gray-600 mt-1"
-                    >
+                    <p v-if="hasActiveSubscription" class="text-gray-600 mt-1">
                       Действует до {{ subscriptionExpiryFormatted }}
                     </p>
                     <p v-else class="text-gray-600 mt-1">
@@ -208,7 +208,9 @@ const plans = [
             </div>
 
             <!-- Mock Actions (for testing) -->
-            <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 mb-8">
+            <div
+              class="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 mb-8"
+            >
               <div class="flex items-start gap-3 mb-4">
                 <UIcon
                   name="i-lucide-test-tube"
