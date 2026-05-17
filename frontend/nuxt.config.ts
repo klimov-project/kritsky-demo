@@ -64,13 +64,11 @@ export default defineNuxtConfig({
       localMode: process.env.NUXT_LOCAL_DEVELOPMENT === 'true',
     },
     session: {
-      password:
-        process.env.NUXT_SESSION_PASSWORD || 'dev-secret-at-least-32-chars',
+      password: process.env.NUXT_SESSION_PASSWORD,
     },
   },
 
   nitro: {
-    // Proxy configuration for local development
     // devProxy: {
     //   '/api': {
     //     target:

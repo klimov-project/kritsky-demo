@@ -63,7 +63,7 @@ services:
       NUXT_API_BACKEND_BASE: http://backend:8000
       NUXT_API_BACKEND_URL: http://backend:8000/api
       NUXT_PUBLIC_API_BASE: /api
-      NUXT_SESSION_PASSWORD: ${NUXT_SESSION_PASSWORD:-change-me-to-random-string}
+      NUXT_SESSION_PASSWORD: ${NUXT_SESSION_PASSWORD}
     restart: always
     depends_on:
       backend:

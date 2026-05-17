@@ -124,7 +124,9 @@ body {
     -ms-user-select: text;
 }
 
-
+button[aria-haspopup="dialog"][data-state="closed"] {
+    display: none;
+}
 
 // from react realisation
 
