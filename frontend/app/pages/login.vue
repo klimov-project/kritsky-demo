@@ -12,7 +12,7 @@ const { query } = useRoute();
 
 const { openLoginModal, isAuthenticated, isLoginModalOpen } = useAuth();
 
-watch(isLoginModalOpen, (o) => o || resolveLogin());
+watch(isLoginModalOpen, o => !o && router.push('/'));
 const resolveLogin = () => {
   const redirectPath = query.redirect as string;
   if (isAuthenticated.value) {

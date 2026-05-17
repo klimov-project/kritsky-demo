@@ -1,11 +1,19 @@
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
 
+  console.log('[Register endpoint] Start', {
+    timestamp: new Date().toISOString(),
+    backendUrl: config.apiBackendUrl,
+  });
   try {
     const body = await readBody(event);
 
+    console.log(`${config.apiBackendUrl}/auth/register`, {
+      timestamp: new Date().toISOString(),
+      backendUrl: config.apiBackendUrl,
+    });
     // Proxy register request to backend
-    const response = await fetch(`${config.apiBackendBase}/auth/register`, {
+    const response = await fetch(`${config.apiBackendUrl}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
