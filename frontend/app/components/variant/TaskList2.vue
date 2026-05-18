@@ -1,0 +1,51 @@
+<script setup lang="ts">
+const someTasks4 = ['task4_1', 'task4_2'];
+const task5 = 'task5';
+</script>
+
+<template>
+  <section
+    class="tasks-section-3 w-full bg-white rounded-[10px] mb-3 p-[30px_40px_50px_30px]"
+  >
+    <VariantTaskInstruction>
+      При написании развёрнутых ответов на задания 4 и 5 не искажайте автор ской
+      позиции, приводите конкретные примеры из текста произведений (обращайтесь
+      к образам, микротемам, деталям и т.п.), не допускайте фактических и логи
+      ческих ошибок; соблюдайте нормы литературной письменной речи, записывайте
+      ответы аккуратно и разборчиво (примерный объём каждого ответа — 5–10
+      предложений).
+    </VariantTaskInstruction>
+
+    <TaskInstruction>
+      Выберите ОДНО из заданий: 4.1 или 4.2. Напишите прямой связный ответ:
+      <ul>
+        <li>- отвечая на вопрос задания, сформулируйте утверждение;</li>
+        <li>- аргументируйте его</li>
+        <li>
+          - приведите из предложенного фрагмента текста не менее ДВУХ примеров,
+          подтверждающих сформулированное утрверждение.
+        </li>
+      </ul>
+    </TaskInstruction>
+
+    <VariantTask
+      v-for="taskKey in someTasks4"
+      :key="taskKey"
+      :task-key="taskKey"
+    />
+
+    <TaskInstruction>
+      Дайте аргументированный связный ответ на вопрос задания: <br />
+      - укажите сходство ИЛИ различие произведений в соответствии с заданием;
+    </TaskInstruction>
+
+    <VariantTask :task-key="task5" />
+  </section>
+</template>
+<style lang="scss">
+.tasks-section-3 {
+  .task-container + .task-info {
+    margin-top: 20px;
+  }
+}
+</style>

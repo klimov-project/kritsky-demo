@@ -1,122 +1,83 @@
 <script setup lang="ts">
-const { data: count, refresh, pending } = await useFetch(
-  '/api/variants-count',
-  {
-    server: true,
-    lazy: false,
-  },
-);
-
-const auth = useAuth();
-const { session, isAuthenticated, logout } = auth;
-const authLoading = computed(() => auth.isLoading);
-const showUserMenu = ref(false);
+const { variantsCount } = useKnowledgeBase();
 
 const formattedCount = computed(() => {
-  if (count.value === undefined || count.value === null) return '...';
-  return formatCompact(Number(count.value));
+  const count = variantsCount.value;
+
+  if (!count || count === 0) return '1 000 000';
+
+  return `${count
+    .toLocaleString('ru-RU')
+    .replace(/,/g, ' ')} вариантов заданий`;
 });
 
-function formatCompact(num: number): string {
-  const suffixes = ['', 'тыс', 'млн', 'млрд', 'трлн'];
-  let i = 0;
-  while (num >= 1000 && i < suffixes.length - 1) {
-    num /= 1000;
-    i++;
-  }
-  return num.toFixed(i > 0 ? 1 : 0) + ' ' + suffixes[i];
-}
-
-const handleLogout = async () => {
-  try {
-    await logout();
-    showUserMenu.value = false;
-  } catch (error) {
-    console.error('Logout error:', error);
-  }
+const navigateToConstructor = () => {
+  navigateTo('/create-variant');
 };
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-    <!-- Hero Section -->
-    <section class="max-w-6xl mx-auto px-4 py-16 md:py-24">
-      <div class="text-center mb-12">
-        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Конструктор вариантов ЕГЭ<br />по литературе
-        </h1>
-        <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-          Генерируйте неограниченное количество уникальных вариантов экзамена на
-          основе актуальной базы заданий
-        </p>
+  <section
+    class="flex-1 flex flex-col items-center justify-center py-[clamp(20px,4vh,36px)]"
+  >
+    <!-- Hero Wordmark -->
+    <HeroWordmark />
+
+    <!-- Features Desktop -->
+    <div
+      class="mt-[clamp(36px,5.6vh,56px)] lg:mt-[80px] max-w-[1125px] w-full hidden lg:grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center text-[#828282] text-[16px] leading-[1.22]"
+    >
+      <p class="max-w-[250px] justify-self-start">
+        Профессиональный<br />конструктор ЕГЭ по литературе<br />для учителей и
+        репетиторов
+      </p>
+      <span class="w-[1px] h-[57px] bg-[#cfcfcf] opacity-80"></span>
+      <p class="max-w-[235px] justify-self-center text-center">
+        База актуальных заданий,<br />более миллиона уникальных<br />авторских
+        вариантов
+      </p>
+      <span class="w-[1px] h-[57px] bg-[#cfcfcf] opacity-80"></span>
+      <p class="max-w-[232px] justify-self-end text-right">
+        Мгновенная<br />подготовка материалов<br />к скачиванию и печати
+      </p>
+    </div>
+
+    <!-- Features Mobile -->
+    <div
+      class="mt-[clamp(32px,5vh,52px)] lg:hidden flex flex-col items-center gap-[14px] text-[#828282] text-[clamp(14px,1.9vw,17px)] leading-[1.2] text-center"
+    >
+      <p class="max-w-[640px]">
+        Профессиональный конструктор ЕГЭ по литературе для учителей и
+        репетиторов
+      </p>
+      <span class="w-[min(70%,320px)] h-[1px] bg-[#cfcfcf] opacity-90"></span>
+      <p class="max-w-[640px]">
+        База актуальных заданий, более миллиона уникальных авторских вариантов
+      </p>
+      <span class="w-[min(70%,320px)] h-[1px] bg-[#cfcfcf] opacity-90"></span>
+      <p class="max-w-[640px]">
+        Мгновенная подготовка материалов к скачиванию и печати
+      </p>
+    </div>
+
+    <!-- Actions -->
+    <div
+      class="mt-[clamp(30px,6vh,74px)] lg:mt-[80px] w-full flex flex-col lg:flex-row items-center justify-center gap-[14px]"
+    >
+      <button
+        @click="navigateToConstructor"
+        class="w-full lg:w-[216px] min-h-[50px] h-[60px] bg-[#bd5343] hover:bg-[#ab4a3c] text-white rounded-[50px] uppercase font-serif transition-colors"
+      >
+        Создать вариант
+      </button>
+      <div
+        class="relative -left-[60px] -z-[1] pl-[70px] w-full lg:w-auto max-w-[653px] h-[60px] rounded-[50px] bg-white text-[#828282] text-[16px] flex items-center px-[34px] gap-[6px] whitespace-nowrap overflow-hidden border-none"
+      >
+        <span class="flex-shrink-0">Сейчас доступно:</span>
+        <span class="overflow-hidden">
+          {{ formattedCount }}
+        </span>
       </div>
-
-      <!-- Main CTA Card -->
-      <div class="max-w-2xl mx-auto mb-12">
-        <div class="bg-white rounded-lg shadow-lg p-8 md:p-12">
-          <div class="text-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">
-              Доступные варианты
-            </h2>
-            <p class="text-gray-600">Уникальных комбинаций заданий</p>
-          </div>
-
-          <!-- Stats -->
-          <div class="text-center mb-8">
-            <div v-if="pending" class="text-3xl text-gray-400 animate-pulse">
-              Загрузка...
-            </div>
-            <div
-              v-else
-              class="text-5xl md:text-6xl font-mono font-bold text-blue-600"
-            >
-              {{ formattedCount }}
-            </div>
-          </div>
-
-          <p class="text-gray-600 text-center mb-8">
-            Каждый вариант собирается из случайных комбинаций отрывков
-            произведений и стихотворений в полном соответствии с форматом ЕГЭ.
-          </p>
-
-          <!-- Primary CTA -->
-          <div class="space-y-3">
-            <NuxtLink
-              to="/public-variant"
-              class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition text-center text-lg"
-            >
-              Сгенерировать первый вариант
-            </NuxtLink>
-            <p class="text-sm text-gray-500 text-center">
-              Демонстрационный вариант доступен всем
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Features Grid -->
-      <div class="grid md:grid-cols-3 gap-6 mb-12">
-        <div class="bg-white p-6 rounded-lg shadow">
-          <h3 class="font-bold text-lg mb-2 text-gray-900">📚 Полная база</h3>
-          <p class="text-gray-600 text-sm">
-            Актуальные отрывки и стихотворения в соответствии с требованиями ЕГЭ
-          </p>
-        </div>
-        <div class="bg-white p-6 rounded-lg shadow">
-          <h3 class="font-bold text-lg mb-2 text-gray-900">
-            ⚡ Быстрая генерация
-          </h3>
-          <p class="text-gray-600 text-sm">
-            Варианты создаются мгновенно, без ожиданий
-          </p>
-        </div>
-        <div class="bg-white p-6 rounded-lg shadow">
-          <h3 class="font-bold text-lg mb-2 text-gray-900">✓ Проверено</h3>
-          <p class="text-gray-600 text-sm">
-            Каждый вариант проверен на соответствие формату
-          </p>
-        </div>
-      </div>
-    </section>
-  </div>
+    </div>
+  </section>
 </template>

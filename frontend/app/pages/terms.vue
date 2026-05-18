@@ -1,78 +1,32 @@
 <script setup lang="ts">
-definePageMeta({
-  layout: 'default',
-});
+import { TERMS_PAGE_DOCUMENT as document } from '~/utils/const';
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <header class="bg-white shadow-sm">
-      <div class="max-w-4xl mx-auto px-4 py-4">
-        <NuxtLink to="/" class="text-blue-600 hover:text-blue-700 font-medium">
-          ← На главную
-        </NuxtLink>
-        <h1 class="text-3xl font-bold text-gray-900 mt-2">
-          Пользовательское соглашение
-        </h1>
-      </div>
-    </header>
+  <div class="w-full flex flex-col items-center min-h-screen py-20 px-4">
+    <div class="w-full max-w-[800px]">
+      <h1 class="font-serif font-bold text-3xl mb-10 text-[#221E20]">
+        {{ document.title }}
+      </h1>
 
-    <!-- Content -->
-    <main class="max-w-4xl mx-auto px-4 py-12">
-      <div class="space-y-6 text-gray-700">
-        <section>
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">
-            1. Принятие условий
-          </h2>
-          <p>
-            Используя данный сервис, вы соглашаетесь со всеми условиями,
-            изложенными в данном соглашении.
-          </p>
-        </section>
+      <div
+        class="font-serif text-[#221E20] opacity-80 space-y-6 leading-relaxed text-[18px]"
+      >
+        <p>{{ document.intro }}</p>
 
-        <section>
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">
-            2. Использование сервиса
+        <section
+          v-for="section in document.sections"
+          :key="section.title"
+          class="space-y-4"
+        >
+          <h2 class="font-bold text-xl pt-4 opacity-100">
+            {{ section.title }}
           </h2>
-          <p>
-            Вы обязуетесь использовать сервис только в законных целях и не
-            нарушать права третьих лиц.
-          </p>
-        </section>
-
-        <section>
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">
-            3. Интеллектуальная собственность
-          </h2>
-          <p>
-            Все содержание сервиса защищено авторским правом. Запрещено
-            копировать, воспроизводить или распространять контент без
-            разрешения.
-          </p>
-        </section>
-
-        <section>
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">
-            4. Ограничение ответственности
-          </h2>
-          <p>
-            Сервис предоставляется "как есть" без гарантий. Мы не несем
-            ответственность за убытки, возникшие в результате использования
-            сервиса.
-          </p>
-        </section>
-
-        <section>
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">
-            5. Изменения условий
-          </h2>
-          <p>
-            Мы оставляем право изменять условия соглашения в любой момент.
-            Продолжение использования сервиса означает принятие новых условий.
+          <p v-for="paragraph in section.paragraphs" :key="paragraph">
+            {{ paragraph }}
           </p>
         </section>
       </div>
-    </main>
+    </div>
   </div>
 </template>

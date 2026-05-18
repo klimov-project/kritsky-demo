@@ -1,62 +1,125 @@
-<script setup lang="ts">
-definePageMeta({
-  layout: 'default',
-});
-</script>
-
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <header class="bg-white shadow-sm">
-      <div class="max-w-4xl mx-auto px-4 py-4">
-        <NuxtLink to="/" class="text-blue-600 hover:text-blue-700 font-medium">
-          ← На главную
+  <div class="w-full max-w-[980px] mx-auto px-4 md:px-0 pt-[90px] pb-20">
+    <article
+      class="max-w-none text-[18px] leading-relaxed space-y-6 text-[#333333]"
+    >
+      <p>
+        Меня зовут <strong>Крицкий Роман Дмитриевич</strong>, я филолог и автор
+        пособий для подготовки к ЕГЭ по литературе. Возможно, вы уже знакомы с
+        моими сборниками.
+      </p>
+
+      <p>
+        В конце 2025 года у меня появилась идея: создать платформу, на которой
+        каждый учитель, репетитор, преподаватель или ученик сможет
+        самостоятельно собирать варианты ЕГЭ под свои задачи.
+      </p>
+
+      <p>
+        Так появился проект —
+        <strong class="text-[#BD5343]">ege.kritsky.academy</strong>
+      </p>
+
+      <p>
+        Это не просто сайт, а профессиональный конструктор экзаменационных
+        вариантов.
+      </p>
+
+      <p class="font-medium">Здесь вы можете:</p>
+
+      <ul class="list-disc pl-6 space-y-2">
+        <li>выбирать произведения из актуального кодификатора</li>
+        <li>подбирать формулировки заданий под конкретную цель</li>
+        <li>
+          скачивать, распечатывать полученные варианты, составлять собственные
+          списки, а также делиться ими с коллегами и учениками
+        </li>
+      </ul>
+
+      <p>
+        Наверное, у вас появились вопросы: как именно собираются/подбираются
+        задания и из чего состоит платформа.
+      </p>
+
+      <p>
+        Сайт работает на основе простого генератора-рандомайзера. Все задания на
+        платформе — авторские. Они разработаны мной с учётом актуальных
+        требований ЕГЭ, критериев оценивания и реальной экзаменационной
+        практики. Если в печатных сборниках неизбежно есть ограничение — 20–30
+        вариантов, — то здесь этого ограничения нет. На платформе вы создаёте
+        столько вариантов, сколько нужно именно вам, а благодаря умной системе
+        фильтров и алгоритмов — вы получаете идеально оформленный материал из
+        миллионов и миллиардов возможных вариаций.
+      </p>
+
+      <p>
+        Платформа особенно полезна для учителей и репетиторов: она позволяет
+        быстро готовить материалы, варьировать задания и работать с учениками
+        системно и гибко. Это инструмент, который невозможно заменить печатным
+        сборником.
+      </p>
+
+      <p>
+        Начните работать с платформой уже сейчас — и убедитесь, насколько проще
+        и эффективнее становится подготовка к ЕГЭ по литературе.
+      </p>
+
+      <!-- Блок с тарифом -->
+      <div class="rounded-xl p-6 border mt-10 bg-[#F6F6F6] border-[#33333315]">
+        <p class="mb-3">
+          Неограниченное количество генераций вариантов доступно по подписке.
+          Ознакомиться с условиями и стоимостью можно на странице тарифа:
+        </p>
+        <NuxtLink
+          to="/subscriptions"
+          class="inline-flex items-center gap-2 font-semibold transition-opacity hover:opacity-80 text-[#BD5343]"
+        >
+          <span>Перейти к тарифу</span>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M6 4L10 8L6 12"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
         </NuxtLink>
-        <h1 class="text-3xl font-bold text-gray-900 mt-2">О проекте</h1>
       </div>
-    </header>
 
-    <!-- Content -->
-    <main class="max-w-4xl mx-auto px-4 py-12">
-      <div class="prose prose-sm max-w-none space-y-6">
-        <section>
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">История проекта</h2>
-          <p class="text-gray-600">
-            Проект "Критский" создан для облегчения подготовки учащихся к ЕГЭ по
-            литературе. Наш конструктор позволяет генерировать неограниченное
-            количество уникальных вариантов экзамена в полном соответствии с
-            официальным форматом.
-          </p>
-        </section>
-
-        <section>
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">Цель</h2>
-          <p class="text-gray-600">
-            Помочь учителям и репетиторам экономить время на подготовку к
-            экзамену, предоставляя инструменты для быстрой генерации вариантов с
-            гарантированным соответствием формату ЕГЭ.
-          </p>
-        </section>
-
-        <section>
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">Возможности</h2>
-          <ul class="list-disc list-inside space-y-2 text-gray-600">
-            <li>Генерация вариантов ЕГЭ любого уровня сложности</li>
-            <li>Выбор вариантов по авторам и произведениям</li>
-            <li>Сохранение и скачивание вариантов</li>
-            <li>Интегрированная проверка ответов</li>
-          </ul>
-        </section>
-
-        <section>
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">Контакты</h2>
-          <p class="text-gray-600">
-            ИП Крицкий Роман Дмитриевич<br />
-            ИНН: 772796119977<br />
-            ОГРНИП: 325774600403322
-          </p>
-        </section>
+      <!-- Блок с контактами -->
+      <div class="rounded-xl p-6 border mt-6 bg-[#F6F6F6] border-[#33333315]">
+        <p class="mb-3">
+          Для связи с нами и по всем вопросам пишите на email:
+        </p>
+        <a
+          href="mailto:support@kritsky.academy"
+          class="inline-flex items-center gap-2 font-semibold transition-opacity hover:opacity-80 text-[#BD5343]"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M4 6L12 14L20 6M4 6H20M4 6V18H20V6"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span>support@kritsky.academy</span>
+        </a>
       </div>
-    </main>
+    </article>
   </div>
 </template>

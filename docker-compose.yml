@@ -7,7 +7,11 @@ services:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-kritsky}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-kritsky}",
+        ]
       interval: 3s
       timeout: 3s
       retries: 10
@@ -17,7 +21,7 @@ services:
   redis:
     image: redis:7-alpine
     restart: always
-    command: [ "redis-server", "--appendonly", "yes" ]
+    command: ["redis-server", "--appendonly", "yes"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 3s
@@ -55,8 +59,48 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     environment:
-      - NUXT_API_BACKEND_BASE=http://backend:8000
-      - NUXT_PUBLIC_API_BASE=/api
+      NITRO_STORAGE_CACHE: ${NITRO_STORAGE_CACHE}
+      NUXT_API_BACKEND_BASE: ${NUXT_API_BACKEND_BASE}
+      NUXT_API_BACKEND_URL: ${NUXT_API_BACKEND_URL}
+      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE}
+      NUXT_SESSION_PASSWORD: ${NUXT_SESSION_PASSWORD}
+    restart: always
+    depends_on:
+      backend:
+        condition: service_healthy
+      redis-cache:
+        condition: service_healthy
+    expose:
+      - "3000"
+    networks:
+      - default
+      - app-network
+
+  redis-cache:
+    image: redis:7-alpine
+    container_name: kritsky-redis-cache
+    restart: unless-stopped
+    volumes:
+      - redis_cache_data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  adminka:
+    build:
+      context: ./adminka
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_BASE_PATH: /adminka
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend:8000}
+        NEXT_PUBLIC_SUPPORT_EMAIL: ${NEXT_PUBLIC_SUPPORT_EMAIL:-admin@kritsky.local}
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend:8000}
+      NEXT_PUBLIC_SUPPORT_EMAIL: ${NEXT_PUBLIC_SUPPORT_EMAIL:-admin@kritsky.local}
     restart: always
     depends_on:
       backend:
@@ -77,6 +121,11 @@ services:
       backend:
         condition: service_healthy
 
+networks:
+  app-network:
+    driver: bridge
+
 volumes:
+  redis_cache_data:
   postgres_data:
   redis_data:

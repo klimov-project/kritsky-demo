@@ -1,0 +1,153 @@
+.button {
+    font-family: var(--font-pt-serif);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    user-select: none;
+
+    &:focus-visible {
+        outline: 2px solid #221E20;
+        outline-offset: 2px;
+    }
+
+    // Адаптивность базовых размеров
+    @media (max-width: 1024px) {
+        font-size: 15px;
+    }
+
+    @media (max-width: 768px) {
+        font-size: 14px;
+    }
+
+    @media (max-width: 480px) {
+        font-size: 13px;
+    }
+}
+
+// Вариант: Outlined (с border)
+.button--outlined {
+    background-color: transparent;
+    border: 1px solid #221E20;
+    border-radius: 16px;
+    padding: 13px 16px;
+    color: #221E20;
+    font-size: 16px;
+    font-weight: 700;
+
+    // Адаптивный padding
+    @media (max-width: 768px) {
+        padding: 11px 14px;
+        border-radius: 14px;
+    }
+
+    @media (max-width: 480px) {
+        padding: 10px 12px;
+        border-radius: 12px;
+    }
+
+    // Hover state
+    &:hover:not(:disabled) {
+        background-color: rgba(34, 30, 32, 0.05);
+        border-color: #474345;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(34, 30, 32, 0.12);
+    }
+
+    // Focus state
+    &:focus:not(:disabled) {
+        background-color: rgba(34, 30, 32, 0.08);
+        border-color: #474345;
+        box-shadow: 0 0 0 3px rgba(34, 30, 32, 0.15);
+    }
+
+    // Active state
+    &:active:not(:disabled) {
+        background-color: rgba(34, 30, 32, 0.12);
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(34, 30, 32, 0.15);
+        border-color: #221E20;
+    }
+}
+
+// Вариант: Filled (с background)
+.button--filled {
+    background-color: #E6E7E7;
+    border: none;
+    border-radius: 6px;
+    padding: 9px 5px;
+    color: #221E20;
+    font-size: 16px;
+    font-weight: 700;
+
+    // Адаптивный padding
+    @media (max-width: 768px) {
+        padding: 8px 4px;
+        border-radius: 5px;
+    }
+
+    @media (max-width: 480px) {
+        padding: 7px 4px;
+        border-radius: 4px;
+    }
+
+    // Hover state
+    &:hover:not(:disabled) {
+        background-color: #D1D2D2;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(34, 30, 32, 0.1);
+    }
+
+    // Focus state
+    &:focus:not(:disabled) {
+        background-color: #C8C9C9;
+        box-shadow: 0 0 0 3px rgba(34, 30, 32, 0.15);
+    }
+
+    // Active state
+    &:active:not(:disabled) {
+        background-color: #BEBFBF;
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(34, 30, 32, 0.12);
+    }
+}
+
+// Disabled state (для обоих вариантов)
+.button--disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+// Full width вариант
+.button--full {
+    width: 100%;
+}
+
+.button--size-default.button--outlined {
+    border-radius: 16px;
+    padding: 13px 16px;
+    font-size: 16px;
+}
+
+.button--size-default.button--filled {
+    border-radius: 6px;
+    padding: 9px 5px;
+    font-size: 16px;
+}
+
+.button--size-small.button--outlined {
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+.button--size-small.button--filled {
+    border-radius: 5px;
+    padding: 7px 10px;
+    font-size: 14px;
+}

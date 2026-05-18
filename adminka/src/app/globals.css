@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+@font-face {
+    font-family: 'Minion Cyrillic';
+    src: url('/fonts/MinionPro/MinionPro-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Minion Cyrillic';
+    src: url('/fonts/MinionPro/MinionPro-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Minion Cyrillic';
+    src: url('/fonts/MinionPro/MinionPro-It.woff') format('woff');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Minion Cyrillic';
+    src: url('/fonts/MinionPro/MinionPro-Bold.woff') format('woff');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Minion Cyrillic';
+    src: url('/fonts/MinionPro/MinionPro-BoldIt.woff') format('woff');
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+
+:root {
+    --font-pt-serif: 'Minion Cyrillic', serif;
+    --home-color-bg: #f6f6f6;
+    --home-color-text-main: #333333;
+    --home-color-text-muted: #828282;
+    --home-color-separator: #cfcfcf;
+    --home-color-accent: #bd5343;
+    --home-color-accent-hover: #ab4a3c;
+
+    --color-text-primary: #221e20;
+    --color-text-secondary: rgba(34, 30, 32, 0.84);
+    --color-text-muted: rgba(34, 30, 32, 0.72);
+    --color-border-soft: rgba(34, 30, 32, 0.14);
+    --color-focus-ring: rgba(34, 30, 32, 0.75);
+    --surface-glass: rgba(255, 255, 255, 0.72);
+    --surface-paper-soft: rgba(255, 255, 255, 0.86);
+    --shadow-soft: 0 18px 45px rgba(34, 30, 32, 0.09);
+    --radius-xl: 20px;
+    --radius-2xl: 28px;
+    --radius-pill: 999px;
+    --color-button-primary-bg: #221e20;
+    --color-button-primary-bg-hover: #3b3538;
+    --color-button-primary-text: #f5f1e8;
+    --color-button-secondary-bg: #ece7dd;
+    --color-button-secondary-bg-hover: #e1dacd;
+    --color-button-secondary-text: #221e20;
+    --color-button-secondary-border: #c7bfb0;
+    --color-button-ghost-text: #221e20;
+    --color-button-ghost-border: rgba(34, 30, 32, 0.28);
+}
+
+@layer base {
+    html {
+        font-family: 'Minion Cyrillic', serif;
+    }
+}
+
+@layer utilities {
+    .font-serif {
+        font-family: var(--font-pt-serif) !important;
+    }
+
+    .rich-content p {
+        min-height: 1.5em;
+    }
+
+    .nav-link-animated {
+        @apply relative py-1;
+    }
+
+    .nav-link-animated::after {
+        content: "";
+        @apply absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#221E20] transition-all duration-300 ease-in-out;
+    }
+
+    .nav-link-animated:hover::after {
+        @apply w-full;
+    }
+
+    .smooth-scroll {
+        scroll-behavior: smooth;
+    }
+}

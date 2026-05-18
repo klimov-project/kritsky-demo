@@ -1,0 +1,253 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(51, 51, 51, 0.8);
+}
+
+.modal {
+    position: relative;
+    z-index: 1;
+    width: min(930px, calc(100vw - 40px));
+    min-height: 608px;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.16);
+}
+
+.inner {
+    padding: 70px 50px;
+}
+
+.closeButton {
+    position: absolute;
+    top: -34px;
+    right: -24px;
+    color: #fff;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    transition: opacity 0.2s ease;
+}
+
+.closeButton:hover {
+    opacity: 0.75;
+}
+
+.title {
+    margin: 0 0 12px;
+    font-size: 40px;
+    line-height: 1;
+    font-weight: 400;
+    color: #333;
+}
+
+.description {
+    margin: 0;
+    color: #333;
+    font-size: 20px;
+    line-height: 1.25;
+}
+
+.form {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.fieldsGrid {
+    display: grid;
+    grid-template-columns: 405px 405px;
+    column-gap: 20px;
+}
+
+.leftFields {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.label {
+    color: #828282;
+    font-size: 14px;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.input,
+.textarea {
+    border-radius: 10px;
+    border: 1px solid #cfcfcf;
+    padding-inline: 25px;
+    font-size: 16px;
+    color: #333;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.input {
+    height: 50px;
+}
+
+.textarea {
+    height: 141px;
+    resize: none;
+    padding-top: 14px;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+    color: #cfcfcf;
+}
+
+.input:focus,
+.textarea:focus {
+    border-color: #bdbdbd;
+}
+
+.consents {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.consentRow {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    column-gap: 10px;
+    align-items: center;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.15;
+}
+
+.consentRow input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.checkVisual {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid #cfcfcf;
+    background: #f6f6f6;
+    position: relative;
+}
+
+.checkVisual::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #333;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.consentRow input:not(:checked) + .checkVisual::after {
+    opacity: 0;
+}
+
+.submitButton {
+    width: 249px;
+    height: 50px;
+    border-radius: 10px;
+    border: none;
+    background: #333;
+    color: #fff;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.submitButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+@media (max-width: 1024px) {
+    .modal {
+        width: min(350px, calc(100vw - 40px));
+        min-height: 685px;
+    }
+
+    .inner {
+        padding: 30px 20px 20px;
+    }
+
+    .title {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .description {
+        font-size: 14px;
+        line-height: 1.2;
+    }
+
+    .form {
+        margin-top: 16px;
+        gap: 14px;
+    }
+
+    .fieldsGrid {
+        display: block;
+    }
+
+    .leftFields {
+        gap: 10px;
+    }
+
+    .commentField {
+        margin-top: 10px;
+    }
+
+    .consents {
+        gap: 8px;
+    }
+
+    .consentRow {
+        font-size: 14px;
+        line-height: 1.15;
+        align-items: start;
+    }
+
+    .submitButton {
+        width: 100%;
+    }
+
+    .closeButton {
+        top: -30px;
+        right: 0;
+    }
+}

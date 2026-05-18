@@ -1,0 +1,759 @@
+.wrapper {
+    width: min(1440px, 100%);
+    margin: 0 auto;
+    padding: 70px 0 60px;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+}
+
+.title {
+    margin: 0 0 44px;
+    font-size: 36px;
+    font-weight: 400;
+    line-height: 1;
+    text-align: center;
+}
+
+.layout {
+    width: min(954px, 100%);
+    margin: 0 auto;
+    position: relative;
+}
+
+.sidebar {
+    position: absolute;
+    top: 0;
+    right: calc(100% + 34px);
+    width: 223px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modeCard {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 15px 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.modeButton {
+    border: none;
+    background: transparent;
+    color: #333333;
+    font-size: 16px;
+    line-height: 1;
+    text-align: left;
+    padding: 9px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.modeButtonActive {
+    background: #f6f6f6;
+}
+
+.subscriptionCard {
+    background: #ffffff;
+    border-radius: 10px;
+    min-height: 78px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.subscriptionIcon {
+    flex-shrink: 0;
+    color: #828282;
+}
+
+.subscriptionText {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 16px;
+    line-height: 1.2;
+
+    strong {
+        font-weight: 400;
+    }
+}
+
+.feedbackButton {
+    width: 100%;
+    min-height: 50px;
+    border: none;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #333333;
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.mainCard {
+    background: #ffffff;
+    border-radius: 10px;
+}
+
+.profileTabs {
+    border-bottom: 1px solid #cfcfcf;
+    padding: 30px 40px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.profileTabsLinks {
+    display: flex;
+    align-items: center;
+    gap: 38px;
+}
+
+.profileTab {
+    position: relative;
+    color: #333333;
+    text-decoration: none;
+    font-size: 24px;
+    line-height: 1;
+    padding-bottom: 10px;
+}
+
+.profileTabActive::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: #333333;
+}
+
+.logoutButton {
+    border: none;
+    background: transparent;
+    color: #bdbdbd;
+    font-size: 20px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 0 0 10px;
+}
+
+.mainContent {
+    padding: 28px 40px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.backButton {
+    width: fit-content;
+    min-height: 50px;
+    border: none;
+    border-radius: 10px;
+    background: #f6f6f6;
+    color: #333333;
+    font-size: 14px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 15px;
+    cursor: pointer;
+}
+
+.folderTitleRow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.folderTitle {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.folderEditButton {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: #828282;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.sectionDescription {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.25;
+}
+
+.searchRow {
+    width: 100%;
+    min-height: 50px;
+    border: 1px solid #cfcfcf;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 18px;
+    color: #828282;
+}
+
+.searchInput {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: #333333;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.searchInput:focus {
+    outline: none;
+}
+
+.controlsRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.sortControl {
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.sortLabel {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.sortOptions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sortOption {
+    border: none;
+    background: transparent;
+    color: #333333;
+    font-size: 14px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+}
+
+.sortOption::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    border: 1px solid #cfcfcf;
+    background: #ffffff;
+}
+
+.sortOptionActive::before {
+    border-color: #333333;
+    background: #333333;
+}
+
+.actionButtons {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.constructorButton,
+.addFolderButton {
+    min-height: 50px;
+    border: none;
+    border-radius: 10px;
+    background: #f6f6f6;
+    color: #333333;
+    font-size: 14px;
+    line-height: 1;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 20px;
+    cursor: pointer;
+}
+
+.utilityRow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.utilityButton,
+.utilitySelect {
+    min-height: 36px;
+    border: 1px solid #cfcfcf;
+    border-radius: 5px;
+    background: #ffffff;
+    color: #333333;
+    font-size: 12px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 10px;
+}
+
+.utilityButton {
+    cursor: pointer;
+}
+
+.tableHeader {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr) minmax(0, 1fr);
+    align-items: end;
+    gap: 8px;
+    padding: 0 54px 2px 40px;
+}
+
+.tableHeaderNumber,
+.tableHeaderBlock {
+    color: #828282;
+    font-size: 12px;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.folderGrid,
+.variantsGrid {
+    display: grid;
+    gap: 10px;
+}
+
+.folderCard,
+.variantCard {
+    width: 100%;
+}
+
+.cardDesktop {
+    min-height: 70px;
+    border-radius: 10px;
+    background: #f6f6f6;
+    display: grid;
+    grid-template-columns: 32px 74px minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+}
+
+.cardMobile {
+    display: none;
+}
+
+.cardMenuButton {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: #828282;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.folderOpenArea {
+    border: none;
+    background: transparent;
+    padding: 0;
+    display: grid;
+    grid-column: 2 / 5;
+    grid-template-columns: 74px minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.rowNumber {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.rowNumberLabel {
+    font-size: 12px;
+    line-height: 1;
+    color: #828282;
+    text-transform: uppercase;
+}
+
+.rowNumberValue {
+    font-size: 14px;
+    line-height: 1;
+    color: #333333;
+}
+
+.rowBlock {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.rowBlockLabel {
+    color: #828282;
+    font-size: 12px;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.rowBlockPrimary {
+    color: #333333;
+    font-size: 14px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rowBlockSecondary {
+    color: #333333;
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rowActions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.rowActionButton {
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    color: #828282;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.rowActionDanger {
+    color: #828282;
+}
+
+.placeholder,
+.error {
+    min-height: 120px;
+    border-radius: 10px;
+    background: #f6f6f6;
+    padding: 24px;
+    text-align: center;
+    color: #666666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.error {
+    background: #fff8f8;
+    border: 1px solid #f1c3c3;
+    color: #8f3030;
+}
+
+.placeholderLinkWrap {
+    margin-top: 10px;
+}
+
+.primaryLink {
+    min-height: 40px;
+    border-radius: 8px;
+    background: #bd5343;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+}
+
+.pagination {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.pageButton {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    background: #f6f6f6;
+    color: #333333;
+    font-size: 16px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.pageButton:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.pageButtonActive {
+    border-color: #828282;
+    background: #ffffff;
+}
+
+.folderLinkInline {
+    border: none;
+    background: transparent;
+    color: #828282;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    text-decoration: underline;
+    width: fit-content;
+    padding: 0;
+}
+
+.mobileModeTabs,
+.mobileExtras {
+    display: none;
+}
+
+.loadingOverlay {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    border-radius: 10px;
+    background: rgba(33, 33, 33, 0.9);
+    color: #ffffff;
+    padding: 10px 14px;
+    font-size: 13px;
+    line-height: 1;
+    z-index: 80;
+}
+
+@media (max-width: 1024px) {
+    .wrapper {
+        padding: 36px 0 48px;
+    }
+
+    .title {
+        margin-bottom: 26px;
+        font-size: 24px;
+    }
+
+    .mobileModeTabs {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 5px;
+        margin-bottom: 10px;
+    }
+
+    .mobileModeButton {
+        min-height: 35px;
+        border-radius: 5px;
+        border: 1px solid #cfcfcf;
+        background: transparent;
+        color: #333333;
+        font-size: 12px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .mobileModeButtonActive {
+        border-color: #ffffff;
+        background: #ffffff;
+    }
+
+    .layout {
+        width: 100%;
+    }
+
+    .sidebar {
+        display: none;
+        position: static;
+    }
+
+    .profileTabs {
+        padding: 20px 17px 0;
+    }
+
+    .profileTabsLinks {
+        gap: 18px;
+    }
+
+    .profileTab {
+        font-size: 16px;
+        line-height: 12px;
+        white-space: pre-line;
+        padding-bottom: 8px;
+    }
+
+    .profileTabsLinks .profileTab:nth-child(1) {
+        width: 53px;
+    }
+
+    .profileTabsLinks .profileTab:nth-child(2) {
+        width: 102px;
+    }
+
+    .profileTabsLinks .profileTab:nth-child(3) {
+        width: 52px;
+    }
+
+    .logoutButton {
+        font-size: 0;
+        padding-bottom: 7px;
+    }
+
+    .mainContent {
+        padding: 20px 17px 24px;
+        gap: 14px;
+    }
+
+    .backButton,
+    .constructorButton,
+    .addFolderButton {
+        width: 100%;
+    }
+
+    .controlsRow {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .sortLabel {
+        font-size: 14px;
+    }
+
+    .actionButtons {
+        margin-left: 0;
+        flex-direction: column;
+    }
+
+    .utilityRow {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .tableHeader {
+        display: none;
+    }
+
+    .cardDesktop {
+        display: none;
+    }
+
+    .cardMobile {
+        display: flex;
+        flex-direction: column;
+        border-radius: 10px;
+        background: #f6f6f6;
+        padding: 16px 14px 12px;
+        position: relative;
+    }
+
+    .folderCard .cardMobile {
+        min-height: 225px;
+    }
+
+    .variantCard .cardMobile {
+        min-height: 247px;
+    }
+
+    .cardMobile .cardMenuButton {
+        position: absolute;
+        top: 16px;
+        right: 14px;
+    }
+
+    .folderOpenAreaMobile {
+        border: none;
+        background: transparent;
+        padding: 0;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-right: 24px;
+        cursor: pointer;
+    }
+
+    .cardMobile .rowNumber {
+        margin-right: 24px;
+    }
+
+    .cardMobile .rowBlock {
+        margin-top: 8px;
+    }
+
+    .cardMobile .rowActions {
+        margin-top: auto;
+        border-top: 1px solid #cfcfcf;
+        padding-top: 10px;
+        justify-content: flex-end;
+    }
+
+    .pageButton {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+
+    .mobileExtras {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .subscriptionText {
+        font-size: 14px;
+    }
+}

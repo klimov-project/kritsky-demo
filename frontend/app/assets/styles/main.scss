@@ -1,0 +1,172 @@
+@use '@/assets/fonts/MinionPro/MinionPro';
+
+:root {
+    --font-pt-serif: 'Minion Cyrillic', serif;
+    --home-color-bg: #f6f6f6;
+    --home-color-text-main: #333333;
+    --home-color-text-muted: #828282;
+    --home-color-separator: #cfcfcf;
+    --home-color-accent: #bd5343;
+    --home-color-accent-hover: #ab4a3c;
+
+    --color-text-primary: #221e20;
+    --color-text-secondary: rgba(34, 30, 32, 0.84);
+    --color-text-muted: rgba(34, 30, 32, 0.72);
+    --color-border-soft: rgba(34, 30, 32, 0.14);
+    --color-focus-ring: rgba(34, 30, 32, 0.75);
+    --surface-glass: rgba(255, 255, 255, 0.72);
+    --surface-paper-soft: rgba(255, 255, 255, 0.86);
+    --shadow-soft: 0 18px 45px rgba(34, 30, 32, 0.09);
+    --radius-xl: 20px;
+    --radius-2xl: 28px;
+    --radius-pill: 999px;
+    --color-button-primary-bg: #221e20;
+    --color-button-primary-bg-hover: #3b3538;
+    --color-button-primary-text: #f5f1e8;
+    --color-button-secondary-bg: #ece7dd;
+    --color-button-secondary-bg-hover: #e1dacd;
+    --color-button-secondary-text: #221e20;
+    --color-button-secondary-border: #c7bfb0;
+    --color-button-ghost-text: #221e20;
+    --color-button-ghost-border: rgba(34, 30, 32, 0.28);
+}
+
+body {
+    font-family: 'Minion Cyrillic', serif;
+    background-color: var(--home-color-bg);
+    color: var(--color-text-primary);
+}
+
+.font-serif {
+    font-family: var(--font-pt-serif) !important;
+}
+
+a:not(.nav-link-animated, .text-white) {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    transition-property: color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+a:not(.nav-link-animated, .text-white):hover {
+    color: var(--color-text-primary);
+    text-decoration: underline;
+}
+
+
+// nuxt-ui global fixes
+
+[data-slot='content'] {
+    border-radius: var(--ui-radius) !important;
+}
+
+[data-slot="item"] {
+    border-radius: var(--ui-radius) !important;
+    padding: 10px 16px;
+}
+
+/* Стили для выделенного элемента в выпадающем списке */
+[data-slot="item"][data-highlighted]::before {
+    border-radius: var(--ui-radius) !important;
+    background-color: var(--ui-primary-bg) !important;
+    color: var(--ui-primary-hover) !important;
+}
+
+[data-slot="item"]::before {
+    border-radius: var(--ui-radius) !important;
+}
+
+/* Или с повышенной специфичностью */
+[data-slot="content"] [data-slot="item"]::before {
+    border-radius: var(--ui-radius) !important;
+}
+
+/* Цвет выделения */
+[data-slot="item"][data-highlighted]::before {
+    background-color: var(--ui-primary-bg) !important;
+}
+
+.no-interactive1 * {
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+
+    /* Запрещаем drag & drop */
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+
+    /* Отключаем контекстное меню (правая кнопка) */
+    -webkit-touch-callout: none;
+
+    /* На всякий случай убираем курсор */
+    cursor: default;
+}
+
+.interactive-element {
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+    user-select: auto;
+    -webkit-user-select: auto;
+    -moz-user-select: auto;
+    -ms-user-select: auto;
+
+    /* Возвращаем drag для интерактивных элементов, если нужно */
+    -webkit-user-drag: auto;
+    user-drag: auto;
+
+    /* Возвращаем touch callout для мобильных */
+    -webkit-touch-callout: default;
+
+    /* Возвращаем нормальный курсор */
+    cursor: auto;
+}
+
+/* Убедитесь, что input и textarea можно выделять и редактировать */
+.interactive-element input,
+.interactive-element textarea,
+.interactive-element [contenteditable="true"] {
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+}
+
+button[aria-haspopup="dialog"][data-state="closed"] {
+    display: none;
+}
+
+// from react realisation
+
+.rich-content p {
+    min-height: 1.5em;
+}
+
+.nav-link-animated {
+    position: relative;
+}
+
+.nav-link-animated::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1.5px;
+    background-color: #221E20;
+    transition: all 0.3s ease-in-out;
+}
+
+.nav-link-animated:hover::after {
+    width: 100%;
+}
+
+.smooth-scroll {
+    scroll-behavior: smooth;
+}

@@ -1,0 +1,131 @@
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.description {
+    margin: 0;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+.tableHeader {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(300px, 1fr);
+    gap: 30px;
+    padding: 10px 24px 0;
+}
+
+.tableHeader span {
+    color: #828282;
+    font-family: var(--font-pt-serif);
+    font-size: 14px;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.rows {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.row {
+    min-height: 50px;
+    border-radius: 10px;
+    background: #f6f6f6;
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(300px, 1fr);
+    gap: 30px;
+    align-items: center;
+    padding: 0 24px;
+}
+
+.row p {
+    margin: 0;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 14px;
+    line-height: 1;
+}
+
+.statusText,
+.errorText {
+    margin: 0;
+    font-family: var(--font-pt-serif);
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.statusText {
+    color: #828282;
+}
+
+.errorText {
+    color: #bd5343;
+}
+
+.pagination {
+    margin-top: 6px;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.pageNumber,
+.pageArrow {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    background: #f6f6f6;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 16px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.pageNumber--active {
+    border-color: #828282;
+    background: #ffffff;
+}
+
+.pageArrow:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+@media (max-width: 1024px) {
+    .description {
+        font-size: 14px;
+    }
+
+    .tableHeader {
+        grid-template-columns: minmax(96px, 1fr) minmax(0, 1fr);
+        gap: 12px;
+        padding: 6px 16px 0;
+    }
+
+    .rows {
+        gap: 8px;
+    }
+
+    .row {
+        grid-template-columns: minmax(96px, 1fr) minmax(0, 1fr);
+        gap: 12px;
+        padding: 0 16px;
+    }
+
+    .row p {
+        font-size: 14px;
+        line-height: 1.2;
+    }
+}
+

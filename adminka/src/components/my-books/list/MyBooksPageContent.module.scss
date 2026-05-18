@@ -1,0 +1,394 @@
+.wrapper {
+    width: min(1440px, 100%);
+    margin: 0 auto;
+    padding: 70px 0 60px;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+}
+
+.title {
+    margin: 0 0 44px;
+    font-size: 36px;
+    font-weight: 400;
+    line-height: 1;
+    text-align: center;
+}
+
+.layout {
+    width: min(954px, 100%);
+    margin: 0 auto;
+    position: relative;
+}
+
+.sidebar {
+    position: absolute;
+    top: 120px;
+    right: calc(100% + 34px);
+    width: 223px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.subscriptionCard {
+    background: #ffffff;
+    border-radius: 10px;
+    min-height: 78px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.subscriptionIcon {
+    flex-shrink: 0;
+    color: #828282;
+}
+
+.subscriptionText {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 16px;
+    line-height: 1.2;
+
+    strong {
+        font-weight: 400;
+    }
+}
+
+.feedbackButton {
+    width: 100%;
+    min-height: 50px;
+    border: none;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.mainCard {
+    background: #ffffff;
+    border-radius: 10px;
+}
+
+.profileTabs {
+    border-bottom: 1px solid #cfcfcf;
+    padding: 30px 40px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.profileTabsLinks {
+    display: flex;
+    align-items: center;
+    gap: 38px;
+}
+
+.profileTab {
+    position: relative;
+    color: #333333;
+    text-decoration: none;
+    font-size: 24px;
+    line-height: 1;
+    padding-bottom: 10px;
+}
+
+.profileTabActive::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: #333333;
+}
+
+.logoutButton {
+    border: none;
+    background: transparent;
+    color: #bdbdbd;
+    font-family: var(--font-pt-serif);
+    font-size: 20px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 0 0 10px;
+}
+
+.mainContent {
+    padding: 28px 40px 40px;
+}
+
+.description {
+    margin: 0 0 20px;
+    font-size: 16px;
+    line-height: 1.25;
+}
+
+.purchasesList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.purchaseCard {
+    min-height: 197px;
+    border-radius: 10px;
+    background: #f6f6f6;
+    padding: 20px 22px 20px 40px;
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr) 150px;
+    align-items: center;
+    gap: 30px;
+}
+
+.cover {
+    width: 110px;
+    height: 157px;
+    border-radius: 5px;
+    overflow: hidden;
+    background: #ffffff;
+    color: #828282;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+}
+
+.purchaseInfo {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+}
+
+.fulfillmentBadge {
+    width: fit-content;
+    min-height: 30px;
+    border: 1px solid #cfcfcf;
+    border-radius: 5px;
+    padding: 6px 15px;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.purchaseTitle {
+    margin: 0;
+    max-width: 474px;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.15;
+}
+
+.downloadButton {
+    min-height: 50px;
+    border: none;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 24px;
+    cursor: pointer;
+}
+
+.placeholder,
+.error {
+    min-height: 120px;
+    border-radius: 10px;
+    background: #f6f6f6;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #666666;
+}
+
+.error {
+    background: #fff8f8;
+    border: 1px solid #f1c3c3;
+    color: #8f3030;
+}
+
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.pageButton {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    background: #f6f6f6;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 16px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.pageButton:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.pageButtonActive {
+    border-color: #828282;
+    background: #ffffff;
+}
+
+.mobileExtras {
+    display: none;
+}
+
+@media (max-width: 1024px) {
+    .wrapper {
+        padding: 36px 0 48px;
+    }
+
+    .title {
+        margin-bottom: 26px;
+        font-size: 24px;
+    }
+
+    .layout {
+        width: 100%;
+    }
+
+    .sidebar {
+        display: none;
+        position: static;
+    }
+
+    .profileTabs {
+        padding: 20px 17px 0;
+    }
+
+    .profileTabsLinks {
+        gap: 18px;
+    }
+
+    .profileTab {
+        font-size: 16px;
+        line-height: 12px;
+        white-space: pre-line;
+        padding-bottom: 8px;
+    }
+
+    .profileTabsLinks .profileTab:nth-child(1) {
+        width: 53px;
+    }
+
+    .profileTabsLinks .profileTab:nth-child(2) {
+        width: 102px;
+    }
+
+    .profileTabsLinks .profileTab:nth-child(3) {
+        width: 52px;
+    }
+
+    .logoutButton {
+        font-size: 0;
+        padding-bottom: 7px;
+    }
+
+    .mainContent {
+        padding: 20px 20px 30px;
+    }
+
+    .description {
+        margin-bottom: 12px;
+        font-size: 14px;
+    }
+
+    .purchaseCard {
+        min-height: 445px;
+        padding: 20px;
+        grid-template-columns: 1fr;
+        justify-items: center;
+        align-items: start;
+        gap: 18px;
+    }
+
+    .cover {
+        width: 160px;
+        height: 229px;
+    }
+
+    .purchaseInfo {
+        align-items: center;
+        gap: 18px;
+        text-align: center;
+    }
+
+    .fulfillmentBadge {
+        order: 1;
+    }
+
+    .purchaseTitle {
+        order: 2;
+        max-width: 270px;
+        font-size: 20px;
+        line-height: 1.15;
+    }
+
+    .downloadButton {
+        width: 100%;
+        margin-top: auto;
+    }
+
+    .pageButton {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+
+    .mobileExtras {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .subscriptionText {
+        flex-direction: row;
+        align-items: baseline;
+        font-size: 14px;
+    }
+}

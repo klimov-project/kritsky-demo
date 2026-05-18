@@ -1,53 +1,110 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+
   ssr: true,
+
+  css: ['~/assets/styles/main.scss', '~/assets/styles/nuxt-ui.css'],
+  modules: ['nuxt-auth-utils', '@pinia/nuxt', '@nuxt/ui'],
+  ui: { fonts: false },
+  icon: {
+    serverBundle: {
+      collections: ['lucide'],
+    },
+    provider: 'iconify',
+  },
+  // Отключаем автоматическую загрузку иконок
+  // icon: false,
+
+  // Отключаем client bundle чтобы не тащить лишнее
 
   // Prerendering configuration
   routeRules: {
     '/': {
-      swr: 60,
       prerender: true,
+      swr: 300,
     },
-    '/admin1': {
-      swr: 60,
-      prerender: true,
-    },
-    '/public-variant': {
-      prerender: true,
+    '/create-variant': {
+      isr: false,
     },
   },
 
-  runtimeConfig: {
-    // Server-only runtime config (can be overridden by NUXT_API_BACKEND_BASE)
-    apiBackendBase: 'http://localhost:8000',
-    public: {
-      // Shared public runtime config (can be overridden by NUXT_PUBLIC_API_BASE)
-      apiBase: '/api',
-    },
+  devServer: {
+    port: 3003,
   },
 
-  // Proxy configuration for local development
-  nitro: {
-    devProxy: {
-      '/api': {
-        target:
-          process.env.NUXT_API_BACKEND_BASE || 'http://localhost:8000/api',
-        changeOrigin: true,
+  auth: {
+    session: {
+      cookie: {
+        name: 'auth.session',
+        sameSite: 'lax',
+        domain: undefined,
+        secure: false,
+        // secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 7,
+        path: '/',
       },
     },
+  },
+
+  components: [
+    {
+      path: '~/components/',
+      pattern: '**/*.vue',
+      prefix: '',
+    },
+    {
+      path: '~/components/ui',
+      pattern: '**/*.vue',
+      prefix: '',
+    },
+  ],
+
+  runtimeConfig: {
+    // Server-only runtime config
+    apiBackendBase:
+      process.env.NUXT_API_BACKEND_BASE + '/api' || 'http://localhost:8000/api',
+    apiBackendUrl:
+      process.env.NUXT_API_BACKEND_URL || 'http://localhost:8000/api/v1',
+    // YooKassa credentials (server-only)
+    yookassaShopId: process.env.YOOKASSA_SHOP_ID || '',
+    yookassaSecretKey: process.env.YOOKASSA_SECRET_KEY || '',
+
+    public: {
+      apiUrl: process.env.NUXT_LOCAL_DEVELOPMENT
+        ? 'http://localhost:8000/api'
+        : process.env.NUXT_PUBLIC_API_BASE || '/api',
+      localMode: process.env.NUXT_LOCAL_DEVELOPMENT === 'true',
+    },
+    sessionPassword: process.env.NUXT_SESSION_PASSWORD,
+  },
+
+  nitro: {
+    // devProxy: {
+    //   '/api': {
+    //     target:
+    //       process.env.NUXT_API_BACKEND_BASE || 'http://localhost:8000/api',
+    //     changeOrigin: true,
+    //   },
+    // },
     storage: {
       cache: {
-        driver: 'memory',
+        driver: 'redis',
+        url: process.env.NITRO_STORAGE_CACHE || 'redis://redis-cache:6379/0',
       },
     },
   },
 
   vite: {
     optimizeDeps: {
-      include: ['@vue/devtools-core', '@vue/devtools-kit'],
+      include: ['@vue/devtools-core', '@vue/devtools-kit', 'pinia'],
+      exclude: ['html2canvas', 'jspdf'],
+    },
+    build: {
+      rollupOptions: {
+        external: ['html2canvas', 'jspdf'],
+      },
     },
   },
-
-  modules: ['@nuxtjs/tailwindcss', 'nuxt-auth-utils'],
 });

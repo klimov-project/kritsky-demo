@@ -1,5 +1,9 @@
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
+  const backendUrl =
+    import.meta.server && !import.meta.dev
+      ? `${config.apiBackendBase}/api`
+      : config.apiBackendUrl;
 
   try {
     // Get session
@@ -14,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
     // If we have an access token, fetch fresh user data from backend
     if (session.accessToken) {
-      const response = await fetch(`${config.apiBackendBase}/auth/me`, {
+      const response = await fetch(`${backendUrl}/auth/me`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${session.accessToken}`,

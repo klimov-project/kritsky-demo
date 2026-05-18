@@ -1,0 +1,4 @@
+export const TASK8_MAX_OPTIONS = 7;
+export const TASK8_MIN_CORRECT_OPTIONS = 2;
+export const TASK8_MAX_CORRECT_OPTIONS = 6;
+export const TASK2_DEFAULT_CHARACTER_COUNT = 3;

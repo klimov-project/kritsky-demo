@@ -57,7 +57,7 @@ const shortTasks = ['task1', 'task2', 'task3', 'task4', 'task5'];
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
             <NuxtLink
-              to="/my-variants"
+              to="/profile/my-variants"
               class="text-blue-600 hover:text-blue-700 font-medium"
             >
               ← К моим вариантам

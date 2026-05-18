@@ -1,0 +1,298 @@
+.pageContainer {
+    margin: 0 auto;
+    width: 100%;
+    max-width: 954px;
+    padding: 30px 0 320px;
+    position: relative;
+}
+
+.surface {
+    width: 100%;
+    max-width: 954px;
+    margin: 0 auto;
+}
+
+.sidePanel {
+    position: absolute;
+    top: 0;
+    right: calc(100% + 20px);
+    width: 223px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sideModeCard {
+    min-height: 133px;
+    border-radius: 10px;
+    background: #ffffff;
+    padding: 15px 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.sideModeButton {
+    min-height: 35px;
+    border: none;
+    border-radius: 5px;
+    background: transparent;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 16px;
+    line-height: 1;
+    text-align: left;
+    padding: 0 10px;
+    cursor: pointer;
+}
+
+.sideModeButtonActive {
+    background: #f6f6f6;
+}
+
+.sideFeedbackButton {
+    width: 100%;
+    min-height: 50px;
+    border: none;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.variantHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modeTabs {
+    display: none;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+}
+
+.modeTab {
+    height: 35px;
+    border-radius: 5px;
+    border: 1px solid #cfcfcf;
+    background: #ffffff;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 12px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: none;
+}
+
+.modeTabActive {
+    border-color: transparent;
+}
+
+.topGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.leftCards {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.leftCard {
+    min-height: 50px;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.leftCardMain {
+    font-size: 24px;
+}
+
+.leftCardSub {
+    font-size: 20px;
+}
+
+.filtersWrap {
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid #cfcfcf;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.controlPanel {
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid #cfcfcf;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.introCard {
+    border-radius: 5px;
+    border: 1px solid #333333;
+    background: #f6f6f6;
+    padding: 20px 40px;
+    text-align: center;
+}
+
+.textCard {
+    border-radius: 10px;
+    border: 1px solid #cfcfcf;
+    background: #ffffff;
+    padding: 20px;
+}
+
+.taskGroup {
+    border-radius: 10px;
+    border: 1px solid #cfcfcf;
+    background: #ffffff;
+    padding: 20px;
+}
+
+.essayTaskSection {
+    border-radius: 10px;
+    background: #ffffff;
+    padding: 30px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.essayTaskStack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.taskStack {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.taskStack > div {
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid #cfcfcf;
+    padding: 20px;
+}
+
+.bottomActions {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.bottomActionButton {
+    min-height: 50px;
+    border: none;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 0 14px;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+@media (max-width: 1024px) {
+    .pageContainer {
+        max-width: 350px;
+        padding: 20px 0 320px;
+    }
+
+    .sidePanel {
+        display: none;
+    }
+
+    .variantHeader {
+        gap: 10px;
+    }
+
+    .modeTabs {
+        display: grid;
+    }
+
+    .topGrid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .leftCards {
+        position: static;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .leftCardMain {
+        font-size: 20px;
+    }
+
+    .leftCardSub {
+        font-size: 20px;
+    }
+
+    .filtersWrap {
+        padding: 20px;
+    }
+
+    .taskStack > div {
+        padding: 14px;
+    }
+
+    .bottomActions {
+        grid-template-columns: 1fr;
+    }
+
+    .controlPanel,
+    .introCard,
+    .textCard,
+    .taskGroup {
+        padding: 20px;
+    }
+
+    .essayTaskSection {
+        padding: 20px;
+        gap: 20px;
+    }
+}

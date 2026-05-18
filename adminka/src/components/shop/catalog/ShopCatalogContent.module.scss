@@ -1,0 +1,99 @@
+.page {
+    width: min(1440px, 100%);
+    margin: 0 auto;
+    padding: 70px 0 56px;
+    color: #333333;
+}
+
+.title {
+    margin: 0 0 44px;
+    font-family: var(--font-pt-serif);
+    font-size: 36px;
+    font-weight: 400;
+    line-height: 1;
+    text-align: center;
+}
+
+.content {
+    width: min(954px, 100%);
+    margin: 0 auto;
+}
+
+.products {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.statusText,
+.errorText,
+.successText {
+    margin: 0;
+    border-radius: 10px;
+    background: #ffffff;
+    padding: 14px 20px;
+    font-family: var(--font-pt-serif);
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.statusText {
+    color: #828282;
+}
+
+.emptyText {
+    border: 1px solid #cfcfcf;
+    background: rgba(255, 255, 255, 0.62);
+    color: #828282;
+    text-align: center;
+}
+
+.errorText {
+    color: #bd5343;
+}
+
+.successText {
+    color: #5f8c69;
+}
+
+.loadMoreWrap {
+    display: flex;
+    justify-content: center;
+    padding: 12px 0 18px;
+}
+
+.loadMoreButton {
+    min-height: 50px;
+    border: none;
+    border-radius: 10px;
+    background: #f6f6f6;
+    color: #333333;
+    font-family: var(--font-pt-serif);
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 18px 35px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.loadMoreButton:hover {
+    background: #ececec;
+}
+
+@media (max-width: 1024px) {
+    .page {
+        padding: 36px 0 48px;
+    }
+
+    .title {
+        margin-bottom: 24px;
+        font-size: 36px;
+    }
+
+    .content {
+        width: min(350px, 100%);
+    }
+}
