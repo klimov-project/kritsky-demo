@@ -54,32 +54,22 @@ export default defineEventHandler(async (event) => {
 
     const data = await response.json();
 
-    await setUserSession(event, {
-      user: {
-        id: data.user.id,
-        email: data.user.email,
-        name: data.user.name || data.user.first_name,
-        phone: data.user.phone,
-        role: data.user.role || 'user',
-        isPro: data.user.is_pro || data.user.isPro || false,
-        isBlocked: data.user.is_blocked || data.user.isBlocked || false,
-      },
+    const sessionData = {
+      user: data.user,
       accessToken: data.accessToken || data.access_token,
       refreshToken: data.refreshToken || data.refresh_token,
       loggedInAt: new Date().toISOString(),
-    });
+    };
 
-    const session = await getUserSession(event);
-    if (session) {
-      // Verify session was set correctly
-      setCookie(event, 'auth.session', session.id || session._id, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7,
-      });
-    }
+    await setUserSession(event, sessionData, {
+      // КРИТИЧНО: для IP - никакого domain
+      domain: undefined,
+      // КРИТИЧНО: false, так как у вас HTTP
+      secure: false,
+      sameSite: 'lax',
+      path: '/',
+      httpOnly: true,
+    });
 
     return {
       user: data.user,

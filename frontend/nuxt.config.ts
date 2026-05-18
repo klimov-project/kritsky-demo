@@ -37,8 +37,10 @@ export default defineNuxtConfig({
     session: {
       cookie: {
         name: 'auth.session',
-        sameSite: 'strict',
-        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        domain: undefined,
+        secure: false,
+        // secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         maxAge: 60 * 60 * 24 * 7,
         path: '/',
@@ -75,9 +77,7 @@ export default defineNuxtConfig({
         : process.env.NUXT_PUBLIC_API_BASE || '/api',
       localMode: process.env.NUXT_LOCAL_DEVELOPMENT === 'true',
     },
-    session: {
-      password: process.env.NUXT_SESSION_PASSWORD,
-    },
+    sessionPassword: process.env.NUXT_SESSION_PASSWORD,
   },
 
   nitro: {
