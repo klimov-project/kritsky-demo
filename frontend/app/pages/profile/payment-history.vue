@@ -2,8 +2,10 @@
 /**
  * Payment History page - displays mock payment history
  */
+
 definePageMeta({
   middleware: 'auth',
+  layout: 'profile',
 });
 
 const config = useRuntimeConfig();
@@ -285,10 +287,7 @@ const completedCount = computed(() => {
               </div>
 
               <!-- Pagination placeholder -->
-              <div
-                v-if="payments.length > 0"
-                class="mt-6 flex justify-center"
-              >
+              <div v-if="payments.length > 0" class="mt-6 flex justify-center">
                 <p class="text-sm text-gray-500">
                   Показано {{ payments.length }} платежей
                 </p>

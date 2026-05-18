@@ -1,6 +1,13 @@
 <script setup lang="ts">
+const route = useRoute();
 const auth = useAuth();
-const { isAuthenticated, logout, openLoginModal } = auth;
+const {
+  session,
+  isLoading: authLoading,
+  isAuthenticated,
+  logout,
+  openLoginModal,
+} = auth;
 const showMobileMenu = ref(false);
 
 const handleLogout = async () => {
@@ -19,8 +26,6 @@ const toggleMobileMenu = () => {
   showMobileMenu.value = !showMobileMenu.value;
 };
 
-// Close mobile menu on route change
-const route = useRoute();
 watch(
   () => route.fullPath,
   () => {
@@ -32,11 +37,7 @@ const isIndexPage = computed(() => route.path === '/');
 const isVariantPage = computed(() => route.path === '/create-variant');
 const hasBackgroundLayer = computed(() => isIndexPage.value);
 const hasOverflowHidden = computed(() => !isVariantPage.value);
-const zclass = computed(() =>
-  isVariantPage.value ? 'z-5 no-interactive' : 'z-15',
-);
 </script>
-
 <template>
   <div class="min-h-screen">
     <div
@@ -229,100 +230,104 @@ const zclass = computed(() =>
         </div>
       </div>
 
-      <!-- Main Content -->
-      <main
-        class="min-h-screen mx-auto max-w-[1440px] w-full px-3 lg:px-0 flex-1 flex flex-col flex items-center justify-center"
-        :class="zclass"
+      <div
+        class="relative mx-auto max-w-[1440px] w-full px-4 lg:px-6 py-6 lg:py-8"
       >
-        <slot />
-      </main>
+        <div
+          class="grid grid-cols-1 lg:grid-cols-[270px_minmax(auto,1fr)_270px] gap-5"
+        >
+          <ProfileSidebar active-item="profile" />
 
-      <!-- Footer -->
-      <footer class="pt-[clamp(56px,8vh,72px)] pb-[24px] text-[#333]">
-        <div class="mx-auto max-w-[1440px] px-4 lg:px-8">
-          <!-- Desktop Footer -->
-          <div
-            class="hidden lg:grid grid-cols-[1fr_auto_1fr] items-center gap-[16px]"
-          >
-            <div class="flex flex-col items-start gap-[6px] text-[14px]">
-              <NuxtLink to="/about" class="nav-link-animated transition-opacity"
-                >О проекте</NuxtLink
-              >
-              <NuxtLink to="/terms" class="nav-link-animated transition-opacity"
-                >Пользовательское соглашение</NuxtLink
-              >
-              <NuxtLink
-                to="/privacy"
-                class="nav-link-animated transition-opacity"
-                >Политика конфиденциальности</NuxtLink
-              >
-            </div>
-            <div class="flex items-center justify-center gap-[5px]">
-              <a
-                href="#"
-                class="w-[30px] h-[30px] rounded-full bg-[#333] text-white flex items-center justify-center hover:opacity-75 transition-opacity"
-              >
-                <IconYT />
-              </a>
-              <a
-                href="#"
-                class="w-[30px] h-[30px] rounded-full bg-[#333] text-white flex items-center justify-center hover:opacity-75 transition-opacity"
-              >
-                <IconTG />
-              </a>
-            </div>
-            <div
-              class="justify-self-end text-right text-[14px] leading-[1.45] flex flex-col items-start gap-[6px] text-[14px]"
+          <main class="min-w-0 bg-white rounded-[10px] p-5 lg:p-6">
+            <slot />
+          </main>
+          <!-- Правая колонка (пустая для симметрии) -->
+          <div class="hidden lg:block"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="pt-[clamp(56px,8vh,72px)] pb-[24px] text-[#333]">
+      <div class="mx-auto max-w-[1440px] px-4 lg:px-8">
+        <!-- Desktop Footer -->
+        <div
+          class="hidden lg:grid grid-cols-[1fr_auto_1fr] items-center gap-[16px]"
+        >
+          <div class="flex flex-col items-start gap-[6px] text-[14px]">
+            <NuxtLink to="/about" class="nav-link-animated transition-opacity"
+              >О проекте</NuxtLink
             >
+            <NuxtLink to="/terms" class="nav-link-animated transition-opacity"
+              >Пользовательское соглашение</NuxtLink
+            >
+            <NuxtLink to="/privacy" class="nav-link-animated transition-opacity"
+              >Политика конфиденциальности</NuxtLink
+            >
+          </div>
+          <div class="flex items-center justify-center gap-[5px]">
+            <a
+              href="#"
+              class="w-[30px] h-[30px] rounded-full bg-[#333] text-white flex items-center justify-center hover:opacity-75 transition-opacity"
+            >
+              <IconYT />
+            </a>
+            <a
+              href="#"
+              class="w-[30px] h-[30px] rounded-full bg-[#333] text-white flex items-center justify-center hover:opacity-75 transition-opacity"
+            >
+              <IconTG />
+            </a>
+          </div>
+          <div
+            class="justify-self-end text-right text-[14px] leading-[1.45] flex flex-col items-start gap-[6px] text-[14px]"
+          >
+            <p>ИП Крицкий Роман Дмитриевич</p>
+            <p>ИНН: 772796119977</p>
+            <p>ОГРНИП: 325774600403322</p>
+          </div>
+        </div>
+        <div class="hidden lg:block mt-[52px] text-center text-[14px]">
+          Все права защищены. © Крицкий 2026
+        </div>
+
+        <!-- Mobile Footer -->
+        <div class="lg:hidden">
+          <div class="grid mb-8 grid-cols-2 gap-[20px] items-start">
+            <div class="flex flex-col gap-[4px] text-[13px]">
+              <NuxtLink to="/about">О проекте</NuxtLink>
+              <NuxtLink to="/terms">Пользовательское соглашение</NuxtLink>
+              <NuxtLink to="/privacy">Политика конфиденциальности</NuxtLink>
+            </div>
+            <div class="text-right text-[12px] leading-[1.9] lg:leading-[1.35]">
               <p>ИП Крицкий Роман Дмитриевич</p>
               <p>ИНН: 772796119977</p>
               <p>ОГРНИП: 325774600403322</p>
             </div>
           </div>
-          <div class="hidden lg:block mt-[52px] text-center text-[14px]">
-            Все права защищены. © Крицкий 2026
-          </div>
-
-          <!-- Mobile Footer -->
-          <div class="lg:hidden">
-            <div class="grid mb-8 grid-cols-2 gap-[20px] items-start">
-              <div class="flex flex-col gap-[4px] text-[13px]">
-                <NuxtLink to="/about">О проекте</NuxtLink>
-                <NuxtLink to="/terms">Пользовательское соглашение</NuxtLink>
-                <NuxtLink to="/privacy">Политика конфиденциальности</NuxtLink>
-              </div>
-              <div
-                class="text-right text-[12px] leading-[1.9] lg:leading-[1.35]"
-              >
-                <p>ИП Крицкий Роман Дмитриевич</p>
-                <p>ИНН: 772796119977</p>
-                <p>ОГРНИП: 325774600403322</p>
-              </div>
+          <div class="mt-[16px] flex items-end justify-between">
+            <div class="text-[12px]">
+              <p>© Крицкий 2026</p>
+              <p>Все права защищены.</p>
             </div>
-            <div class="mt-[16px] flex items-end justify-between">
-              <div class="text-[12px]">
-                <p>© Крицкий 2026</p>
-                <p>Все права защищены.</p>
-              </div>
-              <div class="flex gap-[5px]">
-                <a
-                  href="#"
-                  class="w-[34px] h-[34px] rounded-full bg-[#333] text-white flex items-center justify-center"
-                >
-                  <IconYT />
-                </a>
-                <a
-                  href="#"
-                  class="w-[34px] h-[34px] rounded-full bg-[#333] text-white flex items-center justify-center"
-                >
-                  <IconTG />
-                </a>
-              </div>
+            <div class="flex gap-[5px]">
+              <a
+                href="#"
+                class="w-[34px] h-[34px] rounded-full bg-[#333] text-white flex items-center justify-center"
+              >
+                <IconYT />
+              </a>
+              <a
+                href="#"
+                class="w-[34px] h-[34px] rounded-full bg-[#333] text-white flex items-center justify-center"
+              >
+                <IconTG />
+              </a>
             </div>
           </div>
         </div>
-      </footer>
-    </div>
+      </div>
+    </footer>
   </div>
 </template>
 
