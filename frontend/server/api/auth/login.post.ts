@@ -25,15 +25,11 @@ export default defineEventHandler(async (event) => {
     // Proxy login request to backend
     const loginUrl = `${backendUrl}/auth/login`;
     console.log('[Login endpoint] Proxying to backend:', loginUrl);
-
     const response = await fetch(loginUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-
     console.log('[Login endpoint] Backend response status:', response.status);
     console.log('[Login endpoint] Response headers:', {
       'content-type': response.headers.get('content-type'),
@@ -57,61 +53,33 @@ export default defineEventHandler(async (event) => {
     }
 
     const data = await response.json();
-    console.log('[Login endpoint] Backend response data structure:', {
-      hasUser: !!data.user,
-      userKeys: data.user ? Object.keys(data.user) : [],
-      hasAccessToken: !!(data.accessToken || data.access_token),
-      hasRefreshToken: !!(data.refreshToken || data.refresh_token),
-      tokenType: data.accessToken
-        ? 'accessToken'
-        : data.access_token
-        ? 'access_token'
-        : 'none',
-    });
 
-    // Prepare user object
-    const userData = {
-      id: data.user.id,
-      email: data.user.email,
-      name: data.user.name || data.user.first_name,
-      phone: data.user.phone,
-      role: data.user.role || 'user',
-      isPro: data.user.is_pro || data.user.isPro || false,
-      isBlocked: data.user.is_blocked || data.user.isBlocked || false,
-    };
-    console.log('[Login endpoint] User object to store:', userData);
-
-    // Set user session using nuxt-auth-utils
-    console.log('[Login endpoint] Setting user session...');
-
-    const sessionData = {
-      user: userData,
+    await setUserSession(event, {
+      user: {
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.name || data.user.first_name,
+        phone: data.user.phone,
+        role: data.user.role || 'user',
+        isPro: data.user.is_pro || data.user.isPro || false,
+        isBlocked: data.user.is_blocked || data.user.isBlocked || false,
+      },
       accessToken: data.accessToken || data.access_token,
       refreshToken: data.refreshToken || data.refresh_token,
       loggedInAt: new Date().toISOString(),
-    };
-
-    await setUserSession(event, sessionData);
-
-    // Verify session was set
-    const sessionCheck = await getUserSession(event);
-    console.log('[Login endpoint] Session verification after set:', {
-      hasUser: !!sessionCheck.user,
-      userId: sessionCheck.user?.id,
-      hasAccessToken: !!sessionCheck.accessToken,
-      loggedInAt: sessionCheck.loggedInAt,
     });
 
-    // Check cookies that were set
-    const cookies =
-      getCookie(event, 'auth.session') || getCookie(event, 'nuxt-auth-session');
-    console.log('[Login endpoint] Session cookie set:', {
-      cookieName: cookies ? 'auth.session or nuxt-auth-session' : 'none',
-      cookieLength: cookies ? cookies.length : 0,
-      cookiePreview: cookies ? `${cookies.substring(0, 50)}...` : 'none',
-    });
-
-    console.log('[Login endpoint] Login successful, returning response');
+    const session = await getUserSession(event);
+    if (session) {
+      // Verify session was set correctly
+      setCookie(event, 'auth.session', session.id || session._id, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7,
+      });
+    }
 
     return {
       user: data.user,

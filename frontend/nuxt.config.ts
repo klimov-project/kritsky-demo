@@ -34,7 +34,16 @@ export default defineNuxtConfig({
   },
 
   auth: {
-    baseURL: '/_auth',
+    session: {
+      cookie: {
+        name: 'auth.session',
+        sameSite: 'strict',
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 7,
+        path: '/',
+      },
+    },
   },
 
   components: [
