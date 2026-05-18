@@ -41,17 +41,17 @@ body {
     font-family: var(--font-pt-serif) !important;
 }
 
-a:not(.nav-link-animated, .text-white) {
+a:not(.nav-link-animated, .text-white, .text-xs) {
     color: var(--color-text-muted);
     font-size: 0.875rem;
     transition-property: color;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 150ms;
-}
 
-a:not(.nav-link-animated, .text-white):hover {
-    color: var(--color-text-primary);
-    text-decoration: underline;
+    &:hover {
+        color: var(--color-text-primary);
+        text-decoration: underline;
+    }
 }
 
 
