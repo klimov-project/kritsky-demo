@@ -10,10 +10,12 @@ interface CacheMeta {
 }
 const maxAgeNitro = 360;
 
-async function getBackendFingerprint(config: any): Promise<string | null> {
+async function getBackendFingerprint(
+  backendUrl: string,
+): Promise<string | null> {
   try {
     const cacheMeta = await $fetch<CacheMeta>(
-      `${config.apiBackendBase}/knowledge-base/cache/meta`,
+      `${backendUrl}/knowledge-base/cache/meta`,
       { ignoreResponseError: true },
     );
 
@@ -31,8 +33,11 @@ export default defineCachedEventHandler(
   async (event) => {
     const config = useRuntimeConfig();
 
+    const backendUrl =
+      import.meta.server && !import.meta.dev ? config.apiBackendUrl : '/api/v1';
+      
     // 1. Получаем текущий фингерпринт бэкенда
-    const currentFingerprint = await getBackendFingerprint(config);
+    const currentFingerprint = await getBackendFingerprint(backendUrl);
 
     console.log('currentFingerprint: ', currentFingerprint);
     // 2. Проверяем сохранённый кеш в Redis
@@ -48,9 +53,7 @@ export default defineCachedEventHandler(
 
     // 4. Данные изменились — полный запрос к бэкенду
     console.log('[KB] Cache miss, fetching full data...');
-    const rawPayload = await $fetch<any>(
-      `${config.apiBackendBase}/knowledge-base`,
-    );
+    const rawPayload = await $fetch<any>(`${backendUrl}/knowledge-base`);
 
     // 5. Преобразуем тяжёлый backend payload в лёгкий frontend payload
     const lightPayload = transformToKnowledgeBasePayload(rawPayload);

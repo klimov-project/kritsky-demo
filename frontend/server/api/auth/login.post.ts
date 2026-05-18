@@ -5,10 +5,12 @@
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
+  const backendUrl =
+    import.meta.server && !import.meta.dev ? config.apiBackendUrl : '/api/v1';
 
   console.log('[Login endpoint] Start', {
     timestamp: new Date().toISOString(),
-    backendUrl: config.apiBackendUrl,
+    backendUrl,
   });
 
   try {
@@ -19,10 +21,10 @@ export default defineEventHandler(async (event) => {
     });
 
     // Proxy login request to backend
-    const backendUrl = `${config.apiBackendUrl}/auth/login`;
-    console.log('[Login endpoint] Proxying to backend:', backendUrl);
+    const loginUrl = `${backendUrl}/auth/login`;
+    console.log('[Login endpoint] Proxying to backend:', loginUrl);
 
-    const response = await fetch(backendUrl, {
+    const response = await fetch(loginUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

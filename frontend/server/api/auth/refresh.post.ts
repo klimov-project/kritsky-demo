@@ -6,6 +6,8 @@
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
+  const backendUrl =
+    import.meta.server && !import.meta.dev ? config.apiBackendUrl : '/api/v1';
 
   try {
     const body = await readBody(event);
@@ -24,7 +26,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Proxy refresh request to backend
-    const response = await fetch(`${config.apiBackendUrl}/auth/refresh`, {
+    const response = await fetch(`${backendUrl}/auth/refresh`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

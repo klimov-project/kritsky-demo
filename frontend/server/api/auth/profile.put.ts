@@ -1,5 +1,7 @@
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
+  const backendUrl =
+    import.meta.server && !import.meta.dev ? config.apiBackendUrl : '/api/v1';
 
   try {
     const session = await getUserSession(event);
@@ -14,7 +16,7 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event);
 
     // Proxy update profile request to backend
-    const response = await fetch(`${config.apiBackendUrl}/auth/profile`, {
+    const response = await fetch(`${backendUrl}/auth/profile`, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${session.accessToken}`,

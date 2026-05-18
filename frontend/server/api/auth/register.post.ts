@@ -1,5 +1,7 @@
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
+  const backendUrl =
+    import.meta.server && !import.meta.dev ? config.apiBackendUrl : '/api/v1';
 
   console.log('[Register endpoint] Start', {
     timestamp: new Date().toISOString(),
@@ -8,12 +10,12 @@ export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event);
 
-    console.log(`${config.apiBackendUrl}/auth/register`, {
+    console.log(`${backendUrl}/auth/register`, {
       timestamp: new Date().toISOString(),
       backendUrl: config.apiBackendUrl,
     });
     // Proxy register request to backend
-    const response = await fetch(`${config.apiBackendUrl}/auth/register`, {
+    const response = await fetch(`${backendUrl}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

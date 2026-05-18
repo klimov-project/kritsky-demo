@@ -111,48 +111,7 @@ export const useAuth = () => {
       isLoading.value = false;
     }
   };
-
-  /**
-   * Debug function to check session state
-   */
-  const debugSession = async () => {
-    console.log('[useAuth.debugSession] Starting session debug');
-    console.log('[useAuth.debugSession] Current reactive state:', {
-      loggedIn: loggedIn.value,
-      user: user.value,
-      hasSession: !!session.value,
-      sessionKeys: session.value ? Object.keys(session.value) : [],
-    });
-
-    // Try to fetch fresh session
-    console.log('[useAuth.debugSession] Calling fetchSession()');
-    await fetchSession();
-
-    console.log('[useAuth.debugSession] After fetchSession():', {
-      loggedIn: loggedIn.value,
-      user: user.value,
-      sessionData: session.value,
-    });
-
-    // Check if there are any cookies
-    const cookies = document.cookie.split(';').map((c) => c.trim());
-    const sessionCookies = cookies.filter(
-      (c) =>
-        c.startsWith('auth.session=') || c.startsWith('nuxt-auth-session='),
-    );
-    console.log('[useAuth.debugSession] Session cookies found:', {
-      count: sessionCookies.length,
-      cookieNames: sessionCookies.map((c) => c.split('=')[0]),
-    });
-
-    return {
-      loggedIn: loggedIn.value,
-      user: user.value,
-      session: session.value,
-      cookies: sessionCookies,
-    };
-  };
-
+  
   /**
    * Register - calls our API which proxies to backend and sets JWT tokens in session
    */

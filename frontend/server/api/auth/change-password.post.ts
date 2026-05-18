@@ -1,5 +1,7 @@
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
+  const backendUrl =
+    import.meta.server && !import.meta.dev ? config.apiBackendUrl : '/api/v1';
 
   try {
     const session = await getUserSession(event);
@@ -14,17 +16,14 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event);
 
     // Proxy change password request to backend
-    const response = await fetch(
-      `${config.apiBackendUrl}/auth/change-password`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${session.accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
+    const response = await fetch(`${backendUrl}/auth/change-password`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${session.accessToken}`,
+        'Content-Type': 'application/json',
       },
-    );
+      body: JSON.stringify(body),
+    });
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));

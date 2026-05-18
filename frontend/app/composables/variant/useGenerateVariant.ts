@@ -27,7 +27,7 @@ export const useGenerateVariant = () => {
 
   const apiUrl = import.meta.server
     ? config.apiBackendUrl
-    : config.public.apiUrl + '/v1';
+    : config.public.apiUrl;
 
   const buildPayload = () => ({
     selectedWorkId: selectedWorkId.value,
@@ -179,7 +179,7 @@ export const useGenerateVariant = () => {
     }
   };
 
-  const checkSubscription = () => { 
+  const checkSubscription = () => {
     if (!isAuthenticated.value) {
       openLoginModal();
       statusMessage.value = 'Для обновления блока необходимо войти';
