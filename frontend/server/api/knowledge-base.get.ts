@@ -34,8 +34,10 @@ export default defineCachedEventHandler(
     const config = useRuntimeConfig();
 
     const backendUrl =
-      import.meta.server && !import.meta.dev ? config.apiBackendUrl : '/api/v1';
-      
+      import.meta.server && !import.meta.dev
+        ? `${config.apiBackendBase}/api`
+        : config.apiBackendUrl;
+
     // 1. Получаем текущий фингерпринт бэкенда
     const currentFingerprint = await getBackendFingerprint(backendUrl);
 

@@ -6,7 +6,9 @@
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
   const backendUrl =
-    import.meta.server && !import.meta.dev ? config.apiBackendUrl : '/api/v1';
+    import.meta.server && !import.meta.dev
+      ? `${config.apiBackendBase}/api`
+      : config.apiBackendUrl;
 
   console.log('[Login endpoint] Start', {
     timestamp: new Date().toISOString(),
