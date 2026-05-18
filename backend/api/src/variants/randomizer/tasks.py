@@ -379,12 +379,64 @@ def _build_task8_options(question: dict[str, Any] | None, ctx: SelectionContext)
 
 ROD_LAYOUT_BASE = ["лирика", "пьеса", "поэма", "проза", "проза"]
 
-def _generate_rod_layout() -> list[str]: return _shuffle(ROD_LAYOUT_BASE)
+# Slots where certain rod tags are forbidden due to missing questions in the database.
+# slot 4 = task11_5 has no «лирика» questions.
+SLOT_ROD_CONSTRAINTS: dict[int, set[str]] = {4: {"лирика"}}
+
+
+def _is_valid_rod_layout(layout: list[str]) -> bool:
+    """Return True if the layout satisfies per-slot rod constraints."""
+    for slot_idx, forbidden_rods in SLOT_ROD_CONSTRAINTS.items():
+        if slot_idx < len(layout) and layout[slot_idx] in forbidden_rods:
+            return False
+    return True
+
+
+def _generate_rod_layout() -> list[str]:
+    """Return a random valid rod layout that satisfies per-slot constraints."""
+    for _ in range(20):
+        candidate = _shuffle(ROD_LAYOUT_BASE)
+        if _is_valid_rod_layout(candidate):
+            return candidate
+    # Fallback: force-swap «лирика» away from any forbidden slot
+    candidate = _shuffle(ROD_LAYOUT_BASE)
+    for slot_idx, forbidden_rods in SLOT_ROD_CONSTRAINTS.items():
+        if slot_idx < len(candidate) and candidate[slot_idx] in forbidden_rods:
+            swap_idx = next(
+                (i for i in range(len(candidate))
+                 if i != slot_idx and candidate[i] not in SLOT_ROD_CONSTRAINTS.get(i, set())),
+                0,
+            )
+            candidate[slot_idx], candidate[swap_idx] = candidate[swap_idx], candidate[slot_idx]
+    return candidate
+
 
 def _rotate_rod_layout(layout: list[str]) -> list[str]:
-    """GAP-2: Cyclic rotation of rod layout for full Block 11 refresh."""
-    if not layout or len(layout) < 2: return list(layout)
-    return layout[1:] + layout[:1]
+    """Cyclic rotation of rod layout for full Block 11 refresh.
+
+    After rotating by one position, enforces per-slot rod constraints via a swap
+    if needed. Cycle-step tracking is handled externally in refresh_all_block11_runtime2.
+    """
+    if not layout or len(layout) < 2:
+        return _generate_rod_layout()
+
+    rotated = list(layout[1:] + layout[:1])
+
+    # Enforce constraints: if a forbidden rod ended up in a constrained slot, swap it
+    # with the nearest slot that can accept it.
+    for slot_idx, forbidden_rods in SLOT_ROD_CONSTRAINTS.items():
+        if slot_idx < len(rotated) and rotated[slot_idx] in forbidden_rods:
+            swap_idx = next(
+                (i for i in range(len(rotated))
+                 if i != slot_idx
+                 and rotated[i] not in SLOT_ROD_CONSTRAINTS.get(i, set())
+                 and rotated[slot_idx] not in SLOT_ROD_CONSTRAINTS.get(i, set())),
+                None,
+            )
+            if swap_idx is not None:
+                rotated[slot_idx], rotated[swap_idx] = rotated[swap_idx], rotated[slot_idx]
+
+    return rotated
 
 def _group_pool_by_rod(pool: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
     groups: dict[str, list[dict[str, Any]]] = {"лирика": [], "пьеса": [], "поэма": [], "проза": []}

@@ -4,16 +4,18 @@ from .constants import BLOCK11_KEYS
 from .tokens import (
     _filter_active_items, 
     _extract_term_tokens,
+    _extract_rod_tokens,
     _build_id_exclusion_set,
     _build_identifier_exclusion_set,
 )
-from .context import SelectionContext, _pick_best_from_pool, _pick_random
+from .context import SelectionContext, _pick_best_from_pool, _pick_random, _can_select_question
 from .tasks import (
     _build_runtime_task2,
     _build_runtime_two_gap_candidates,
     _task8_has_term_conflict,
     _build_task8_options,
     _generate_rod_layout,
+    _rotate_rod_layout,
     _group_pool_by_rod,
     _find_exclusive_slot,
     _is_exclusive_question,
@@ -92,6 +94,8 @@ def populate_block2(poem_pools: dict[str, list[dict[str, Any]]], ctx: SelectionC
     task8_pool_final = task8_no_conflict if task8_no_conflict else task8_pool
     tasks["task8"] = _pick_best_from_pool(task8_pool_final, "task8", ctx)
     if tasks["task8"]:
+        import copy
+        tasks["task8"] = copy.deepcopy(tasks["task8"])
         tasks["task8Options"] = _build_task8_options(tasks["task8"], ctx)
         if isinstance(tasks["task8"], dict):
             tasks["task8"]["options"] = tasks["task8Options"]
@@ -101,27 +105,90 @@ def populate_block2(poem_pools: dict[str, list[dict[str, Any]]], ctx: SelectionC
     tasks["task10"] = _pick_best_from_pool(poem_pools.get("task10") or [], "task10", ctx)
     return tasks
 
-def populate_block3(block3_payload: dict[str, Any], ctx: SelectionContext, rod_layout: list[str] = None) -> dict[str, Any]:
+
+# Maps each block3 slot index (0–4) to the block3_payload key(s) it draws from.
+# Slots 1 and 2 (task11_2, task11_3) share a single pool.
+_SLOT_POOL_KEYS: dict[int, list[str]] = {
+    0: ["task11_1"],
+    1: ["task11_2_3"],
+    2: ["task11_2_3"],
+    3: ["task11_4"],
+    4: ["task11_5"],
+}
+
+
+def _build_slot_pool(
+    block3_payload: dict[str, Any],
+    slot_idx: int,
+    rod: str,
+) -> list[dict[str, Any]]:
+    """Return active questions for *slot_idx* that match the given rod tag.
+
+    Questions without any rod tag are treated as 'проза' (default).
+    """
+    pool: list[dict[str, Any]] = []
+    for pool_key in _SLOT_POOL_KEYS[slot_idx]:
+        pool += _filter_active_items(block3_payload.get(pool_key) or [])
+    return [
+        q for q in pool
+        if rod in _extract_rod_tokens(q)
+        or (not _extract_rod_tokens(q) and rod == "проза")
+    ]
+
+
+def _find_exclusive_slot_per_pool(
+    block3_payload: dict[str, Any],
+    rod_layout: list[str],
+) -> int:
+    """Find a slot where the per-slot pool actually contains an exclusive question
+    for the assigned rod.  Falls back to a random slot if none qualify.
+    """
+    candidates = []
+    for i, rod in enumerate(rod_layout):
+        slot_pool = _build_slot_pool(block3_payload, i, rod)
+        if any(_is_exclusive_question(q) for q in slot_pool):
+            candidates.append(i)
+    if candidates:
+        import random
+        return random.choice(candidates)
+    import random
+    return random.randint(0, len(rod_layout) - 1)
+
+
+def populate_block3(block3_payload: dict[str, Any], ctx: SelectionContext, rod_layout: list[str] = None, pinned_tasks: dict[str, Any] = None) -> dict[str, Any]:
     tasks = {}
     rod_layout = rod_layout or _generate_rod_layout()
-    b3_pool = (block3_payload.get("task11_1") or []) + (block3_payload.get("task11_2_3") or []) + \
-              (block3_payload.get("task11_4") or []) + (block3_payload.get("task11_5") or [])
-    rod_groups = _group_pool_by_rod(b3_pool)
-    
-    exclusive_slot = _find_exclusive_slot(rod_layout, rod_groups)
-    
+    pinned_tasks = pinned_tasks or {}
+
+    # R15: Pre-add pinned tasks to ctx so they correctly exclude authors/themes from other slots.
+    for key, task in pinned_tasks.items():
+        if key in BLOCK11_KEYS and task:
+            ctx.add_question_tokens(task, key)
+            tasks[key] = task
+
+    # Determine exclusive slot using per-slot pool visibility.
+    exclusive_slot = _find_exclusive_slot_per_pool(block3_payload, rod_layout)
+
     for i, key in enumerate(BLOCK11_KEYS):
+        if key in tasks:
+            continue  # Already filled by pinned_tasks
+
         rod = rod_layout[i]
-        pool = rod_groups.get(rod) or []
+        # Primary pool: per-slot questions matching the assigned rod.
+        slot_pool = _build_slot_pool(block3_payload, i, rod)
+
         if i == exclusive_slot:
-            excl_pool = [q for q in pool if _is_exclusive_question(q)]
-            if excl_pool:
-                pool = excl_pool
+            excl_pool = [q for q in slot_pool if _is_exclusive_question(q)]
+            primary_pool = excl_pool if excl_pool else slot_pool
         else:
-            pool = [q for q in pool if not _is_exclusive_question(q)]
-            
-        tasks[key] = _pick_best_from_pool(pool, key, ctx)
-        
+            primary_pool = [q for q in slot_pool if not _is_exclusive_question(q)]
+
+        # _pick_best_from_pool internally calls ctx.add_question_tokens, which
+        # prevents 11.2 and 11.3 (shared pool) from selecting the same question.
+        tasks[key] = _pick_best_from_pool(primary_pool, key, ctx)
+
     tasks["_rodLayout"] = rod_layout
     tasks["_exclusiveSlot"] = exclusive_slot
+    tasks["_rodLayoutStep"] = 0  # Reset step counter on fresh generation
     return tasks
+
