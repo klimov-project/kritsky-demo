@@ -45,20 +45,22 @@ const isActive = (item: typeof menuItems[0]) => {
   <aside
     class="w-full lg:w-[270px] flex-shrink-0 flex justify-center aligin-center"
   >
-    <div class="flex flex-col gap-5 w-full flex justify-center aligin-center">
-      <nav class="bg-white rounded-[10px] p-5 lg:p-6">
+    <div class="flex flex-col gap-5 w-full flex pt-[35%] aligin-center">
+      <nav
+        class="bg-white rounded-[10px] px-3 py-1 lg:px-6 lg:py-4 flex flex-col"
+      >
         <NuxtLink
           v-for="item in menuItems"
           :key="item.id"
           :to="item.to"
-          class="flex items-center gap-3 rounded-xl px-5 py-3.5 transition-colors"
+          class="flex items-center gap-3 rounded px-5 py-2 transition-colors"
           :class="{
             'bg-gray-100 font-medium': isActive(item),
             'hover:bg-gray-50': !isActive(item),
           }"
         >
-          <UIcon :name="item.icon" class="w-5 h-5 text-gray-600" />
-          <span class="text-[15px]">{{ item.label }}</span>
+          <!-- <UIcon :name="item.icon" class="w-5 h-5 text-gray-600" /> -->
+          <span class="text-base">{{ item.label }}</span>
         </NuxtLink>
       </nav>
 

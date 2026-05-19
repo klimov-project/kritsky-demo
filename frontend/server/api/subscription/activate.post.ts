@@ -10,19 +10,28 @@ export default defineEventHandler(async (event) => {
     const session = await getUserSession(event);
 
     const config = useRuntimeConfig();
+    const backendUrl = config.apiBackendUrl;
+
+    console.log(
+      '[Sub ACTIVATE] Start 123123123 __________backendUrl________',
+      backendUrl,
+    );
+
+    console.log(
+      '[Sub ACTIVATE] Endpoint',
+      `${backendUrl}/subscription/activate-mock`,
+    );
 
     // Forward activate-mock request to backend with auth token
-    const response = await fetch(
-      `${config.apiBackendBase}/subscription/activate-mock`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-        body: JSON.stringify({}),
+    const response = await fetch(`${backendUrl}/subscription/activate-mock`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.accessToken}`,
       },
-    );
+      body: JSON.stringify({}),
+    });
+    console.error('[Sub ACTIVATE] Response:', response);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -35,7 +44,7 @@ export default defineEventHandler(async (event) => {
     const result = (await response.json()) as MockSubscriptionResponse;
     return result;
   } catch (error) {
-    console.error('[v0] Activate mock subscription error:', error);
+    console.error('[Sub ACTIVATE] Activate mock subscription error:', error);
     if (error instanceof Error && 'statusCode' in error) {
       throw error;
     }
