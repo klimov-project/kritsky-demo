@@ -19,6 +19,10 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
+print(
+    f"[ALEMBIC] SETTINGS: DB_HOST={SETTINGS.DB_HOST}, DB_PORT={SETTINGS.DB_PORT}, DB_USER={SETTINGS.DB_USER}, DB_PASSWORD={SETTINGS.DB_PASSWORD}, DB_NAME={SETTINGS.DB_NAME}, DB_URL={SETTINGS.DB_URL}"
+)
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 

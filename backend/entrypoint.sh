@@ -1,6 +1,14 @@
 #!/bin/sh
 set -e
 
+echo "Backend startup env:"
+echo "  DB_HOST=${DB_HOST:-<unset>}"
+echo "  DB_PORT=${DB_PORT:-<unset>}"
+echo "  DB_USER=${DB_USER:-<unset>}"
+echo "  DB_PASSWORD=${DB_PASSWORD:-<unset>}"
+echo "  DB_NAME=${DB_NAME:-<unset>}"
+echo "  REDIS_URL=${REDIS_URL:-<unset>}"
+echo ""
 echo "Waiting for database at $DB_HOST:$DB_PORT..."
 
 uv run python3 -c "

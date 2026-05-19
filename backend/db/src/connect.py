@@ -13,14 +13,18 @@ from .base import Base
 POOL_SIZE = 10
 MAX_OVERFLOW = 20
 
+db_url = SETTINGS.TEST_DB_URL if SETTINGS.TEST else SETTINGS.DB_URL
+print(f"[DB_CONNECT] sync engine URL={db_url}")
 engine = create_engine(
-    SETTINGS.TEST_DB_URL if SETTINGS.TEST else SETTINGS.DB_URL,
+    db_url,
     pool_size=POOL_SIZE,
     max_overflow=MAX_OVERFLOW,
 )
 
+adb_url = SETTINGS.TEST_ADB_URL if SETTINGS.TEST else SETTINGS.ADB_URL
+print(f"[DB_CONNECT] async engine URL={adb_url}")
 aengine = create_async_engine(
-    SETTINGS.TEST_ADB_URL if SETTINGS.TEST else SETTINGS.ADB_URL,
+    adb_url,
     pool_size=POOL_SIZE,
     max_overflow=MAX_OVERFLOW,
 )
