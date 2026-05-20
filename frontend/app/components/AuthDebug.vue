@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const show = ref(true);
+const show = ref(false);
 const { loggedIn, user, session, fetchSession, clearSession } = useAuth();
 const sessionCookies = ref<string[]>([]);
 const lastFetchTime = ref('');
@@ -10,7 +10,7 @@ const refreshSession = async () => {
   lastFetchTime.value = new Date().toLocaleTimeString();
 
   try {
-    console.log('[AuthDebug] Manually fetching session');
+    // console.log('[AuthDebug] Manually fetching session');
     await fetchSession();
 
     // Check cookies
@@ -20,11 +20,11 @@ const refreshSession = async () => {
         c.startsWith('auth.session=') || c.startsWith('nuxt-auth-session='),
     );
 
-    console.log('[AuthDebug] After fetch:', {
-      loggedIn: loggedIn.value,
-      user: user.value,
-      session: session.value,
-    });
+    // console.log('[AuthDebug] After fetch:', {
+    //   loggedIn: loggedIn.value,
+    //   user: user.value,
+    //   session: session.value,
+    // });
   } catch (err) {
     console.error('[AuthDebug] Error fetching session:', err);
     sessionError.value = err.message;
@@ -38,26 +38,26 @@ const clearAll = async () => {
 
 // Watch for session changes for debugging
 watch(loggedIn, (newValue, oldValue) => {
-  console.log('[useAuth] loggedIn changed:', {
-    from: oldValue,
-    to: newValue,
-  });
+  // console.log('[useAuth] loggedIn changed:', {
+  //   from: oldValue,
+  //   to: newValue,
+  // });
 });
 
 watch(user, (newValue, oldValue) => {
-  console.log('[useAuth] user changed:', {
-    from: oldValue?.id,
-    to: newValue?.id,
-    newUserData: newValue,
-  });
+  // console.log('[useAuth] user changed:', {
+  //   from: oldValue?.id,
+  //   to: newValue?.id,
+  //   newUserData: newValue,
+  // });
 });
 
 watch(session, (newValue, oldValue) => {
-  console.log('[useAuth] session changed:');
+  // console.log('[useAuth] session changed:');
   const { user: sessionUser, accessToken, refreshToken } = newValue || {};
-  console.log(' session sessionUser: ', sessionUser);
-  console.log(' session accessToken: ', accessToken);
-  console.log(' session refreshToken: ', refreshToken);
+  // console.log(' session sessionUser: ', sessionUser);
+  // console.log(' session accessToken: ', accessToken);
+  // console.log(' session refreshToken: ', refreshToken);
 });
 
 // Auto-refresh on mount

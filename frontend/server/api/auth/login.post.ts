@@ -10,17 +10,8 @@ export default defineEventHandler(async (event) => {
       ? `${config.apiBackendBase}/api`
       : config.apiBackendUrl;
 
-  console.log('[Login endpoint] Start', {
-    timestamp: new Date().toISOString(),
-    backendUrl,
-  });
-
   try {
     const body = await readBody(event);
-    console.log('[Login endpoint] Request body:', {
-      email: body.email,
-      passwordPresent: !!body.password,
-    });
 
     // Proxy login request to backend
     const loginUrl = `${backendUrl}/auth/login`;
@@ -30,45 +21,44 @@ export default defineEventHandler(async (event) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    console.log('[Login endpoint] Backend response status:', response.status);
-    console.log('[Login endpoint] Response headers:', {
-      'content-type': response.headers.get('content-type'),
-    });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('[Login endpoint] Backend error response:', errorText);
-
+      const error = await response.json().catch(() => ({}));
       let errorJson;
       try {
         errorJson = JSON.parse(errorText);
       } catch {
         errorJson = { detail: errorText };
       }
-
       throw createError({
         statusCode: response.status,
-        statusMessage: errorJson.detail || errorJson.message || 'Login failed',
+        statusMessage:
+          errorJson.detail ||
+          errorJson.message ||
+          error.detail ||
+          'Login failed',
       });
     }
 
     const data = await response.json();
 
-    const sessionData = {
-      user: data.user,
+    // Set user session using nuxt-auth-utils
+    // The session is encrypted and stored in a sealed cookie
+    await setUserSession(event, {
+      user: {
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.name || data.user.first_name,
+        phone: data.user.phone,
+        role: data.user.role || 'user',
+        isPro: data.user.is_pro || data.user.isPro || false,
+        isBlocked: data.user.is_blocked || data.user.isBlocked || false,
+      },
+      // Store tokens for API calls that need them
       accessToken: data.accessToken || data.access_token,
       refreshToken: data.refreshToken || data.refresh_token,
       loggedInAt: new Date().toISOString(),
-    };
-
-    await setUserSession(event, sessionData, {
-      // КРИТИЧНО: для IP - никакого domain
-      domain: undefined,
-      // КРИТИЧНО: false, так как у вас HTTP
-      secure: false,
-      sameSite: 'lax',
-      path: '/',
-      httpOnly: true,
     });
 
     return {
@@ -76,14 +66,7 @@ export default defineEventHandler(async (event) => {
       success: true,
     };
   } catch (error) {
-    console.error('[Login endpoint] Error caught:', {
-      name: error?.name,
-      message: error?.message,
-      statusCode: error?.statusCode,
-      statusMessage: error?.statusMessage,
-      stack: error?.stack,
-    });
-
+    console.error('Login error:', error);
     if (error?.statusCode) {
       throw error;
     }

@@ -14,7 +14,7 @@ services:
       timeout: 3s
       retries: 10
     volumes:
-      - postgres_data_demo:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - proxy-net
 
@@ -28,7 +28,7 @@ services:
       timeout: 3s
       retries: 10
     volumes:
-      - redis_data_demo:/data
+      - redis_data:/data
     networks:
       - proxy-net
 
@@ -36,7 +36,7 @@ services:
     image: redis:7-alpine 
     restart: unless-stopped
     volumes:
-      - redis_cache_data_demo:/data
+      - redis_cache_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -116,9 +116,9 @@ services:
       - proxy-net
 
 volumes:
-  redis_cache_data_demo:
-  postgres_data_demo:
-  redis_data_demo:
+  redis_cache_data:
+  postgres_data:
+  redis_data:
   
 networks:
   proxy-net:

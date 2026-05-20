@@ -16,8 +16,6 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    console.log('Session found:', session);
-    console.log('Backend URL:', backendUrl);
     // If we have an access token, fetch fresh user data from backend
     if (session.accessToken) {
       const response = await fetch(`${backendUrl}/auth/me`, {
