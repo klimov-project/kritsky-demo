@@ -6,6 +6,7 @@
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
+  const backendUrl = `${config.apiBackendBase}/api`;
   const query = getQuery(event);
   const { planId, userId } = query;
 
@@ -24,20 +25,17 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Call backend to activate subscription (mock endpoint)
-    const response = await fetch(
-      `${config.apiBackendBase}/subscription/activate-mock`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-        body: JSON.stringify({
-          userId: session.user.id,
-          planId,
-        }),
+    const response = await fetch(`${backendUrl}/subscription/activate-mock`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.accessToken}`,
       },
-    );
+      body: JSON.stringify({
+        userId: session.user.id,
+        planId,
+      }),
+    });
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));

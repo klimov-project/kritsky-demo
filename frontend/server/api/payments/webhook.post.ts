@@ -6,6 +6,7 @@
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
+  const backendUrl = `${config.apiBackendBase}/api`;
 
   try {
     const body = await readBody(event);
@@ -36,21 +37,18 @@ export default defineEventHandler(async (event) => {
       }
 
       // Activate subscription via backend
-      const response = await fetch(
-        `${config.apiBackendBase}/subscription/activate-mock`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId,
-            planId,
-            paymentId: payment.id,
-            amount: payment.amount?.value,
-          }),
+      const response = await fetch(`${backendUrl}/subscription/activate-mock`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          userId,
+          planId,
+          paymentId: payment.id,
+          amount: payment.amount?.value,
+        }),
+      });
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));

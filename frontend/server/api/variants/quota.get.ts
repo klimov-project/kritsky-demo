@@ -12,18 +12,16 @@ export default defineEventHandler(async (event) => {
     const session = await getUserSession(event);
 
     const config = useRuntimeConfig();
+    const backendUrl = `${config.apiBackendBase}/api`;
 
     // Forward quota request to backend with auth token
-    const response = await fetch(
-      `${config.apiBackendBase}/variants/export/quota`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.accessToken}`,
-        },
+    const response = await fetch(`${backendUrl}/variants/export/quota`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.accessToken}`,
       },
-    );
+    });
 
     if (!response.ok) {
       // Return default quota for free users

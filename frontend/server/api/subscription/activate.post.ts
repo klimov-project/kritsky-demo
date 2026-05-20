@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     const session = await getUserSession(event);
 
     const config = useRuntimeConfig();
-    const backendUrl = config.apiBackendUrl;
+    const backendUrl = `${config.apiBackendBase}/api`;
 
     // Forward activate-mock request to backend with auth token
     const response = await fetch(`${backendUrl}/subscription/activate-mock`, {

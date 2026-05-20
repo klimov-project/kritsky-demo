@@ -4,9 +4,10 @@ export default defineEventHandler(async (event) => {
     const session = await getUserSession(event);
 
     const config = useRuntimeConfig();
+    const backendUrl = `${config.apiBackendBase}/api`;
 
     // Fetch variants list from backend
-    const response = await fetch(`${config.apiBackendBase}/variants`, {
+    const response = await fetch(`${backendUrl}/variants`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

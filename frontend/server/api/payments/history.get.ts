@@ -15,18 +15,16 @@ export default defineEventHandler(async (event) => {
     const session = await getUserSession(event);
 
     const config = useRuntimeConfig();
+    const backendUrl = `${config.apiBackendBase}/api`;
 
     // Forward payment history request to backend with auth token
-    const response = await fetch(
-      `${config.apiBackendBase}/shop/payments/history`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.accessToken}`,
-        },
+    const response = await fetch(`${backendUrl}/shop/payments/history`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.accessToken}`,
       },
-    );
+    });
 
     if (!response.ok) {
       if (response.status === 401) {
