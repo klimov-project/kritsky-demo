@@ -20,30 +20,30 @@ interface AdminOrdersListResponse {
 }
 
 export const getAdminDashboard = async (): Promise<AdminDashboardStats> => {
-    return requestJsonAuth<AdminDashboardStats>('/api/admin/dashboard');
+    return requestJsonAuth<AdminDashboardStats>('/api/v1/admin/dashboard');
 };
 
 export const listAdminUsers = async (): Promise<AdminUser[]> => {
-    const response = await requestJsonAuth<AdminUsersListResponse>('/api/admin/users');
+    const response = await requestJsonAuth<AdminUsersListResponse>('/api/v1/admin/users');
     return response.items;
 };
 
 export const listAdminPayments = async (): Promise<AdminPayment[]> => {
-    const response = await requestJsonAuth<AdminPaymentsListResponse>('/api/admin/payments');
+    const response = await requestJsonAuth<AdminPaymentsListResponse>('/api/v1/admin/payments');
     return response.items;
 };
 
 export const listAdminOrders = async (): Promise<AdminOrder[]> => {
-    const response = await requestJsonAuth<AdminOrdersListResponse>('/api/admin/orders');
+    const response = await requestJsonAuth<AdminOrdersListResponse>('/api/v1/admin/orders');
     return response.items;
 };
 
 export const getAdminUser = async (userId: number): Promise<AdminUserDetail> => {
-    return requestJsonAuth<AdminUserDetail>(`/api/admin/users/${userId}`);
+    return requestJsonAuth<AdminUserDetail>(`/api/v1/admin/users/${userId}`);
 };
 
 export const setAdminUserBlockStatus = async (userId: number, block: boolean): Promise<void> => {
-    await requestJsonAuth(`/api/admin/users/${userId}/block`, {
+    await requestJsonAuth(`/api/v1/admin/users/${userId}/block`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ block }),
@@ -51,7 +51,7 @@ export const setAdminUserBlockStatus = async (userId: number, block: boolean): P
 };
 
 export const adminActivateSubscription = async (userId: number, days: number): Promise<{ expireDate: string }> => {
-    return requestJsonAuth(`/api/admin/users/${userId}/subscription/activate`, {
+    return requestJsonAuth(`/api/v1/admin/users/${userId}/subscription/activate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ days }),
@@ -59,13 +59,13 @@ export const adminActivateSubscription = async (userId: number, days: number): P
 };
 
 export const adminDeactivateSubscription = async (userId: number): Promise<void> => {
-    await requestJsonAuth(`/api/admin/users/${userId}/subscription/deactivate`, {
+    await requestJsonAuth(`/api/v1/admin/users/${userId}/subscription/deactivate`, {
         method: 'POST',
     });
 };
 
 export const adminSetDownloadCredits = async (userId: number, credits: number): Promise<void> => {
-    await requestJsonAuth(`/api/admin/users/${userId}/download-credits`, {
+    await requestJsonAuth(`/api/v1/admin/users/${userId}/download-credits`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credits }),
@@ -73,11 +73,11 @@ export const adminSetDownloadCredits = async (userId: number, credits: number): 
 };
 
 export const getAdminSavedVariant = async (variantId: number): Promise<any> => {
-    return requestJsonAuth(`/api/admin/variants/${variantId}`);
+    return requestJsonAuth(`/api/v1/admin/variants/${variantId}`);
 };
 
 export const updateAdminSavedVariant = async (variantId: number, payload: any): Promise<any> => {
-    return requestJsonAuth(`/api/admin/variants/${variantId}`, {
+    return requestJsonAuth(`/api/v1/admin/variants/${variantId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

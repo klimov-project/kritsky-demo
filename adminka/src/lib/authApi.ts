@@ -61,7 +61,7 @@ export const clearAuthSession = () => {
 };
 
 export const loginWithEmail = async (payload: LoginPayload): Promise<AuthUser> => {
-    const response = await requestJson<AuthTokensResponse>('/api/auth/login', {
+    const response = await requestJson<AuthTokensResponse>('/api/v1/auth/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ export const loginWithEmail = async (payload: LoginPayload): Promise<AuthUser> =
 };
 
 export const registerWithEmail = async (payload: RegisterPayload): Promise<AuthUser> => {
-    const response = await requestJson<AuthTokensResponse>('/api/auth/register', {
+    const response = await requestJson<AuthTokensResponse>('/api/v1/auth/register', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ export const registerWithEmail = async (payload: RegisterPayload): Promise<AuthU
 };
 
 export const loginAdmin = async (payload: AdminLoginPayload): Promise<AuthUser> => {
-    const response = await requestJson<AuthTokensResponse>('/api/auth/admin/login', {
+    const response = await requestJson<AuthTokensResponse>('/api/v1/auth/admin/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -94,11 +94,11 @@ export const loginAdmin = async (payload: AdminLoginPayload): Promise<AuthUser> 
 };
 
 export const getCurrentUser = async (): Promise<AuthUser> => {
-    return requestJsonAuth<AuthUser>('/api/auth/me');
+    return requestJsonAuth<AuthUser>('/api/v1/auth/me');
 };
 
 export const updateProfile = async (payload: UpdateProfilePayload): Promise<AuthUser> => {
-    return requestJsonAuth<AuthUser>('/api/auth/profile', {
+    return requestJsonAuth<AuthUser>('/api/v1/auth/profile', {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -108,7 +108,7 @@ export const updateProfile = async (payload: UpdateProfilePayload): Promise<Auth
 };
 
 export const changePassword = async (payload: ChangePasswordPayload): Promise<void> => {
-    await requestJsonAuth<{ ok: boolean }>('/api/auth/change-password', {
+    await requestJsonAuth<{ ok: boolean }>('/api/v1/auth/change-password', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

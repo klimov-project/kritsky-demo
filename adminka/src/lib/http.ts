@@ -98,7 +98,7 @@ const refreshAccessToken = async (): Promise<boolean> => {
         return false;
     }
 
-    const response = await fetch(buildUrl('/api/auth/refresh'), {
+    const response = await fetch(buildUrl('/api/v1/auth/refresh'), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

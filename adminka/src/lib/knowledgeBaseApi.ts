@@ -143,7 +143,7 @@ const parseResponse = async (response: Response): Promise<KnowledgeBaseResponse>
 };
 
 export const fetchKnowledgeBase = async (): Promise<KnowledgeBaseResponse> => {
-    const response = await fetch(`${resolveApiUrl()}/api/knowledge-base`, {
+    const response = await fetch(`${resolveApiUrl()}/api/v1/knowledge-base`, {
         method: 'GET',
         cache: 'no-store',
         headers: {
@@ -155,7 +155,7 @@ export const fetchKnowledgeBase = async (): Promise<KnowledgeBaseResponse> => {
 };
 
 export const updateKnowledgeBase = async (payload: KnowledgeBasePayload): Promise<KnowledgeBaseResponse> => {
-    const response = await fetch(`${resolveApiUrl()}/api/knowledge-base`, {
+    const response = await fetch(`${resolveApiUrl()}/api/v1/knowledge-base`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -168,7 +168,7 @@ export const updateKnowledgeBase = async (payload: KnowledgeBasePayload): Promis
 };
 
 export const saveWeeklyPins = async (weeklyPins: Record<string, string> | null): Promise<void> => {
-    const response = await fetch(`${resolveApiUrl()}/api/knowledge-base/weekly-pins`, {
+    const response = await fetch(`${resolveApiUrl()}/api/v1/knowledge-base/weekly-pins`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -184,7 +184,7 @@ export const saveWeeklyPins = async (weeklyPins: Record<string, string> | null):
 };
 
 export const setWeeklyVariant = async (weeklyVariant: unknown): Promise<void> => {
-    const response = await fetch(`${resolveApiUrl()}/api/knowledge-base/weekly-variant`, {
+    const response = await fetch(`${resolveApiUrl()}/api/v1/knowledge-base/weekly-variant`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',

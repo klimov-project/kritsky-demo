@@ -276,7 +276,7 @@ export const listShopProducts = async (params: ShopListParams = {}): Promise<Sho
     if (typeof params.offset === 'number') query.set('offset', String(params.offset));
 
     const suffix = query.toString();
-    const response = await requestJson<ShopBooksListResponse>(`/api/shop/books${suffix ? `?${suffix}` : ''}`);
+    const response = await requestJson<ShopBooksListResponse>(`/api/v1/shop/books${suffix ? `?${suffix}` : ''}`);
 
     return {
         items: response.items.map(toProduct),
@@ -287,39 +287,39 @@ export const listShopProducts = async (params: ShopListParams = {}): Promise<Sho
 };
 
 export const getShopProductById = async (id: string | number): Promise<ShopProductExtended> => {
-    const response = await requestJson<ShopBookDto>(`/api/shop/books/${id}`);
+    const response = await requestJson<ShopBookDto>(`/api/v1/shop/books/${id}`);
     return toProduct(response);
 };
 
 export const listFavoriteProducts = async (): Promise<ShopProductExtended[]> => {
-    const response = await requestJsonAuth<FavoriteBooksListResponse>('/api/shop/favorites');
+    const response = await requestJsonAuth<FavoriteBooksListResponse>('/api/v1/shop/favorites');
     return response.items.map((item) => toProduct(item.book));
 };
 
 export const listFavoriteProductIds = async (): Promise<Set<string>> => {
-    const response = await requestJsonAuth<FavoriteBooksListResponse>('/api/shop/favorites');
+    const response = await requestJsonAuth<FavoriteBooksListResponse>('/api/v1/shop/favorites');
     return new Set(response.items.map((item) => String(item.bookId)));
 };
 
 export const addProductToFavorites = async (bookId: string | number): Promise<void> => {
-    await requestJsonAuth<{ ok: boolean }>(`/api/shop/favorites/${bookId}`, {
+    await requestJsonAuth<{ ok: boolean }>(`/api/v1/shop/favorites/${bookId}`, {
         method: 'POST',
     });
 };
 
 export const removeProductFromFavorites = async (bookId: string | number): Promise<void> => {
-    await requestJsonAuth<{ ok: boolean }>(`/api/shop/favorites/${bookId}`, {
+    await requestJsonAuth<{ ok: boolean }>(`/api/v1/shop/favorites/${bookId}`, {
         method: 'DELETE',
     });
 };
 
 export const getCart = async (): Promise<CartSummary> => {
-    const response = await requestJsonAuth<CartResponseDto>('/api/shop/cart');
+    const response = await requestJsonAuth<CartResponseDto>('/api/v1/shop/cart');
     return toCartSummary(response);
 };
 
 export const addProductToCart = async (bookId: string | number, quantity = 1): Promise<CartSummary> => {
-    const response = await requestJsonAuth<CartResponseDto>('/api/shop/cart', {
+    const response = await requestJsonAuth<CartResponseDto>('/api/v1/shop/cart', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -333,7 +333,7 @@ export const addProductToCart = async (bookId: string | number, quantity = 1): P
 };
 
 export const updateCartItemQuantity = async (bookId: string | number, quantity: number): Promise<CartSummary> => {
-    const response = await requestJsonAuth<CartResponseDto>(`/api/shop/cart/${bookId}`, {
+    const response = await requestJsonAuth<CartResponseDto>(`/api/v1/shop/cart/${bookId}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -344,14 +344,14 @@ export const updateCartItemQuantity = async (bookId: string | number, quantity: 
 };
 
 export const removeProductFromCart = async (bookId: string | number): Promise<CartSummary> => {
-    const response = await requestJsonAuth<CartResponseDto>(`/api/shop/cart/${bookId}`, {
+    const response = await requestJsonAuth<CartResponseDto>(`/api/v1/shop/cart/${bookId}`, {
         method: 'DELETE',
     });
     return toCartSummary(response);
 };
 
 export const checkoutCart = async (payload: CheckoutPayload): Promise<CheckoutResult> => {
-    const response = await requestJsonAuth<CheckoutResponseDto>('/api/shop/checkout', {
+    const response = await requestJsonAuth<CheckoutResponseDto>('/api/v1/shop/checkout', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -381,7 +381,7 @@ export const listPurchases = async (params: PurchasesListParams = {}): Promise<P
     if (params.query) query.set('query', params.query);
 
     const suffix = query.toString();
-    const response = await requestJsonAuth<PurchasedItemsListDto>(`/api/shop/purchases${suffix ? `?${suffix}` : ''}`);
+    const response = await requestJsonAuth<PurchasedItemsListDto>(`/api/v1/shop/purchases${suffix ? `?${suffix}` : ''}`);
     const items = response.items.map(toPurchasedItem);
 
     return {
@@ -395,17 +395,17 @@ export const listPurchases = async (params: PurchasesListParams = {}): Promise<P
 };
 
 export const getPurchaseById = async (purchaseId: string | number): Promise<PurchasedItem> => {
-    const response = await requestJsonAuth<PurchasedItemDto>(`/api/shop/purchases/${purchaseId}`);
+    const response = await requestJsonAuth<PurchasedItemDto>(`/api/v1/shop/purchases/${purchaseId}`);
     return toPurchasedItem(response);
 };
 
 export const listPaymentHistory = async (): Promise<PaymentHistoryItem[]> => {
-    const response = await requestJsonAuth<PaymentHistoryListDto>('/api/shop/payments/history');
+    const response = await requestJsonAuth<PaymentHistoryListDto>('/api/v1/shop/payments/history');
     return response.items.map(toPaymentHistoryItem);
 };
 
 export const createShopProduct = async (payload: ShopBookPayload): Promise<ShopProductExtended> => {
-    const response = await requestJsonAuth<ShopBookDto>('/api/shop/books', {
+    const response = await requestJsonAuth<ShopBookDto>('/api/v1/shop/books', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -416,7 +416,7 @@ export const createShopProduct = async (payload: ShopBookPayload): Promise<ShopP
 };
 
 export const updateShopProduct = async (id: string | number, payload: ShopBookPayload): Promise<ShopProductExtended> => {
-    const response = await requestJsonAuth<ShopBookDto>(`/api/shop/books/${id}`, {
+    const response = await requestJsonAuth<ShopBookDto>(`/api/v1/shop/books/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -427,7 +427,7 @@ export const updateShopProduct = async (id: string | number, payload: ShopBookPa
 };
 
 export const deleteShopProduct = async (id: string | number): Promise<void> => {
-    await requestJsonAuth<{ ok: boolean }>(`/api/shop/books/${id}`, {
+    await requestJsonAuth<{ ok: boolean }>(`/api/v1/shop/books/${id}`, {
         method: 'DELETE',
     });
 };

@@ -221,7 +221,7 @@ export const listSavedVariantsCatalog = async (
     params: ListSavedVariantsParams = {},
 ): Promise<SavedVariantsCatalogResponse> => {
     const response = await requestJsonAuth<SavedVariantsListDto>(
-        `/api/variants${buildQueryString({
+        `/api/v1/variants${buildQueryString({
             page: params.page,
             limit: params.limit,
             search: params.search?.trim(),
@@ -247,7 +247,7 @@ export const listSavedVariantsCatalog = async (
 };
 
 export const getSavedVariantById = async (variantId: string | number): Promise<SavedVariantRecord> => {
-    const response = await requestJsonAuth<SavedVariantDto>(`/api/variants/${variantId}`);
+    const response = await requestJsonAuth<SavedVariantDto>(`/api/v1/variants/${variantId}`);
     return toRecord(response);
 };
 
@@ -256,7 +256,7 @@ export const saveVariant = async (payload: {
     settings: SavedVariantRecord['settings'];
     folderId?: number | null;
 }): Promise<SavedVariantRecord> => {
-    const response = await requestJsonAuth<SavedVariantDto>('/api/variants', {
+    const response = await requestJsonAuth<SavedVariantDto>('/api/v1/variants', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -267,7 +267,7 @@ export const saveVariant = async (payload: {
 };
 
 export const deleteSavedVariant = async (variantId: string | number): Promise<void> => {
-    await requestJsonAuth<{ ok: boolean }>(`/api/variants/${variantId}`, {
+    await requestJsonAuth<{ ok: boolean }>(`/api/v1/variants/${variantId}`, {
         method: 'DELETE',
     });
 };
@@ -276,7 +276,7 @@ export const listSavedVariantFolders = async (
     params: ListSavedVariantFoldersParams = {},
 ): Promise<SavedVariantFoldersResponse> => {
     const response = await requestJsonAuth<SavedVariantFolderListDto>(
-        `/api/variants/folders${buildQueryString({
+        `/api/v1/variants/folders${buildQueryString({
             page: params.page,
             limit: params.limit,
             search: params.search?.trim(),
@@ -298,7 +298,7 @@ export const listSavedVariantFolders = async (
 };
 
 export const createSavedVariantFolder = async (name: string): Promise<SavedVariantFolder> => {
-    const response = await requestJsonAuth<SavedVariantFolderDto>('/api/variants/folders', {
+    const response = await requestJsonAuth<SavedVariantFolderDto>('/api/v1/variants/folders', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -309,7 +309,7 @@ export const createSavedVariantFolder = async (name: string): Promise<SavedVaria
 };
 
 export const renameSavedVariantFolder = async (folderId: number, name: string): Promise<SavedVariantFolder> => {
-    const response = await requestJsonAuth<SavedVariantFolderDto>(`/api/variants/folders/${folderId}`, {
+    const response = await requestJsonAuth<SavedVariantFolderDto>(`/api/v1/variants/folders/${folderId}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -320,13 +320,13 @@ export const renameSavedVariantFolder = async (folderId: number, name: string): 
 };
 
 export const deleteSavedVariantFolder = async (folderId: number): Promise<{ ok: boolean; deleted: boolean }> => {
-    return requestJsonAuth<{ ok: boolean; deleted: boolean }>(`/api/variants/folders/${folderId}`, {
+    return requestJsonAuth<{ ok: boolean; deleted: boolean }>(`/api/v1/variants/folders/${folderId}`, {
         method: 'DELETE',
     });
 };
 
 export const reorderSavedVariantFolders = async (folderIds: number[]): Promise<SavedVariantFoldersResponse> => {
-    const response = await requestJsonAuth<SavedVariantFolderListDto>('/api/variants/folders/reorder', {
+    const response = await requestJsonAuth<SavedVariantFolderListDto>('/api/v1/variants/folders/reorder', {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -350,7 +350,7 @@ export const moveSavedVariantToFolder = async (
     folderId: number | null,
     position?: number,
 ): Promise<SavedVariantRecord> => {
-    const response = await requestJsonAuth<SavedVariantDto>(`/api/variants/${variantId}/folder`, {
+    const response = await requestJsonAuth<SavedVariantDto>(`/api/v1/variants/${variantId}/folder`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -364,7 +364,7 @@ export const reorderSavedVariants = async (
     variantIds: number[],
     folderId: number | null,
 ): Promise<SavedVariantsCatalogResponse> => {
-    const response = await requestJsonAuth<SavedVariantsListDto>('/api/variants/reorder', {
+    const response = await requestJsonAuth<SavedVariantsListDto>('/api/v1/variants/reorder', {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -386,14 +386,14 @@ export const reorderSavedVariants = async (
 };
 
 export const getVariantExportQuota = async (): Promise<VariantExportQuota> => {
-    return requestJsonAuth<VariantExportQuota>('/api/variants/export/quota');
+    return requestJsonAuth<VariantExportQuota>('/api/v1/variants/export/quota');
 };
 
 export const consumeVariantExportQuota = async (
     savedVariantId?: number | string,
     action: 'download' | 'print' = 'download',
 ): Promise<ConsumeVariantExportDto> => {
-    return requestJsonAuth<ConsumeVariantExportDto>('/api/variants/export/quota/consume', {
+    return requestJsonAuth<ConsumeVariantExportDto>('/api/v1/variants/export/quota/consume', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -406,7 +406,7 @@ export const consumeVariantExportQuota = async (
 export const generateRuntimeVariant = async (
     payload: RuntimeVariantRequestPayload & { useSelected: boolean },
 ): Promise<RuntimeVariantResponseDto> => {
-    const response = await requestJson<RuntimeVariantResponseDto>('/api/variants/runtime/generate', {
+    const response = await requestJson<RuntimeVariantResponseDto>('/api/v1/variants/runtime/generate', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -417,7 +417,7 @@ export const generateRuntimeVariant = async (
 };
 
 export const getPregeneratedVariant = async (): Promise<RuntimeVariantResponseDto> => {
-    const response = await requestJson<RuntimeVariantResponseDto>('/api/variants/runtime/pregenerated');
+    const response = await requestJson<RuntimeVariantResponseDto>('/api/v1/variants/runtime/pregenerated');
     return normalizeNbspDeep(response) as RuntimeVariantResponseDto;
 };
 
@@ -429,7 +429,7 @@ export const refreshRuntimeVariantBlock = async (
         replaceConflictingPoem?: boolean;
     },
 ): Promise<RuntimeVariantResponseDto> => {
-    const response = await requestJson<RuntimeVariantResponseDto>('/api/variants/runtime/refresh-block', {
+    const response = await requestJson<RuntimeVariantResponseDto>('/api/v1/variants/runtime/refresh-block', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -448,7 +448,7 @@ export const refreshRuntimeVariantTask = async (
         excludedTaskIds?: string[];
     },
 ): Promise<RuntimeVariantResponseDto> => {
-    const response = await requestJson<RuntimeVariantResponseDto>('/api/variants/runtime/refresh-task', {
+    const response = await requestJson<RuntimeVariantResponseDto>('/api/v1/variants/runtime/refresh-task', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
