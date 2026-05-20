@@ -82,7 +82,7 @@ const zclass = computed(() =>
               Вариант недели
             </NuxtLink>
             <NuxtLink
-              to="/shop"
+              to="/subscriptions"
               class="nav-link-animated text-[#333] font-serif text-[18px] uppercase"
             >
               Магазин

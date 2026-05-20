@@ -7,22 +7,19 @@ definePageMeta({
   layout: 'profile',
 });
 
-const toast = useToast();
+const toast = useToast()
 
-const userStore = useUserStore();
-const {
-  user,
-  subscriptionExpiryFormatted,
-  hasActiveSubscription,
-} = storeToRefs(userStore);
+const userStore = useUserStore()
+const { user, subscriptionExpiryFormatted, hasActiveSubscription } =
+  storeToRefs(userStore)
 
-const isActivating = ref(false);
-const isDeactivating = ref(false);
+const isActivating = ref(false)
+const isDeactivating = ref(false)
 
 // Fetch user data on mount
 onMounted(async () => {
-  await userStore.fetchUser();
-});
+  await userStore.fetchUser()
+})
 
 /**
  * Activate mock subscription

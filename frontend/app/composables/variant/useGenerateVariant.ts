@@ -1,8 +1,8 @@
-import type { GeneratedVariant } from '@/types/generatedVariant';
+import type { GeneratedVariant } from '@/types/generatedVariant'
 import type {
   RuntimeVariantBlockKey,
   VariantTaskKey,
-} from '@/types/variantTasks';
+} from '@/types/variantTasks'
 
 export const useGenerateVariant = () => {
   const {
@@ -16,187 +16,257 @@ export const useGenerateVariant = () => {
     refreshLoadingByTask,
     statusMessage,
     checkedAnswers,
+    task11Refreshes,
+    cachedPreGeneratedVariant,
+    hasCachedPreGeneratedVariant,
     useSelected,
-  } = useVariantState();
+  } = useVariantState()
 
-  const config = useRuntimeConfig();
-  const { isAuthenticated, openLoginModal, isLocked } = useAuth();
-  const { showPaywall } = useSubscription();
-
-  const { apiWithAuth } = useAuthApi();
+  const config = useRuntimeConfig()
+  const { isAuthenticated } = useAuth()
+  const { apiWithAuth } = useAuthApi()
+  const { showPaywall } = useSubscription()
 
   const apiUrl = import.meta.server
     ? config.apiBackendUrl
-    : config.public.apiUrl;
-
-  const buildPayload = () => ({
-    selectedWorkId: selectedWorkId.value,
-    selectedExcerptId: selectedExcerptId.value,
-    selectedPoetId: selectedPoetId.value,
-    selectedPoemId: selectedPoemId.value,
-    selectedThemeId: selectedThemeId.value,
-    selectedBlock3AuthorId: '',
-    useSelected: useSelected.value,
-  });
+    : config.public.apiUrl
 
   /**
-   * Make authenticated API call or prompt login
-   * For routes that require auth, uses JWT token
+   * Build payload with task1 filters for block1 refresh
    */
-  const authFetch = async <T>(
-    url: string,
-    options: Parameters<typeof $fetch>[1] = {},
-    requireAuth = false,
-  ): Promise<T> => {
-    // If auth required but user not logged in, show login modal
-    if (requireAuth && !isAuthenticated.value) {
-      openLoginModal();
-      throw new Error('Требуется авторизация');
+  const buildPayload = (includeTask1Filters = true) => {
+    let task1Filters = { includeWorkQuestions: true, includeTermQuestions: true }
+
+    // Get filters from TermQuestionToggles if available
+    if (includeTask1Filters) {
+      const termToggles = useTermQuestionToggles?.()
+      if (termToggles) {
+        task1Filters = {
+          includeWorkQuestions: termToggles.includeWorkQuestions?.value ?? true,
+          includeTermQuestions: termToggles.includeTermQuestions?.value ?? true,
+        }
+      }
+    } else {
+      task1Filters = { includeWorkQuestions: false, includeTermQuestions: false }
     }
 
-    // Use authenticated request if user is logged in
-    if (isAuthenticated.value) {
-      return apiWithAuth<T>(url, options);
+    return {
+      selectedWorkId: selectedWorkId.value,
+      selectedExcerptId: selectedExcerptId.value,
+      selectedPoetId: selectedPoetId.value,
+      selectedPoemId: selectedPoemId.value,
+      selectedThemeId: selectedThemeId.value,
+      selectedBlock3AuthorId: '',
+      task1Filters,
     }
-
-    // Public request (no auth)
-    const fullUrl = url.startsWith('/')
-      ? `${apiUrl}${url}`
-      : `${apiUrl}/${url}`;
-    return $fetch<T>(fullUrl, options);
-  };
-
-  const pregenerateVariant = async () => {
-    const pregeneratedUrl = `${apiUrl}/variants/runtime/pregenerated`;
-    try {
-      const data = await $fetch<{ variant: GeneratedVariant }>(pregeneratedUrl);
-      variant.value = data.variant; // setVariant
-      statusMessage.value = '';
-      checkedAnswers.value.clear();
-    } catch (e) {
-      statusMessage.value = (e as Error).message || 'Ошибка генерации варианта';
-    }
-  };
+  }
 
   /**
-   * Generate variant - requires authentication
+   * Pregenerated variant - cached for unauthenticated users
+   */
+  const pregenerateVariant = async () => {
+    // Return cached variant if available for unauthenticated users
+    if (!isAuthenticated.value && hasCachedPreGeneratedVariant.value) {
+      variant.value = cachedPreGeneratedVariant.value
+      statusMessage.value = ''
+      checkedAnswers.value.clear()
+      return
+    }
+
+    const pregeneratedUrl = `${apiUrl}/variants/runtime/pregenerated`
+    try {
+      const data = await $fetch<{ variant: GeneratedVariant }>(pregeneratedUrl)
+      variant.value = data.variant
+
+      // Cache for unauthenticated users
+      if (!isAuthenticated.value) {
+        cachedPreGeneratedVariant.value = data.variant
+        hasCachedPreGeneratedVariant.value = true
+      }
+
+      statusMessage.value = ''
+      checkedAnswers.value.clear()
+    } catch (e) {
+      statusMessage.value = (e as Error).message || 'Ошибка генерации варианта'
+    }
+  }
+
+  /**
+   * Generate new random variant - requires authentication
    */
   const generateVariant = async () => {
-    // Check auth first
-    if (!checkSubscription()) return;
+    if (!isAuthenticated.value) {
+      showPaywall()
+      statusMessage.value = 'Для создания нового варианта необходима подписка'
+      return
+    }
 
-    refreshLoadingByBlock.value.block1 = true;
-    refreshLoadingByBlock.value.block2 = true;
-    refreshLoadingByBlock.value.block3 = true;
+    refreshLoadingByBlock.value.block1 = true
+    refreshLoadingByBlock.value.block2 = true
+    refreshLoadingByBlock.value.block3 = true
 
     try {
-      const data = await authFetch<{ variant: GeneratedVariant }>(
+      const data = await apiWithAuth<{ variant: GeneratedVariant }>(
         '/variants/runtime/generate',
         {
           method: 'POST',
-          body: buildPayload(),
+          body: {
+            ...buildPayload(),
+            useSelected: false,
+          },
         },
-        true,
-      );
-      variant.value = data.variant;
-      statusMessage.value = '';
-      checkedAnswers.value.clear();
+      )
+      variant.value = data.variant
+      statusMessage.value = ''
+      checkedAnswers.value.clear()
+      task11Refreshes.value = 0 // Reset task11 refreshes
     } catch (e) {
-      if ((e as Error).message !== 'Требуется авторизация') {
-        statusMessage.value =
-          (e as Error).message || 'Ошибка генерации варианта';
-      }
+      statusMessage.value =
+        (e as Error).message || 'Ошибка генерации варианта'
     } finally {
-      refreshLoadingByBlock.value.block1 = false;
-      refreshLoadingByBlock.value.block2 = false;
-      refreshLoadingByBlock.value.block3 = false;
+      refreshLoadingByBlock.value.block1 = false
+      refreshLoadingByBlock.value.block2 = false
+      refreshLoadingByBlock.value.block3 = false
     }
-  };
+  }
 
   /**
    * Refresh block - requires authentication
    */
-  const refreshBlock = async (block: RuntimeVariantBlockKey) => {
-    // Check auth first
-    if (!checkSubscription()) return;
+  const refreshBlock = async (
+    block: RuntimeVariantBlockKey,
+    blockRodPreference?: Record<string, string>,
+  ) => {
+    if (!isAuthenticated.value) {
+      showPaywall()
+      statusMessage.value = 'Для обновления блока необходима подписка'
+      return
+    }
 
-    refreshLoadingByBlock.value[block] = true;
+    refreshLoadingByBlock.value[block] = true
     try {
-      const data = await authFetch<{ variant: GeneratedVariant }>(
+      const payload: any = {
+        ...buildPayload(block === 'block1'),
+        block,
+        variant: variant.value,
+      }
+
+      // Add block3 rod preference if provided
+      if (block === 'block3' && blockRodPreference) {
+        payload.block11RodPreference = blockRodPreference
+      }
+
+      const data = await apiWithAuth<{ variant: GeneratedVariant }>(
         '/variants/runtime/refresh-block',
         {
           method: 'POST',
-          body: {
-            ...buildPayload(),
-            block,
-            variant: variant.value,
-          },
+          body: payload,
         },
-        true,
-      );
-      variant.value = data.variant;
-      checkedAnswers.value.clear();
+      )
+      variant.value = data.variant
+      checkedAnswers.value.clear()
     } catch (e) {
-      if ((e as Error).message !== 'Требуется авторизация') {
-        statusMessage.value =
-          (e as Error).message || `Ошибка обновления блока ${block}`;
-      }
+      statusMessage.value =
+        (e as Error).message || `Ошибка обновления блока ${block}`
     } finally {
-      refreshLoadingByBlock.value[block] = false;
+      refreshLoadingByBlock.value[block] = false
     }
-  };
+  }
 
   /**
-   * Refresh task - requires authentication
+   * Refresh individual task - requires authentication
+   * For task11 tasks: increment counter (max 3)
    */
   const refreshTask = async (taskKey: VariantTaskKey) => {
-    // Check auth first
-    if (!checkSubscription()) return;
+    if (!isAuthenticated.value) {
+      showPaywall()
+      statusMessage.value = 'Для обновления задания необходима подписка'
+      return
+    }
 
-    refreshLoadingByTask.value[taskKey] = true;
+    // Check task11 refresh limit
+    if (taskKey.startsWith('task11_') && task11Refreshes.value >= 3) {
+      statusMessage.value =
+        'Достигнут максимум обновлений для 11-классных заданий (3)'
+      return
+    }
+
+    refreshLoadingByTask.value[taskKey] = true
     try {
-      const data = await authFetch<{ variant: GeneratedVariant }>(
+      const payload: any = {
+        ...buildPayload(false),
+        taskKey,
+        variant: variant.value,
+        excludedTaskIds: [],
+      }
+
+      const data = await apiWithAuth<{ variant: GeneratedVariant }>(
         '/variants/runtime/refresh-task',
+        {
+          method: 'POST',
+          body: payload,
+        },
+      )
+      variant.value = data.variant
+      checkedAnswers.value.delete(taskKey)
+
+      // Increment task11 refresh counter
+      if (taskKey.startsWith('task11_')) {
+        task11Refreshes.value++
+      }
+    } catch (e) {
+      statusMessage.value =
+        (e as Error).message || `Ошибка обновления задания ${taskKey}`
+    } finally {
+      refreshLoadingByTask.value[taskKey] = false
+    }
+  }
+
+  /**
+   * Refresh all tasks in variant - requires authentication
+   */
+  const refreshAllTasks = async () => {
+    if (!isAuthenticated.value) {
+      showPaywall()
+      statusMessage.value = 'Для обновления всех заданий необходима подписка'
+      return
+    }
+
+    // Set all loading states
+    Object.keys(refreshLoadingByTask.value).forEach((key) => {
+      refreshLoadingByTask.value[key as VariantTaskKey] = true
+    })
+
+    try {
+      const data = await apiWithAuth<{ variant: GeneratedVariant }>(
+        '/variants/runtime/generate',
         {
           method: 'POST',
           body: {
             ...buildPayload(),
-            taskKey,
-            variant: variant.value,
+            useSelected: true,
           },
         },
-        true,
-      );
-      variant.value = data.variant;
-      checkedAnswers.value.delete(taskKey);
+      )
+      variant.value = data.variant
+      statusMessage.value = ''
+      checkedAnswers.value.clear()
+      task11Refreshes.value = 0 // Reset task11 refreshes
     } catch (e) {
-      if ((e as Error).message !== 'Требуется авторизация') {
-        statusMessage.value =
-          (e as Error).message || `Ошибка обновления задания ${taskKey}`;
-      }
-    } finally {
-      refreshLoadingByTask.value[taskKey] = false;
-    }
-  };
-
-  const checkSubscription = () => {
-    if (!isAuthenticated.value) {
-      openLoginModal();
-      statusMessage.value = 'Для обновления блока необходимо войти';
-      return false;
-    } else if (isLocked.value) {
-      showPaywall();
       statusMessage.value =
-        'Обновления варианта ограничены. Пожалуйста, оформите подписку.';
-      return false;
+        (e as Error).message || 'Ошибка обновления всех заданий'
+    } finally {
+      Object.keys(refreshLoadingByTask.value).forEach((key) => {
+        refreshLoadingByTask.value[key as VariantTaskKey] = false
+      })
     }
-    return true;
-  };
+  }
 
   return {
     pregenerateVariant,
     generateVariant,
     refreshBlock,
     refreshTask,
-  };
-};
+    refreshAllTasks,
+  }
+}

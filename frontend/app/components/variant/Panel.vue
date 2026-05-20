@@ -6,62 +6,65 @@ defineProps<{
   disabled?: boolean;
 }>();
 
-const { variant } = useVariantState();
-const { isAuthenticated, openLoginModal } = useAuth();
+const { isAuthenticated } = useAuth();
+const { showPaywall } = useSubscription();
 const {
   downloadVariantPdf,
   printVariant,
   saveVariantToProfile,
-  shareVariant,
-  isDownloadingPdf,
+  generateShareableLink,
 } = useVariantExport();
 
-const isSaving = ref(false);
-const isLoading = computed(() => isSaving.value || isDownloadingPdf.value);
+const isLoading = ref(false);
 
 const handleDownload = async () => {
   if (!isAuthenticated.value) {
-    openLoginModal();
+    showPaywall();
     return;
   }
-  await downloadVariantPdf('variant-content');
+  isLoading.value = true;
+  try {
+    await downloadVariantPdf();
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 const handlePrint = () => {
   if (!isAuthenticated.value) {
-    openLoginModal();
+    showPaywall();
     return;
   }
-  printVariant('variant-content');
+  printVariant();
 };
 
 const handleSave = async () => {
-  if (!variant.value) return;
-
-  isSaving.value = true;
+  if (!isAuthenticated.value) {
+    showPaywall();
+    return;
+  }
+  isLoading.value = true;
   try {
-    await saveVariantToProfile(variant.value);
+    await saveVariantToProfile();
   } finally {
-    isSaving.value = false;
+    isLoading.value = false;
   }
 };
 
 const handleShare = async () => {
-  if (!variant.value) return;
-  await shareVariant(variant.value);
+  if (!isAuthenticated.value) {
+    showPaywall();
+    return;
+  }
+  await generateShareableLink();
 };
-
-// const handleDownload = () => onSubmit();
-// const handlePrint = () => console.log('click handlePrint');
-// const handleSave = () => console.log('click handleSave');
-// const handleShare = () => console.log('click handleShare');
 </script>
 
 <template>
   <div
     class="shadow-custom fixed z-10 bottom-0 mx-auto max-w-[1440px] w-full px-3 lg:px-8 py-2 lg:py-6 flex-1 bg-white rounded-[10px_10px_0_0] p-5 shadow-sm"
   >
-    <!-- Прогресс-бар Nuxt UI - появляется только при загрузке -->
+    <!-- Progress bar -->
     <UProgress
       v-if="isLoading"
       animation="swing"
@@ -72,7 +75,7 @@ const handleShare = async () => {
     <div
       class="flex flex-col md:flex-row md:items-center justify-between gap-6"
     >
-      <!-- Левая информационная часть -->
+      <!-- Left info section -->
       <div class="flex flex-wrap gap-8">
         <h3 class="text-2xl font-normal leading-7 uppercase text-default">
           ПАНЕЛЬ <br />
@@ -82,59 +85,46 @@ const handleShare = async () => {
           class="text-xl flex flex-col items-start justify-center leading-6 text-gray-300"
         >
           <p>
-            Осталось бесплатных скачиваний:
-            <span class="font-semibold text-gray-400">3 из 3</span>
+            Статус:
+            <span class="font-semibold text-gray-400">{{
+              isAuthenticated ? 'Подписка активна' : 'Базовый доступ'
+            }}</span>
           </p>
-          <p>
-            Платных в запасе:
-            <span class="font-semibold text-gray-400">0</span>
+          <p v-if="!isAuthenticated" class="text-sm">
+            Оформите подписку для всех функций
           </p>
         </div>
       </div>
 
-      <!-- Правая группа кнопок -->
+      <!-- Right buttons group -->
       <div class="flex flex-wrap gap-3">
-        <!-- Download PDF -->
         <BaseButton
           icon="i-lucide-download"
-          :disabled="disabled || isDownloadingPdf || !variant"
-          :loading="isDownloadingPdf"
           @click="handleDownload"
+          :disabled="disabled || isLoading || !isAuthenticated"
         >
-          {{ isDownloadingPdf ? 'ЗАГРУЗКА...' : 'СКАЧАТЬ' }}
+          {{ isLoading ? 'ЗАГРУЗКА...' : 'СКАЧАТЬ' }}
         </BaseButton>
-
-        <!-- Print -->
         <BaseButton
           icon="i-lucide-printer"
-          :disabled="disabled || !variant"
           @click="handlePrint"
+          :disabled="disabled || !isAuthenticated"
         >
-          <span class="hidden sm:inline">Печать</span>
-          <span class="sm:hidden">Печать</span>
+          ПЕЧАТЬ
         </BaseButton>
-
-        <!-- Save to Profile -->
-        <!-- icon="i-lucide-bookmark" -->
         <BaseButton
           icon="i-lucide-save"
-          :disabled="disabled || isSaving || !variant"
-          :loading="isSaving"
           @click="handleSave"
+          :disabled="disabled || isLoading || !isAuthenticated"
         >
-          <span class="hidden sm:inline">Сохранить</span>
-          <span class="sm:hidden">Сохранить</span>
+          СОХРАНИТЬ
         </BaseButton>
-
-        <!-- Share -->
-        <!-- icon="i-lucide-share-2" -->
         <BaseButton
-          icon="i-lucide-forward"
-          :disabled="disabled || !variant"
+          icon="i-lucide-share-2"
           @click="handleShare"
+          :disabled="disabled || !isAuthenticated"
         >
-          <span class="hidden sm:inline">Поделиться</span>
-          <span class="sm:hidden">Поделиться</span>
+          ПОДЕЛИТЬСЯ
         </BaseButton>
       </div>
     </div>

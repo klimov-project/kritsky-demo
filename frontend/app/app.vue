@@ -1,7 +1,6 @@
 <template>
   <NuxtLayout>
     <NuxtPage />
-    <AuthDebug />
 
     <AuthModal />
     <ModalPaywall />
