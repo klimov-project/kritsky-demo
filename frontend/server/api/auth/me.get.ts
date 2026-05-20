@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
 
     // If we have an access token, fetch fresh user data from backend
     if (session.accessToken) {
+    console.log('[ME] session token - ', session.accessToken);
       const response = await fetch(`${backendUrl}/auth/me`, {
         method: 'GET',
         headers: {

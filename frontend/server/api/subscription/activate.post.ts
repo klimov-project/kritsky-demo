@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig();
     const backendUrl = `${config.apiBackendBase}/api`;
 
+    console.log('[Sub ACTIVATE] session token - ', session.accessToken);
     // Forward activate-mock request to backend with auth token
     const response = await fetch(`${backendUrl}/subscription/activate-mock`, {
       method: 'POST',
@@ -21,7 +22,7 @@ export default defineEventHandler(async (event) => {
       },
       body: JSON.stringify({}),
     });
-    console.error('[Sub ACTIVATE] Response ok? - ', response.ok);
+    console.log('[Sub ACTIVATE] Response ok? - ', response.ok);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
