@@ -7,7 +7,6 @@ interface ResetMockResponse {
 export default defineEventHandler(async (event) => {
   try {
     // Get the session to verify authentication
-    const { user } = await requireAuth(event);
 
     const config = useRuntimeConfig();
     const session = await useAuthSession(event);

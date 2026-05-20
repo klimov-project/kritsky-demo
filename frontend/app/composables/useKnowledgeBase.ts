@@ -23,7 +23,7 @@ export function useKnowledgeBase() {
   const config = useRuntimeConfig();
 
   const apiUrl = import.meta.server
-    ? config.apiBackendUrl
+    ? `${config.apiBackendBase}/api`
     : config.public.apiUrl;
 
   const { data, pending, error, refresh } = useFetch<KnowledgeBaseResponse>(
