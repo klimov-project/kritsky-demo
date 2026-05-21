@@ -3,7 +3,7 @@ const { isLocked } = useAuth();
 const { showPaywall } = useSubscription();
 
 const handleWrapperClick = () => {
-  showPaywall();
+  if (isLocked.value) showPaywall();
 };
 </script>
 

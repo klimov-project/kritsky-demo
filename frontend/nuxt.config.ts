@@ -57,7 +57,10 @@ export default defineNuxtConfig({
     yookassaSecretKey: process.env.YOOKASSA_SECRET_KEY || '',
 
     public: {
-      apiUrl: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000/api/v1',
+      // Client-side: requests go directly to backend
+      apiUrl: process.env.NUXT_PUBLIC_BACKEND_API_URL || '/api/v1',
+      // Client-side: nitro routes
+      nitroApiUrl: process.env.NUXT_PUBLIC_NITRO_API_URL || '/api',
       localMode: process.env.NUXT_LOCAL_DEVELOPMENT === 'true',
     },
     sessionPassword: process.env.NUXT_SESSION_PASSWORD,
