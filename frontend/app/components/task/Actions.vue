@@ -1,4 +1,7 @@
 <script setup lang="ts">
+defineProps<{
+  forTask?: string;
+}>();
 const { pending: kbPending } = useKnowledgeBase();
 const isLoading = computed(() => kbPending.value);
 </script>
@@ -6,7 +9,7 @@ const isLoading = computed(() => kbPending.value);
 <template>
   <div class="task-action-btns shadow-hover">
     <VariantTaskPrevious :block-btns="isLoading" />
-    <VariantTaskRefresh :block-btns="isLoading" />
+    <VariantTaskRefresh :block-btns="isLoading" :task="forTask" />
   </div>
 </template>
 

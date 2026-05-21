@@ -13,6 +13,9 @@ export interface AuthUser {
   role: 'user' | 'admin';
   isPro: boolean;
   isBlocked: boolean;
+  isAdmin: boolean;
+  subscriptionExpiresAt: string | null;
+  paidDownloadCredits: number;
 }
 
 interface AuthResponse {
@@ -34,8 +37,17 @@ export const useAuth = () => {
   const route = useRoute();
   const config = useRuntimeConfig();
 
-  const accessToken = useCookie<string | null>('auth.accessToken', STORAGE_COOKIE_OPTIONS);
-  const refreshToken = useCookie<string | null>('auth.refreshToken', STORAGE_COOKIE_OPTIONS);
+  const userStore = useUserStore();
+  const { hasActiveSubscription } = storeToRefs(userStore);
+
+  const accessToken = useCookie<string | null>(
+    'auth.accessToken',
+    STORAGE_COOKIE_OPTIONS,
+  );
+  const refreshToken = useCookie<string | null>(
+    'auth.refreshToken',
+    STORAGE_COOKIE_OPTIONS,
+  );
   const user = useCookie<AuthUser | null>('auth.user', STORAGE_COOKIE_OPTIONS);
 
   const isLoading = ref(false);
@@ -60,7 +72,11 @@ export const useAuth = () => {
 
   const isUnauthorizedError = (error: unknown) => {
     const err = error as any;
-    return err?.status === 401 || err?.statusCode === 401 || err?.statusCode === '401';
+    return (
+      err?.status === 401 ||
+      err?.statusCode === 401 ||
+      err?.statusCode === '401'
+    );
   };
 
   const setSession = (payload: AuthResponse) => {
@@ -157,14 +173,79 @@ export const useAuth = () => {
     return fetchWithAuth<T>(path, options);
   };
 
+  /**
+   * Фетчит данные с авторизацией, но НЕ выбрасывает ошибку при отсутствии токенов.
+   * Возвращает:
+   * - Данные (если авторизация успешна)
+   * - null (если токенов нет или они невалидны)
+   */
+  const fetchWithAuthSafe = async <T>(
+    path: string,
+    options: FetchOptions = {},
+    retry = true,
+  ): Promise<T | null> => {
+    // Пытаемся обновить токены, если есть refreshToken
+    if (!accessToken.value && refreshToken.value) {
+      await refreshTokens();
+    }
+
+    // Если всё равно нет accessToken — возвращаем null
+    if (!accessToken.value) {
+      return null;
+    }
+
+    try {
+      return await fetchJson<T>(path, {
+        ...options,
+        headers: {
+          ...(options.headers || {}),
+          Authorization: `Bearer ${accessToken.value}`,
+        },
+      });
+    } catch (error) {
+      if (isUnauthorizedError(error) && retry) {
+        const refreshed = await refreshTokens();
+        if (refreshed && accessToken.value) {
+          return fetchWithAuthSafe<T>(path, options, false);
+        }
+        clearSession();
+        return null;
+      }
+      // Для других ошибок (не 401) — возвращаем null
+      return null;
+    }
+  };
+
+  /**
+   * Проверяет текущего пользователя (/auth/me) и возвращает:
+   * - Данные пользователя (если авторизован)
+   * - null (если не авторизован)
+   */
+  const checkMe = async (): Promise<AuthUser | null> => {
+    const profile = await fetchWithAuthSafe<AuthUser>('/auth/me', {
+      method: 'GET',
+    });
+
+    if (profile) {
+      user.value = profile;
+    }
+
+    return profile;
+  };
+
   const validateSession = async (): Promise<boolean> => {
+    console.log('validateSession:');
     if (!accessToken.value && !refreshToken.value) {
       return false;
     }
 
     if (!user.value) {
       try {
-        const profile = await fetchWithAuth<AuthUser>('/auth/me', { method: 'GET' });
+        const profile = await fetchWithAuth<AuthUser>('/auth/me', {
+          method: 'GET',
+        });
+        console.log('profile from validateSession 1:', profile);
+        console.log('subscriptionExpiresAt:', profile.subscriptionExpiresAt);
         user.value = profile;
         return true;
       } catch {
@@ -175,6 +256,11 @@ export const useAuth = () => {
               const profile = await fetchWithAuth<AuthUser>('/auth/me', {
                 method: 'GET',
               });
+              console.log('profile from validateSession 2:', profile);
+              console.log(
+                'subscriptionExpiresAt:',
+                profile.subscriptionExpiresAt,
+              );
               user.value = profile;
               return true;
             } catch {
@@ -197,6 +283,11 @@ export const useAuth = () => {
             const profile = await fetchWithAuth<AuthUser>('/auth/me', {
               method: 'GET',
             });
+            console.log('profile from validateSession 3:', profile);
+            console.log(
+              'subscriptionExpiresAt:',
+              profile.subscriptionExpiresAt,
+            );
             user.value = profile;
             return true;
           } catch {
@@ -316,7 +407,7 @@ export const useAuth = () => {
     return route.query.modal === 'register' ? 'register' : 'login';
   });
 
-  const isPro = computed(() => user.value?.isPro || false);
+  const isPro = computed(() => hasActiveSubscription.value);
 
   return {
     accessToken,
@@ -338,10 +429,12 @@ export const useAuth = () => {
     setSession,
     clearSession,
     fetchSession,
+    checkMe,
     session,
     openLoginModal,
     closeLoginModal,
     isLoginModalOpen,
     activeAuthTab,
+    isPro,
   };
 };

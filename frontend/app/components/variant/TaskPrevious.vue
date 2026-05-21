@@ -4,9 +4,10 @@ const props = defineProps<{
 }>();
 
 const manualDisable = ref(false);
-const isLoading = computed(() => {
-  return props.blockBtns || manualDisable.value;
-});
+// const isLoading = computed(() => {
+//   return props.blockBtns || manualDisable.value;
+// });
+const isLoading = ref(true);
 
 async function handleBack() {
   manualDisable.value = true;

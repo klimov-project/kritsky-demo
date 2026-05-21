@@ -204,7 +204,7 @@ const showAnswerButton = computed(() => {
     position: absolute;
     top: 0;
     right: 0;
-    height: 200%;
+    height: 100%;
     width: 280px;
     z-index: 10;
   }
@@ -213,9 +213,12 @@ const showAnswerButton = computed(() => {
     box-shadow: 0 0 0 2px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
     .anchor-for-action {
       z-index: 30;
-      .shadow-hover button {
-        box-shadow: 0 10px 15px -3px var(--tw-shadow-color, rgb(0 0 0 / 0.1)),
-          0 4px 6px -4px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+      .task-action-btns {
+        z-index: 31;
+        button {
+          box-shadow: 0 10px 15px -3px var(--tw-shadow-color, rgb(0 0 0 / 0.1)),
+            0 4px 6px -4px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+        }
       }
     }
   }

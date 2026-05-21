@@ -1,11 +1,22 @@
 <script setup lang="ts">
 const props = defineProps<{
   blockBtns: boolean;
+  task: string;
 }>();
+
+const { refreshTask } = useGenerateVariant();
+// const { task11Refreshes } = useVariantState();
+const { isLocked } = useAuth();
 
 const isRefreshing = ref(false);
 
-const isLocked = ref(false);
+// const isLockedLocal = computed(
+//   () =>
+//     (task11Refreshes.value >= 3 || !props.task.startsWith('11')) &&
+//     isLocked.value,
+// );
+
+const isLockedLocal = computed(() => isLocked.value);
 
 const isLoading = computed(() => {
   return props.blockBtns || isRefreshing.value;
@@ -13,12 +24,7 @@ const isLoading = computed(() => {
 
 async function handleRefresh() {
   isRefreshing.value = true;
-
-  console.log('Имитация обновления ');
-  await new Promise((resolve) => setTimeout(resolve, 3000));
-
-  console.log('обновлено ');
-
+  await refreshTask(props.task);
   isRefreshing.value = false;
 }
 </script>
@@ -37,14 +43,10 @@ async function handleRefresh() {
     @click="handleRefresh"
   >
     <!-- Иконка замка (если заблокировано) -->
-    <IconLock v-if="isLocked && !isRefreshing" />
+    <IconLock v-if="isLockedLocal && !isRefreshing" />
 
     <!-- Иконка обновления -->
-    <IconRefresh
-      v-else
-      :class="{ 'animate-spin': isRefreshing }"
-      @click="handleRefresh"
-    />
+    <IconRefresh v-else :class="{ 'animate-spin': isRefreshing }" />
   </button>
 </template>
 

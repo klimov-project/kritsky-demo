@@ -33,8 +33,6 @@ export const useUserStore = defineStore('user', () => {
   const isLoading = ref(false);
   const error = ref<string | null>(null);
 
-  const config = useRuntimeConfig()
-
   /**
    * Fetch user data from backend auth endpoint
    */
@@ -44,7 +42,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       const authApi = useAuthApi();
       const data = await authApi.apiWithAuth<User>('/auth/me');
-      user.value = data;
+      setUser(data);
       return data;
     } catch (err) {
       const fetchError = err as { data?: { message?: string } };
@@ -102,6 +100,11 @@ export const useUserStore = defineStore('user', () => {
    * Check if subscription is active
    */
   const hasActiveSubscription = computed(() => {
+    console.log('user.value?.isPro:', user.value?.isPro);
+    console.log(
+      'user.value?.subscriptionExpiresAt:',
+      user.value?.subscriptionExpiresAt,
+    );
     if (!user.value?.isPro) return false;
     if (!user.value.subscriptionExpiresAt) return false;
     return new Date(user.value.subscriptionExpiresAt) > new Date();

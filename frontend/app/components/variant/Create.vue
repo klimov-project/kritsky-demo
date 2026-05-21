@@ -9,10 +9,9 @@ const {
   selectedThemeId,
   refreshLoadingByBlock,
   isInitialLoading,
-  statusMessage,
 } = useVariantState();
 
-const { pending: kbPending, error: kbError } = useKnowledgeBase();
+const { pending: kbPending } = useKnowledgeBase();
 
 const { generateVariant, refreshBlock } = useGenerateVariant();
 
@@ -51,7 +50,6 @@ const isLoading = computed(
     isInitialLoading.value ||
     refreshLoadingByBlock.value.block1,
 );
-const hasError = computed(() => !!kbError.value || !!statusMessage.value);
 
 const manualUpdateWork = (workId: string) => {
   selectedWorkId.value = workId;
@@ -97,28 +95,7 @@ const manualUpdatePoem = (poemId: string) => {
     </div>
 
     <ClientOnly v-else>
-      <div
-        v-if="hasError"
-        class="bg-red-50 border border-red-200 rounded-lg p-6 mb-3"
-      >
-        <p class="text-red-700">
-          {{
-            statusMessage ||
-            'Ошибка загрузки данных. Пожалуйста, попробуйте позже.'
-          }}
-        </p>
-        <button
-          @click="generateVariant"
-          class="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
-        >
-          Повторить загрузку
-        </button>
-      </div>
-
-      <div
-        v-else-if="!variant"
-        class="bg-white rounded-lg shadow p-6 text-center"
-      >
+      <div v-if="!variant" class="bg-white rounded-lg shadow p-6 text-center">
         <p class="text-gray-600">
           Нет данных для отображения. Нажмите "Новый вариант" для генерации.
         </p>

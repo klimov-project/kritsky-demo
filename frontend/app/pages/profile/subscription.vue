@@ -7,20 +7,23 @@ definePageMeta({
   layout: 'profile',
 });
 
-const toast = useToast()
+const toast = useToast();
 
-const userStore = useUserStore()
-const { user, subscriptionExpiryFormatted, hasActiveSubscription } =
-  storeToRefs(userStore)
+const userStore = useUserStore();
+const {
+  user,
+  subscriptionExpiryFormatted,
+  hasActiveSubscription,
+} = storeToRefs(userStore);
 
-const authApi = useAuthApi()
-const isActivating = ref(false)
-const isDeactivating = ref(false)
+const authApi = useAuthApi();
+const isActivating = ref(false);
+const isDeactivating = ref(false);
 
 // Fetch user data on mount
 onMounted(async () => {
-  await userStore.fetchUser()
-})
+  await userStore.fetchUser();
+});
 
 /**
  * Activate mock subscription
@@ -28,17 +31,17 @@ onMounted(async () => {
 const activateSubscription = async () => {
   isActivating.value = true;
   try {
-    const response = await authApi.apiWithAuth<{ isPro: boolean; subscriptionExpiresAt: string | null }>(
-      '/subscription/activate-mock',
-      { method: 'POST' },
-    )
+    const response = await authApi.apiWithAuth<{
+      isPro: boolean;
+      subscriptionExpiresAt: string | null;
+    }>('/subscription/activate-mock', { method: 'POST' });
 
     if (userStore.user) {
       userStore.setUser({
         ...userStore.user,
         isPro: response.isPro,
         subscriptionExpiresAt: response.subscriptionExpiresAt,
-      })
+      });
     }
 
     toast.add({
@@ -46,19 +49,19 @@ const activateSubscription = async () => {
       description: 'Теперь у вас есть доступ ко всем функциям',
       color: 'success',
       icon: 'i-lucide-crown',
-    })
+    });
   } catch (error) {
-    console.error('[v0] Failed to activate subscription:', error)
+    console.error('[v0] Failed to activate subscription:', error);
     toast.add({
       title: 'Ошибка',
       description: 'Не удалось активировать подписку',
       color: 'error',
       icon: 'i-lucide-alert-circle',
-    })
+    });
   } finally {
-    isActivating.value = false
+    isActivating.value = false;
   }
-}
+};
 
 /**
  * Reset mock subscription (deactivate)
@@ -66,17 +69,17 @@ const activateSubscription = async () => {
 const deactivateSubscription = async () => {
   isDeactivating.value = true;
   try {
-    const response = await authApi.apiWithAuth<{ isPro: boolean; subscriptionExpiresAt: string | null }>(
-      '/subscription/reset-mock',
-      { method: 'POST' },
-    )
+    const response = await authApi.apiWithAuth<{
+      isPro: boolean;
+      subscriptionExpiresAt: string | null;
+    }>('/subscription/reset-mock', { method: 'POST' });
 
     if (userStore.user) {
       userStore.setUser({
         ...userStore.user,
         isPro: response.isPro,
         subscriptionExpiresAt: response.subscriptionExpiresAt,
-      })
+      });
     }
 
     toast.add({
@@ -84,19 +87,19 @@ const deactivateSubscription = async () => {
       description: 'Подписка успешно отменена (тестовый режим)',
       color: 'warning',
       icon: 'i-lucide-alert-triangle',
-    })
+    });
   } catch (error) {
-    console.error('[v0] Failed to deactivate subscription:', error)
+    console.error('  Failed to deactivate subscription:', error);
     toast.add({
       title: 'Ошибка',
       description: 'Не удалось деактивировать подписку',
       color: 'error',
       icon: 'i-lucide-alert-circle',
-    })
+    });
   } finally {
-    isDeactivating.value = false
+    isDeactivating.value = false;
   }
-}
+};
 
 // Subscription plans
 const plans = [
