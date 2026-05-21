@@ -34,31 +34,33 @@
     </div>
   </aside>
 </template>
-<style>
-.bg-glass::before {
-  content: '';
-  position: absolute;
-  top: -30px;
-  left: 0;
-  width: 100%;
-  height: calc(100% + 60px);
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(246, 246, 246, 0.3) 15px,
-    rgba(246, 246, 246, 0.7) 50px,
-    rgba(246, 246, 246, 0.7) calc(100% - 50px),
-    rgba(246, 246, 246, 0.3) calc(100% - 15px),
-    transparent 100%
-  );
+<style lang="scss">
+.bg-glass {
+  &:after {
+    content: '';
+    position: absolute;
+    top: -30px;
+    left: 0;
+    width: 100%;
+    height: calc(100% + 60px);
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(246, 246, 246, 0.3) 15px,
+      rgba(246, 246, 246, 0.7) 50px,
+      rgba(246, 246, 246, 0.7) calc(100% - 50px),
+      rgba(246, 246, 246, 0.3) calc(100% - 15px),
+      transparent 100%
+    );
 
-  /* Блик по краям */
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4),
-    inset 0 -1px 1px rgba(255, 255, 255, 0.2);
+    /* Блик по краям */
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4),
+      inset 0 -1px 1px rgba(255, 255, 255, 0.2);
 
-  border: 0px solid;
-  opacity: 1;
-  z-index: -1;
-  pointer-events: none;
+    border: 0px solid;
+    opacity: 1;
+    z-index: -1;
+    pointer-events: none;
+  }
 }
 </style>

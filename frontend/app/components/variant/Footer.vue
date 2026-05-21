@@ -3,7 +3,7 @@ defineProps<{
   blockBtns: boolean;
 }>();
 
-const { isAuthenticated } = useAuth();
+const { isAuthenticated, isLocked } = useAuth();
 const { generateVariant, refreshAllTasks } = useGenerateVariant();
 const { showPaywall } = useSubscription();
 
@@ -26,17 +26,12 @@ const handleRefreshAll = async () => {
 
 <template>
   <div class="w-full">
-    <!-- Action Panel for download/print/save/share -->
-    <VariantActionPanel
-      :disabled="blockBtns || !isAuthenticated"
-      class="mb-5"
-    />
-
     <div class="flex items-center justify-between mb-[20px] gap-3">
       <WhiteButton
         icon="i-lucide-file"
         class="white-btn w-full h-[50px] whitespace-nowrap"
-        :disabled="blockBtns || !isAuthenticated"
+        :disabled="blockBtns"
+        :isLocked="isLocked"
         @click="handleNewVariant"
       >
         Новый рандомный вариант
@@ -45,7 +40,8 @@ const handleRefreshAll = async () => {
       <WhiteButton
         icon="i-lucide-rotate-cw"
         class="white-btn w-full h-[50px] whitespace-nowrap"
-        :disabled="blockBtns || !isAuthenticated"
+        :disabled="blockBtns"
+        :isLocked="isLocked"
         @click="handleRefreshAll"
       >
         Обновить все задания в варианте
@@ -60,5 +56,11 @@ const handleRefreshAll = async () => {
         Следующий вариант
       </WhiteButton>
     </div> -->
+
+    <!-- Action Panel for download/print/save/share -->
+    <VariantActionPanel
+      :disabled="blockBtns || !isAuthenticated"
+      class="mb-5"
+    />
   </div>
 </template>

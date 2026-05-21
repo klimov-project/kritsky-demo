@@ -24,6 +24,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  isLocked: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 defineEmits(['click']);
@@ -36,6 +40,7 @@ const computedIcon = computed(() => {
 
 const computedTrailingIcon = computed(() => {
   if (props.trailingIcon) return props.trailingIcon;
+  if (props.isLocked) return 'i-lucide:lock';
   if (props.next) return 'i-lucide:arrow-right';
   return '';
 });

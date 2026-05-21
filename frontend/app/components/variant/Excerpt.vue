@@ -17,8 +17,6 @@ const { hasPrevious, hasNext } = scene.value;
 
 const { isLocked } = useAuth();
 
-const isLockIcon = computed(() => (isLocked.value ? 'i-lucide:lock' : ''));
-
 const handleNav = (key: 'previous' | 'next') => {
   navigate(key);
 };

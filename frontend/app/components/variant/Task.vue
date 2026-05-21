@@ -206,6 +206,7 @@ const showAnswerButton = computed(() => {
     right: 0;
     height: 200%;
     width: 280px;
+    z-index: 10;
   }
   &:hover {
     --tw-ring-inset: inset;
