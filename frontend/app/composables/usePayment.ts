@@ -1,7 +1,6 @@
 /**
  * Payment composable for YooKassa integration
- *
- * Handles subscription payments with YooKassa
+ * Handles subscription payments with direct payment creation
  */
 
 export interface PaymentPlan {
@@ -11,20 +10,50 @@ export interface PaymentPlan {
   period: string;
   discount?: string;
   features: string[];
+  recommended?: boolean;
+}
+
+export interface CreatePaymentRequest {
+  amount: number;
+  description: string;
+  order_id?: number;
+  return_url?: string;
+}
+
+export interface PaymentResponse {
+  paymentId: string;
+  confirmation_url: string;
+  status: string;
+  orderId?: number;
+}
+
+export interface PaymentStatusResponse {
+  status: 'pending' | 'succeeded' | 'canceled' | 'rejected';
+  order_id?: number;
+  amount?: number;
+  description?: string;
 }
 
 export const usePayment = () => {
   const { isAuthenticated, openLoginModal } = useAuth();
+  const authApi = useAuthApi();
+  const toast = useToast();
+  const userStore = useUserStore();
+  const router = useRouter();
 
   const isProcessing = ref(false);
+  const isCheckingStatus = ref(false);
   const error = ref<string | null>(null);
+  const currentPaymentId = ref<string | null>(null);
+
+  let statusPollInterval: NodeJS.Timeout | null = null;
 
   // Available subscription plans
   const plans: PaymentPlan[] = [
     {
       id: 'monthly',
       name: 'Месячная подписка',
-      price: 99,
+      price: 890,
       period: 'месяц',
       features: [
         'Безлимитная генерация',
@@ -34,61 +63,77 @@ export const usePayment = () => {
     },
     {
       id: 'yearly',
-      name: 'Годовая подписка',
-      price: 990,
-      period: 'год',
-      discount: '16%',
+      name: 'На 6 месяцев подписка',
+      price: 699,
+      period: '6 месяцев',
+      discount: '21%',
       features: [
         'Безлимитная генерация',
-        '5 скачиваний в день',
+        '3 скачивания в день',
         'Сохранение вариантов',
+        'Экономия 21%',
       ],
+      recommended: true,
     },
   ];
 
   /**
-   * Initiate payment for a subscription plan
-   * Creates YooKassa payment and redirects user to payment page
+   * Create a payment for subscription
    */
-  const purchaseSubscription = async (planId: string) => {
+  const createPayment = async (
+    planId: string,
+  ): Promise<PaymentResponse | null> => {
     // Check authentication
     if (!isAuthenticated.value) {
       openLoginModal();
       error.value = 'Для покупки подписки необходимо войти';
-      return;
+      return null;
     }
 
     const plan = plans.find((p) => p.id === planId);
     if (!plan) {
       error.value = 'Тариф не найден';
-      return;
+      return null;
     }
 
     isProcessing.value = true;
     error.value = null;
 
     try {
-      // Create payment via our API
-      const response = await $fetch<{
-        paymentId: string;
-        confirmationUrl: string;
-        status: string;
-      }>('/api/payments/create', {
-        method: 'POST',
-        body: {
-          planId: plan.id,
-          amount: plan.price,
-          description: `${plan.name} - Критский ЕГЭ`,
-        },
-      });
+      const paymentRequest: CreatePaymentRequest = {
+        amount: plan.price,
+        description: `${plan.name} - Критский ЕГЭ`,
+        return_url: `${window.location.origin}/profile/subscription/success`,
+      };
 
-      if (!response.confirmationUrl) {
+      const response = await authApi.apiWithAuth<PaymentResponse>(
+        '/payments/create',
+        {
+          method: 'POST',
+          body: JSON.stringify(paymentRequest),
+        },
+      );
+
+      console.log('[Payment] Create payment response:', response);
+      console.log('[Payment] Payment URL:', response.confirmation_url);
+      if (!response.confirmation_url) {
         throw new Error('Payment URL not received');
       }
 
+      currentPaymentId.value = response.paymentId;
+
+      toast.add({
+        title: 'Платеж создан',
+        description: `Переход на страницу оплаты...`,
+        color: 'info',
+        icon: 'i-lucide-credit-card',
+      });
+
       // Redirect to YooKassa payment page
-      window.location.href = response.confirmationUrl;
-    } catch (err: unknown) {
+      window.location.href = response.confirmation_url;
+
+      return response;
+    } catch (err) {
       const fetchError = err as {
         data?: { message?: string };
         statusMessage?: string;
@@ -99,7 +144,239 @@ export const usePayment = () => {
         fetchError?.statusMessage ||
         fetchError?.message ||
         'Ошибка создания платежа';
-      console.error('Payment error:', err);
+      console.error('[Payment] Create payment error:', err);
+
+      toast.add({
+        title: 'Ошибка',
+        description: error.value,
+        color: 'error',
+        icon: 'i-lucide-alert-circle',
+      });
+
+      return null;
+    } finally {
+      isProcessing.value = false;
+    }
+  };
+
+  /**
+   * Check payment status
+   */
+  const checkPaymentStatus = async (
+    paymentId: string,
+  ): Promise<PaymentStatusResponse | null> => {
+    isCheckingStatus.value = true;
+    console.log(`[Payment] Checking status for payment ID: ${paymentId}...`);
+
+    try {
+      const response = await authApi.apiWithAuth<PaymentStatusResponse>(
+        `/payments/status/${paymentId}`,
+        {
+          method: 'GET',
+        },
+      );
+
+      return response;
+    } catch (err) {
+      const fetchError = err as {
+        data?: { message?: string };
+        statusMessage?: string;
+        message?: string;
+      };
+      console.error('[Payment] Check status error:', fetchError);
+      return null;
+    } finally {
+      isCheckingStatus.value = false;
+    }
+  };
+
+  /**
+   * Poll payment status until completion
+   */
+  const pollPaymentStatus = (
+    paymentId: string,
+    callbacks: {
+      onSuccess?: (status: PaymentStatusResponse) => void;
+      onFailed?: (status: PaymentStatusResponse) => void;
+      onPending?: (status: PaymentStatusResponse) => void;
+    },
+    intervalMs: number = 3000,
+    maxAttempts: number = 60, // 3 minutes max
+  ) => {
+    let attempts = 0;
+
+    console.log(
+      `[Payment] Starting to poll payment status for ID: ${paymentId}...`,
+    );
+
+    // Clear any existing interval
+    if (statusPollInterval) {
+      clearInterval(statusPollInterval);
+    }
+
+    const checkStatus = async () => {
+      console.log(
+        `[Payment] Polling payment status (attempt ${attempts + 1})...`,
+      );
+      attempts++;
+      const status = await checkPaymentStatus(paymentId);
+
+      if (!status) {
+        if (attempts >= maxAttempts) {
+          stopPolling();
+          callbacks.onFailed?.({ status: 'rejected', order_id: undefined });
+        }
+        return;
+      }
+
+      switch (status.status) {
+        case 'succeeded':
+          stopPolling();
+          callbacks.onSuccess?.(status);
+          break;
+        case 'canceled':
+        case 'rejected':
+          stopPolling();
+          callbacks.onFailed?.(status);
+          break;
+        case 'pending':
+          callbacks.onPending?.(status);
+          break;
+      }
+
+      if (attempts >= maxAttempts && status.status === 'pending') {
+        stopPolling();
+        callbacks.onFailed?.({ status: 'rejected', order_id: undefined });
+      }
+    };
+
+    const stopPolling = () => {
+      if (statusPollInterval) {
+        clearInterval(statusPollInterval);
+        statusPollInterval = null;
+      }
+    };
+
+    // Start polling
+    statusPollInterval = setInterval(checkStatus, intervalMs);
+    // Initial check
+    checkStatus();
+
+    return stopPolling;
+  };
+
+  /**
+   * Purchase subscription (full flow: create payment + handle redirect)
+   */
+  const purchaseSubscription = async (planId: string) => {
+    await createPayment(planId);
+  };
+
+  /**
+   * Activate subscription after successful payment
+   */
+  const activateSubscription = async () => {
+    isProcessing.value = true;
+    error.value = null;
+
+    try {
+      const response = await authApi.apiWithAuth<{
+        isPro: boolean;
+        subscriptionExpiresAt: string | null;
+      }>('/subscription/activate-mock', { method: 'POST' });
+
+      if (userStore.user) {
+        userStore.setUser({
+          ...userStore.user,
+          isPro: response.isPro,
+          subscriptionExpiresAt: response.subscriptionExpiresAt,
+        });
+      }
+
+      toast.add({
+        title: 'Подписка активирована',
+        description: 'Теперь у вас есть доступ ко всем функциям',
+        color: 'success',
+        icon: 'i-lucide-crown',
+      });
+
+      return true;
+    } catch (err) {
+      const fetchError = err as {
+        data?: { message?: string };
+        statusMessage?: string;
+        message?: string;
+      };
+      error.value =
+        fetchError?.data?.message ||
+        fetchError?.statusMessage ||
+        fetchError?.message ||
+        'Ошибка активации подписки';
+      console.error('[Payment] Failed to activate subscription:', err);
+
+      toast.add({
+        title: 'Ошибка',
+        description: error.value,
+        color: 'error',
+        icon: 'i-lucide-alert-circle',
+      });
+
+      return false;
+    } finally {
+      isProcessing.value = false;
+    }
+  };
+
+  /**
+   * Deactivate subscription (for testing)
+   */
+  const deactivateSubscription = async () => {
+    isProcessing.value = true;
+    error.value = null;
+
+    try {
+      const response = await authApi.apiWithAuth<{
+        isPro: boolean;
+        subscriptionExpiresAt: string | null;
+      }>('/subscription/reset-mock', { method: 'POST' });
+
+      if (userStore.user) {
+        userStore.setUser({
+          ...userStore.user,
+          isPro: response.isPro,
+          subscriptionExpiresAt: response.subscriptionExpiresAt,
+        });
+      }
+
+      toast.add({
+        title: 'Подписка деактивирована',
+        description: 'Подписка успешно отменена (тестовый режим)',
+        color: 'warning',
+        icon: 'i-lucide-alert-triangle',
+      });
+
+      return true;
+    } catch (err) {
+      const fetchError = err as {
+        data?: { message?: string };
+        statusMessage?: string;
+        message?: string;
+      };
+      error.value =
+        fetchError?.data?.message ||
+        fetchError?.statusMessage ||
+        fetchError?.message ||
+        'Ошибка деактивации подписки';
+      console.error('[Payment] Failed to deactivate subscription:', err);
+
+      toast.add({
+        title: 'Ошибка',
+        description: error.value,
+        color: 'error',
+        icon: 'i-lucide-alert-circle',
+      });
+
+      return false;
     } finally {
       isProcessing.value = false;
     }
@@ -112,11 +389,30 @@ export const usePayment = () => {
     return plans.find((p) => p.id === planId);
   };
 
+  // Cleanup on unmount
+  const cleanup = () => {
+    if (statusPollInterval) {
+      clearInterval(statusPollInterval);
+      statusPollInterval = null;
+    }
+  };
+
   return {
+    // State
     plans,
     isProcessing: readonly(isProcessing),
+    isCheckingStatus: readonly(isCheckingStatus),
     error: readonly(error),
+    currentPaymentId: readonly(currentPaymentId),
+
+    // Methods
+    createPayment,
+    checkPaymentStatus,
+    pollPaymentStatus,
     purchaseSubscription,
+    activateSubscription,
+    deactivateSubscription,
     getPlan,
+    cleanup,
   };
 };

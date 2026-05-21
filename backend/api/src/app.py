@@ -11,6 +11,7 @@ from api.src.subscription.router import router as subscription_router
 from api.src.variants.router import router as variants_router
 from api.src.variants.folders_router import router as folder_router
 from api.src.variants.router import warm_runtime_variant_payload_cache
+from api.src.payments.router import router as payments_router
 from db.src.base import Base
 from db.src.connect import engine
 
@@ -62,3 +63,4 @@ app.include_router(subscription_router)
 app.include_router(variants_router)
 app.include_router(folder_router)
 app.include_router(admin_router)
+app.include_router(payments_router)

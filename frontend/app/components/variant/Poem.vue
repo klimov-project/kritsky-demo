@@ -21,7 +21,7 @@ defineProps<Props>();
     </div>
     <div class="poem poem-sm max-w-none mb-4">
       <p
-        v-html="poemText || 'Текст отрывка не загрузился, попробуйте ещё раз'"
+        v-html="poemText || 'Стихотворение не загрузилось, попробуйте ещё раз'"
       ></p>
     </div>
     <div class="flex justify-end">

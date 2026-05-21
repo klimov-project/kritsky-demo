@@ -1,13 +1,11 @@
 <script setup lang="ts">
 /**
- * Subscription management page with mock activate/deactivate
+ * Subscription management page
  */
 definePageMeta({
   middleware: 'auth',
   layout: 'profile',
 });
-
-const toast = useToast();
 
 const userStore = useUserStore();
 const {
@@ -16,129 +14,24 @@ const {
   hasActiveSubscription,
 } = storeToRefs(userStore);
 
-const authApi = useAuthApi();
-const isActivating = ref(false);
-const isDeactivating = ref(false);
+const {
+  plans,
+  isProcessing,
+  purchaseSubscription,
+  deactivateSubscription,
+} = usePayment();
 
 // Fetch user data on mount
 onMounted(async () => {
   await userStore.fetchUser();
 });
-
-/**
- * Activate mock subscription
- */
-const activateSubscription = async () => {
-  isActivating.value = true;
-  try {
-    const response = await authApi.apiWithAuth<{
-      isPro: boolean;
-      subscriptionExpiresAt: string | null;
-    }>('/subscription/activate-mock', { method: 'POST' });
-
-    if (userStore.user) {
-      userStore.setUser({
-        ...userStore.user,
-        isPro: response.isPro,
-        subscriptionExpiresAt: response.subscriptionExpiresAt,
-      });
-    }
-
-    toast.add({
-      title: 'Подписка активирована',
-      description: 'Теперь у вас есть доступ ко всем функциям',
-      color: 'success',
-      icon: 'i-lucide-crown',
-    });
-  } catch (error) {
-    console.error('[v0] Failed to activate subscription:', error);
-    toast.add({
-      title: 'Ошибка',
-      description: 'Не удалось активировать подписку',
-      color: 'error',
-      icon: 'i-lucide-alert-circle',
-    });
-  } finally {
-    isActivating.value = false;
-  }
-};
-
-/**
- * Reset mock subscription (deactivate)
- */
-const deactivateSubscription = async () => {
-  isDeactivating.value = true;
-  try {
-    const response = await authApi.apiWithAuth<{
-      isPro: boolean;
-      subscriptionExpiresAt: string | null;
-    }>('/subscription/reset-mock', { method: 'POST' });
-
-    if (userStore.user) {
-      userStore.setUser({
-        ...userStore.user,
-        isPro: response.isPro,
-        subscriptionExpiresAt: response.subscriptionExpiresAt,
-      });
-    }
-
-    toast.add({
-      title: 'Подписка деактивирована',
-      description: 'Подписка успешно отменена (тестовый режим)',
-      color: 'warning',
-      icon: 'i-lucide-alert-triangle',
-    });
-  } catch (error) {
-    console.error('  Failed to deactivate subscription:', error);
-    toast.add({
-      title: 'Ошибка',
-      description: 'Не удалось деактивировать подписку',
-      color: 'error',
-      icon: 'i-lucide-alert-circle',
-    });
-  } finally {
-    isDeactivating.value = false;
-  }
-};
-
-// Subscription plans
-const plans = [
-  {
-    id: 'monthly',
-    name: 'Месячная',
-    price: 299,
-    period: 'месяц',
-    features: [
-      'Безлимитная генерация вариантов',
-      '3 скачивания в день',
-      'Сохранение вариантов в профиль',
-      'Печать вариантов',
-    ],
-  },
-  {
-    id: 'yearly',
-    name: 'Годовая',
-    price: 2990,
-    period: 'год',
-    discount: '17%',
-    features: [
-      'Все функции месячной подписки',
-      'Экономия 17%',
-      'Приоритетная поддержка',
-      'Ранний доступ к новым функциям',
-    ],
-    recommended: true,
-  },
-];
 </script>
 
 <template>
   <!-- Header -->
   <div class="border-b border-gray-200 mb-8 pb-4">
     <h1 class="text-2xl font-bold">Подписка</h1>
-    <p class="text-gray-500 mt-1">
-      Управление вашей подпиской на сервис
-    </p>
+    <p class="text-gray-500 mt-1">Управление вашей подпиской на сервис</p>
   </div>
 
   <!-- Current Status -->
@@ -189,45 +82,44 @@ const plans = [
     </div>
   </div>
 
-  <!-- Mock Actions (for testing) -->
+  <!-- Test Mode Actions   -->
   <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 mb-8">
     <div class="flex items-start gap-3 mb-4">
       <UIcon name="i-lucide-test-tube" class="w-5 h-5 text-yellow-600 mt-0.5" />
       <div>
-        <h3 class="font-semibold text-yellow-800">
-          Тестовый режим
-        </h3>
+        <h3 class="font-semibold text-yellow-800">Тестовый режим</h3>
         <p class="text-sm text-yellow-700 mt-1">
-          Используйте эти кнопки для тестирования функционала подписки
+          Используйте эти кнопки для тестирования функционала подписки (без
+          реальной оплаты)
         </p>
       </div>
     </div>
     <div class="flex flex-wrap gap-3">
       <button
         class="px-5 py-2.5 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2 disabled:opacity-50"
-        :disabled="isActivating || hasActiveSubscription"
+        :disabled="isProcessing || hasActiveSubscription"
         @click="activateSubscription"
       >
         <UIcon
-          v-if="isActivating"
+          v-if="isProcessing"
           name="i-lucide-loader-2"
           class="w-4 h-4 animate-spin"
         />
         <UIcon v-else name="i-lucide-zap" class="w-4 h-4" />
-        Активировать подписку
+        Тест: Активировать подписку (mock)
       </button>
       <button
         class="px-5 py-2.5 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50"
-        :disabled="isDeactivating || !hasActiveSubscription"
+        :disabled="isProcessing || !hasActiveSubscription"
         @click="deactivateSubscription"
       >
         <UIcon
-          v-if="isDeactivating"
+          v-if="isProcessing"
           name="i-lucide-loader-2"
           class="w-4 h-4 animate-spin"
         />
         <UIcon v-else name="i-lucide-x" class="w-4 h-4" />
-        Деактивировать (тест)
+        Тест: Деактивировать подписку (mock)
       </button>
     </div>
   </div>
@@ -282,14 +174,22 @@ const plans = [
       </ul>
 
       <button
-        class="w-full py-3 font-medium rounded-lg transition-colors"
+        class="w-full py-3 font-medium rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         :class="
           plan.recommended
             ? 'bg-black text-white hover:bg-gray-800'
             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
         "
+        :disabled="isProcessing || hasActiveSubscription"
+        @click="purchaseSubscription(plan.id)"
       >
-        Выбрать план
+        <UIcon
+          v-if="isProcessing"
+          name="i-lucide-loader-2"
+          class="w-4 h-4 animate-spin"
+        />
+        <UIcon v-else name="i-lucide-credit-card" class="w-4 h-4" />
+        {{ isProcessing ? 'Обработка...' : 'Оформить подписку' }}
       </button>
     </div>
   </div>
@@ -302,9 +202,7 @@ const plans = [
         Подписка продлевается автоматически. Вы можете отменить автопродление в
         любой момент.
       </p>
-      <p class="mt-1">
-        При возникновении вопросов обращайтесь в поддержку.
-      </p>
+      <p class="mt-1">При возникновении вопросов обращайтесь в поддержку.</p>
     </div>
   </div>
 </template>

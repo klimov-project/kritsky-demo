@@ -115,19 +115,37 @@ class DbPaymentsRepo(DbMixin, AbcDBRepository):
             return [PaymentSchema.model_validate(item, from_attributes=True) for item in db_models]
 
     def _save(self, obj: BaseModel, session) -> Payment:
-        dump = obj.model_dump(exclude={'id'}, exclude_unset=True)
-        db_model = Payment(**dump)
-        session.add(db_model)
-        session.flush()
-        return db_model
+        # Handle both Pydantic models and SQLAlchemy ORM models
+        if isinstance(obj, Payment):
+            # If obj is already a Payment model, add it directly
+            session.add(obj)
+            session.flush()
+            return obj
+        else:
+            # If obj is a Pydantic model, convert it to Payment
+            dump = obj.model_dump(exclude={'id'}, exclude_unset=True)
+            db_model = Payment(**dump)
+            session.add(db_model)
+            session.flush()
+            return db_model
 
     def _update(self, obj: BaseModel, session, consider_all: bool = False) -> Optional[Payment]:
         if not getattr(obj, 'id', None):
              return None
-        dump = obj.model_dump(exclude={'id'}, exclude_unset=not consider_all)
-        stmt = sa_update(Payment).where(Payment.id == obj.id).values(**dump).returning(Payment)
-        res = session.execute(stmt)
-        return res.scalar_one_or_none()
+        # Handle both Pydantic models and SQLAlchemy ORM models
+        if isinstance(obj, Payment):
+            # If it's already a Payment model, merge it and flush
+            session.merge(obj)
+            session.flush()
+            # Return the merged object by querying it back
+            result = session.execute(select(Payment).where(Payment.id == obj.id))
+            return result.scalar_one_or_none()
+        else:
+            # If it's a Pydantic model, convert it
+            dump = obj.model_dump(exclude={'id'}, exclude_unset=not consider_all)
+            stmt = sa_update(Payment).where(Payment.id == obj.id).values(**dump).returning(Payment)
+            res = session.execute(stmt)
+            return res.scalar_one_or_none()
 
     def _delete(self, id: int, session) -> Optional[Payment]:
         result = session.execute(sa_delete(Payment).where(Payment.id == id).returning(Payment))
@@ -136,29 +154,59 @@ class DbPaymentsRepo(DbMixin, AbcDBRepository):
     def _save_many(self, objs: Iterable[BaseModel], session) -> List[Payment]:
         db_models = []
         for obj in objs:
-            db_models.append(self._save(obj, session))
+            # Handle both Payment models and Pydantic models
+            if isinstance(obj, Payment):
+                session.add(obj)
+                db_models.append(obj)
+            else:
+                db_models.append(self._save(obj, session))
+        session.flush()
         return db_models
 
     async def _asave_many(self, objs: Iterable[BaseModel], session: AsyncSession) -> List[Payment]:
         db_models = []
         for obj in objs:
-            db_models.append(await self._asave(obj, session))
+            # Handle both Payment models and Pydantic models
+            if isinstance(obj, Payment):
+                session.add(obj)
+                db_models.append(obj)
+            else:
+                db_models.append(await self._asave(obj, session))
+        await session.flush()
         return db_models
 
     async def _asave(self, obj: BaseModel, session: AsyncSession) -> Payment:
-        dump = obj.model_dump(exclude={'id'}, exclude_unset=True)
-        db_model = Payment(**dump)
-        session.add(db_model)
-        await session.flush()
-        return db_model
+        # Handle both Pydantic models and SQLAlchemy ORM models
+        if isinstance(obj, Payment):
+            # If obj is already a Payment model, add it directly
+            session.add(obj)
+            await session.flush()
+            return obj
+        else:
+            # If obj is a Pydantic model, convert it to Payment
+            dump = obj.model_dump(exclude={'id'}, exclude_unset=True)
+            db_model = Payment(**dump)
+            session.add(db_model)
+            await session.flush()
+            return db_model
 
     async def _aupdate(self, obj: BaseModel, session: AsyncSession, consider_all: bool = False) -> Optional[Payment]:
         if getattr(obj, "id", None) is None:
             raise ValueError("id cannot be None")
-        dump = obj.model_dump(exclude={'id'}, exclude_unset=not consider_all)
-        result = await session.execute(sa_update(Payment).where(Payment.id == obj.id).values(dump).returning(Payment))
-        await session.flush()
-        return result.scalar_one_or_none()
+        # Handle both Pydantic models and SQLAlchemy ORM models
+        if isinstance(obj, Payment):
+            # If it's already a Payment model, merge it and flush
+            session.merge(obj)
+            await session.flush()
+            # Return the merged object by querying it back
+            result = await session.execute(select(Payment).where(Payment.id == obj.id))
+            return result.scalar_one_or_none()
+        else:
+            # If it's a Pydantic model, convert it
+            dump = obj.model_dump(exclude={'id'}, exclude_unset=not consider_all)
+            result = await session.execute(sa_update(Payment).where(Payment.id == obj.id).values(dump).returning(Payment))
+            await session.flush()
+            return result.scalar_one_or_none()
 
     async def _adelete(self, id: int, session: AsyncSession) -> Optional[Payment]:
         result = await session.execute(sa_delete(Payment).where(Payment.id == id).returning(Payment))

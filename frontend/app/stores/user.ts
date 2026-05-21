@@ -100,11 +100,6 @@ export const useUserStore = defineStore('user', () => {
    * Check if subscription is active
    */
   const hasActiveSubscription = computed(() => {
-    console.log('user.value?.isPro:', user.value?.isPro);
-    console.log(
-      'user.value?.subscriptionExpiresAt:',
-      user.value?.subscriptionExpiresAt,
-    );
     if (!user.value?.isPro) return false;
     if (!user.value.subscriptionExpiresAt) return false;
     return new Date(user.value.subscriptionExpiresAt) > new Date();

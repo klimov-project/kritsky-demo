@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     REDIS_IO_TIMEOUT_SECONDS: float = 1.0
     KB_CACHE_DB_SYNC_INTERVAL_SECONDS: float = 5.0
 
+    # Yookassa Payment Gateway
+    YOOKASSA_ACCOUNT_ID: str = '1364996'
+    YOOKASSA_SECRET_KEY: str = 'test_Qc-mjjt7xsI7KEVlYfk7TMeUZeSBeMF0nqZSMZq_eto'
+    YOOKASSA_RETURN_URL: str = 'http://localhost:3003/profile/subscription/success'
+
     model_config = SettingsConfigDict(
         env_file=BACKEND_ENV_FILE,
         env_file_encoding='utf-8',
