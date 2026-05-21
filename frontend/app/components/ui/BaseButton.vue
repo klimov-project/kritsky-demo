@@ -34,8 +34,8 @@ defineEmits(['click']);
 
 const computedIcon = computed(() => {
   if (props.icon) return props.icon;
-  if (props.previous) return 'i-lucide:arrow-left';
   if (props.isLocked) return 'i-lucide:lock';
+  if (props.previous) return 'i-lucide:arrow-left';
   return '';
 });
 

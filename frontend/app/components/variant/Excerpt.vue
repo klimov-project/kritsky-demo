@@ -15,6 +15,10 @@ const {
 
 const { hasPrevious, hasNext } = scene.value;
 
+const { isLocked } = useAuth();
+
+const isLockIcon = computed(() => (isLocked.value ? 'i-lucide:lock' : ''));
+
 const handleNav = (key: 'previous' | 'next') => {
   navigate(key);
 };
@@ -40,11 +44,21 @@ const handleNav = (key: 'previous' | 'next') => {
     </div>
 
     <div class="prose-nav pt-7 flex justify-between items-center">
-      <BaseButton v-show="hasNext" previous @click="handleNav('next')">
+      <BaseButton
+        v-show="hasNext"
+        :isLocked="isLocked"
+        previous
+        @click="handleNav('next')"
+      >
         Предыдущая сцена
       </BaseButton>
       <div class="opacity-0"><span>_</span></div>
-      <BaseButton v-show="hasPrevious" next @click="handleNav('previous')">
+      <BaseButton
+        v-show="hasPrevious"
+        :isLocked="isLocked"
+        next
+        @click="handleNav('previous')"
+      >
         Следующая сцена
       </BaseButton>
     </div>

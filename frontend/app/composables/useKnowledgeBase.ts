@@ -37,6 +37,10 @@ export function useKnowledgeBase() {
       },
       transform: (response) => {
         if (response._metadata?.hash !== store.lastKnownHash) {
+          console.log(
+            '[Store] Hydrating, response._metadata:',
+            response._metadata,
+          );
           console.log('[Store] Hydrating, new hash:', response._metadata?.hash);
           store.hydrate(response);
         }

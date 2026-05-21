@@ -139,7 +139,7 @@ export const useGenerateVariant = () => {
   ) => {
     if (!isAuthenticated.value) {
       showPaywall()
-      statusMessage.value = 'Для обновления блока необходима подписка'
+      // statusMessage.value = 'Для обновления блока необходима подписка'
       return
     }
 
