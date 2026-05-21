@@ -18,14 +18,16 @@ export const useVariantsStore = defineStore('variants', () => {
   const isLoading = ref(false);
   const error = ref<string | null>(null);
 
+  const authApi = useAuthApi();
+
   /**
-   * Fetch saved variants from /api/variants/list
+   * Fetch saved variants from backend
    */
   const fetchSavedVariants = async () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const data = await $fetch<SavedVariantsResponse>('/api/variants/list');
+      const data = await authApi.apiWithAuth<SavedVariantsResponse>('/variants');
       savedVariants.value = data.items || [];
       return data.items;
     } catch (err) {
@@ -41,13 +43,12 @@ export const useVariantsStore = defineStore('variants', () => {
 
   /**
    * Save current variant to profile
-   * POST /api/variants/save
    */
   const saveVariant = async (variant: GeneratedVariant) => {
     isLoading.value = true;
     error.value = null;
     try {
-      const response = await $fetch('/api/variants/save', {
+      const response = await authApi.apiWithAuth('/variants', {
         method: 'POST',
         body: {
           title: `Variant - ${new Date().toLocaleDateString('ru-RU')}`,
@@ -55,12 +56,12 @@ export const useVariantsStore = defineStore('variants', () => {
           variant,
         },
       });
-      // Transform response to SavedVariant format
+
       const newVariant: SavedVariant = {
-        id: parseInt(response.id) || Date.now(),
-        userId: 0,
+        id: Number(response.id) || Date.now(),
+        userId: response.userId || 0,
         createdAt: response.createdAt || new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        updatedAt: response.updatedAt || new Date().toISOString(),
         variant,
       };
       savedVariants.value.unshift(newVariant);
@@ -82,10 +83,9 @@ export const useVariantsStore = defineStore('variants', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      await $fetch(`/api/variants/${variantId}`, {
+      await authApi.apiWithAuth(`/variants/${variantId}`, {
         method: 'DELETE',
       });
-      // Remove from local list
       savedVariants.value = savedVariants.value.filter(
         (v) => v.id !== variantId,
       );

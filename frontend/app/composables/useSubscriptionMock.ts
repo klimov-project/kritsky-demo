@@ -1,14 +1,17 @@
 export const useSubscriptionMock = () => {
   const toast = useToast()
   const userStore = useUserStore()
+  const authApi = useAuthApi()
 
   const activateSubscription = async () => {
     try {
-      const response = await $fetch('/api/subscription/activate-mock', {
+      const response = await authApi.apiWithAuth<{
+        isPro: boolean
+        subscriptionExpiresAt: string | null
+      }>('/subscription/activate-mock', {
         method: 'POST',
       })
 
-      // Update user store with new subscription status
       if (userStore.user) {
         userStore.user.isPro = response.isPro
         userStore.user.subscriptionExpiresAt = response.subscriptionExpiresAt
@@ -36,11 +39,13 @@ export const useSubscriptionMock = () => {
 
   const resetSubscription = async () => {
     try {
-      const response = await $fetch('/api/subscription/reset-mock', {
+      const response = await authApi.apiWithAuth<{
+        isPro: boolean
+        subscriptionExpiresAt: string | null
+      }>('/subscription/reset-mock', {
         method: 'POST',
       })
 
-      // Update user store with new subscription status
       if (userStore.user) {
         userStore.user.isPro = response.isPro
         userStore.user.subscriptionExpiresAt = response.subscriptionExpiresAt
@@ -67,7 +72,15 @@ export const useSubscriptionMock = () => {
 
   const fetchPaymentHistory = async () => {
     try {
-      const response = await $fetch('/api/payments/history')
+      const response = await authApi.apiWithAuth<{ items: Array<{
+        id: string
+        date: string
+        amount: number
+        currency: string
+        description: string
+        status: 'completed' | 'pending' | 'failed'
+      }> }>('/shop/payments/history')
+
       return response
     } catch (error) {
       console.error('[v0] Fetch payment history error:', error)

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-const show = ref(false);
-const { loggedIn, user, session, fetchSession, clearSession } = useAuth();
-const sessionCookies = ref<string[]>([]);
+const show = ref(true);
+const { user, session, fetchSession, clearSession } = useAuth();
+const authCookies = ref<string[]>([]);
 const lastFetchTime = ref('');
 const sessionError = ref('');
 
@@ -10,24 +10,18 @@ const refreshSession = async () => {
   lastFetchTime.value = new Date().toLocaleTimeString();
 
   try {
-    // console.log('[AuthDebug] Manually fetching session');
     await fetchSession();
 
-    // Check cookies
     const cookies = document.cookie.split(';').map((c) => c.trim());
-    sessionCookies.value = cookies.filter(
+    authCookies.value = cookies.filter(
       (c) =>
-        c.startsWith('auth.session=') || c.startsWith('nuxt-auth-session='),
+        c.startsWith('auth.accessToken=') ||
+        c.startsWith('auth.refreshToken=') ||
+        c.startsWith('auth.user='),
     );
-
-    // console.log('[AuthDebug] After fetch:', {
-    //   loggedIn: loggedIn.value,
-    //   user: user.value,
-    //   session: session.value,
-    // });
   } catch (err) {
     console.error('[AuthDebug] Error fetching session:', err);
-    sessionError.value = err.message;
+    sessionError.value = (err as Error).message;
   }
 };
 
@@ -36,28 +30,20 @@ const clearAll = async () => {
   await refreshSession();
 };
 
-// Watch for session changes for debugging
-watch(loggedIn, (newValue, oldValue) => {
-  // console.log('[useAuth] loggedIn changed:', {
-  //   from: oldValue,
-  //   to: newValue,
-  // });
-});
-
 watch(user, (newValue, oldValue) => {
-  // console.log('[useAuth] user changed:', {
-  //   from: oldValue?.id,
-  //   to: newValue?.id,
-  //   newUserData: newValue,
-  // });
+  console.log('[useAuth] user changed:', {
+    from: oldValue?.id,
+    to: newValue?.id,
+    newUserData: newValue,
+  });
 });
 
 watch(session, (newValue, oldValue) => {
-  // console.log('[useAuth] session changed:');
+  console.log('[useAuth] session changed:');
   const { user: sessionUser, accessToken, refreshToken } = newValue || {};
-  // console.log(' session sessionUser: ', sessionUser);
-  // console.log(' session accessToken: ', accessToken);
-  // console.log(' session refreshToken: ', refreshToken);
+  console.log(' session sessionUser: ', sessionUser);
+  console.log(' session accessToken: ', accessToken);
+  console.log(' session refreshToken: ', refreshToken);
 });
 
 // Auto-refresh on mount
@@ -79,15 +65,9 @@ onMounted(() => {
     </div>
 
     <div class="space-y-1">
-      <div>
-        🔐 <strong>loggedIn:</strong> {{ loggedIn ? '✅' : '❌' }}
-        {{ String(loggedIn) }}
-      </div>
       <div>👤 <strong>user:</strong> {{ user?.email || 'null' }}</div>
       <div>🆔 <strong>userId:</strong> {{ user?.id || 'null' }}</div>
-      <div>
-        🍪 <strong>session cookies:</strong> {{ sessionCookies.length }}
-      </div>
+      <div>🍪 <strong>auth cookies:</strong> {{ authCookies.length }}</div>
       <div>
         📦 <strong>has accessToken:</strong>
         {{ !!session?.accessToken ? '✅' : '❌' }}

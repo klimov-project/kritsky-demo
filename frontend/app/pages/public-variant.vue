@@ -1,6 +1,9 @@
 <script setup lang="ts">
+const config = useRuntimeConfig();
+const apiUrl = config.public.apiUrl.replace(/\/$/, '');
+
 const { data: payload, pending, error, refresh } = await useFetch(
-  '/api/variants/runtime/pregenerated',
+  `${apiUrl}/variants/runtime/pregenerated`,
   {
     server: true,
   },
