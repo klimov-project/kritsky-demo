@@ -1,6 +1,28 @@
 @host_api = http://localhost:8000
 
+@email = test1@test.com
+@password = test111
+@contentType = application/json
+@temporaryJWT = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzOCIsInJvbGUiOiJ1c2VyIiwidHlwZSI6ImFjY2VzcyIsImlhdCI6MTc3OTQ0ODk1NSwiZXhwIjoxNzc5NDUyNTU1fQ.N-EA_zV3bhzJeOfbGn1cesNnAG5b84PLbFGKhVRxMKY
+
 ### Проверка работы сервера
 GET {{host_api}}/health
+
+ 
+### Вход в систему
+# @name login
+POST {{host_api}}/api/auth/login 
+Content-Type: {{contentType}}
+ 
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Проверка платежей
+GET {{host_api}}/api/shop/payments/history
+Authorization: {{temporaryJWT}}
+Content-Type: {{contentType}}
+
 
  
