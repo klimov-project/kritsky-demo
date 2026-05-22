@@ -58,11 +58,6 @@ onMounted(async () => {
             color: 'success',
             icon: 'i-lucide-circle-check',
           });
-
-          // Redirect to subscription page after 3 seconds
-          setTimeout(() => {
-            router.push('/profile/subscription');
-          }, 3000);
         }
       },
       onFailed: (status) => {

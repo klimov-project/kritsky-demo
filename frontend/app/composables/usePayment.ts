@@ -7,6 +7,7 @@ export interface PaymentPlan {
   id: string;
   name: string;
   price: number;
+  fullPrice: number;
   period: string;
   discount?: string;
   features: string[];
@@ -53,7 +54,8 @@ export const usePayment = () => {
     {
       id: 'monthly',
       name: 'Месячная подписка',
-      price: 890,
+      price: 890.67,
+      fullPrice: 890.67 * 1,
       period: 'месяц',
       features: [
         'Безлимитная генерация',
@@ -64,7 +66,8 @@ export const usePayment = () => {
     {
       id: 'yearly',
       name: 'На 6 месяцев подписка',
-      price: 699,
+      price: 690.67,
+      fullPrice: 890.67 * 6,
       period: '6 месяцев',
       discount: '21%',
       features: [
@@ -101,7 +104,7 @@ export const usePayment = () => {
 
     try {
       const paymentRequest: CreatePaymentRequest = {
-        amount: plan.price,
+        amount: plan.fullPrice,
         description: `${plan.name} - Критский ЕГЭ`,
         return_url: `${window.location.origin}/profile/subscription/success`,
       };
