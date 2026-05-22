@@ -81,12 +81,12 @@ const zclass = computed(() =>
             >
               Вариант недели
             </NuxtLink>
-            <NuxtLink
+            <!-- <NuxtLink
               to="/subscriptions"
               class="nav-link-animated text-[#333] font-serif text-[18px] uppercase"
             >
               Магазин
-            </NuxtLink>
+            </NuxtLink> -->
           </nav>
 
           <!-- Desktop Actions -->
@@ -185,12 +185,12 @@ const zclass = computed(() =>
           >
             Вариант недели
           </NuxtLink>
-          <NuxtLink
+          <!-- <NuxtLink
             to="/subscriptions"
             class="w-full min-h-[58px] rounded-[10px] bg-[#f6f6f6] text-[#333] font-serif text-[18px] uppercase flex items-center px-[24px]"
           >
             Магазин
-          </NuxtLink>
+          </NuxtLink> -->
         </nav>
         <div class="mt-[60px] flex flex-col gap-[5px]">
           <template v-if="isAuthenticated">

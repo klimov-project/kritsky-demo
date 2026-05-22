@@ -15,7 +15,6 @@ const {
   checkPaymentStatus,
   activateSubscription,
   pollPaymentStatus,
-  checkPaymentsList,
 } = usePayment();
 
 const isActivating = ref(false);
@@ -23,91 +22,31 @@ const paymentStatus = ref<
   'pending' | 'succeeded' | 'canceled' | 'rejected' | null
 >(null);
 const error = ref<string | null>(null);
-const paymentDetails = ref<{
-  amount: string;
-  description: string;
-  type: string;
-  expiresAt?: string;
-} | null>(null);
 
-// Get paymentId from URL params or payments list
-const paymentId = computed(async () => {
-  const urlPaymentId = route.query.id as string;
-  if (urlPaymentId) return urlPaymentId;
-
-  // Fetch payments list to find the latest payment
-  const response = await checkPaymentsList();
-  const payments = response?.items || [
-    {
-      id: 1,
-      createdAt: '2026-05-14T10:30:00Z',
-      paymentId: '31a1a746-000f-5000-b000-19cc5eb014ec',
-      amount: 299,
-      description: 'Месячная подписка Pro',
-      status: 'completed',
-      type: 'subscription',
-    },
-  ];
-
-  // Find the latest completed payment
-  const latestPayment = payments
-    .filter((p) => p.status === 'completed')
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    )[0];
-
-  return latestPayment?.paymentId || null;
-});
-
-// Calculate expiration date based on amount
-const calculateExpirationDate = (amount: string): string => {
-  const now = new Date();
-  if (amount.startsWith('699.')) {
-    now.setMonth(now.getMonth() + 6); // 6 months
-  } else if (amount.startsWith('890.')) {
-    now.setMonth(now.getMonth() + 1); // 1 month
-  } else {
-    now.setMonth(now.getMonth() + 1); // Default: 1 month
-  }
-  return now.toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-};
+// Get payment_id from URL params
+const paymentId = computed(() => route.query.id as string);
+console.log('paymentId.value', paymentId.value);
 
 // Check payment status on mount
 onMounted(async () => {
-  const id = await paymentId.value;
-  if (!id) {
+  if (!paymentId.value) {
     error.value = 'Информация о платеже не найдена';
     return;
   }
 
   // Poll payment status
   pollPaymentStatus(
-    id,
+    paymentId.value,
     {
       onPending: (status) => {
         paymentStatus.value = status.status;
+        console.log('Payment pending...');
       },
       onSuccess: async (status) => {
         paymentStatus.value = status.status;
-        const response = await checkPaymentsList();
-        const payments = response?.items || [];
-        const payment = payments.find((p) => p.paymentId === id);
+        console.log('Payment succeeded!', status);
 
-        if (payment) {
-          paymentDetails.value = {
-            amount: payment.amount.toString(),
-            description: payment.description,
-            type: payment.type,
-            expiresAt: calculateExpirationDate(payment.amount.toString()),
-          };
-        }
-
-        // Activate subscription
+        // Activate subscription after successful payment
         isActivating.value = true;
         const activated = await activateSubscription();
         isActivating.value = false;
@@ -122,13 +61,14 @@ onMounted(async () => {
 
           // Redirect to subscription page after 3 seconds
           setTimeout(() => {
-            router.push('/subscription');
+            router.push('/profile/subscription');
           }, 3000);
         }
       },
       onFailed: (status) => {
         paymentStatus.value = status?.status || 'rejected';
         error.value = 'Оплата не прошла. Пожалуйста, попробуйте снова.';
+
         toast.add({
           title: 'Ошибка оплаты',
           description: error.value,
@@ -139,7 +79,7 @@ onMounted(async () => {
     },
     3000,
     30,
-  );
+  ); // Check every 3 seconds, max 30 attempts (90 seconds)
 });
 
 const goBack = () => {
@@ -180,26 +120,15 @@ const goBack = () => {
           class="w-16 h-16 text-emerald-500 mx-auto mb-4"
         />
         <h2 class="text-xl font-semibold mb-2">Оплата прошла успешно!</h2>
-
-        <div v-if="paymentDetails" class="mb-6 text-left space-y-2">
-          <p class="text-gray-600">
-            Вы купили: <strong>{{ paymentDetails.description }}</strong>
-          </p>
-          <p class="text-gray-600">
-            Подписка активна до: <strong>{{ paymentDetails.expiresAt }}</strong>
-          </p>
-          <p class="text-gray-500 text-sm">
-            До этого момента доступны безлимитные генерации вариантов и по 3
-            скачивания в день.
-          </p>
-        </div>
-
-        <p class="text-gray-500 mb-4" v-else>
+        <p class="text-gray-500 mb-4" v-if="!isActivating">
           Подписка активирована. Спасибо за покупку!
         </p>
-
+        <p class="text-gray-500 mb-4" v-else>
+          Активация подписки...
+        </p>
         <div class="flex gap-3 justify-center">
           <UButton @click="goBack" color="gray">Вернуться к подписке</UButton>
+
           <NuxtLink
             to="/create-variant"
             class="px-6 py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"

@@ -113,9 +113,6 @@ export const usePayment = () => {
           body: JSON.stringify(paymentRequest),
         },
       );
-
-      console.log('[Payment] Create payment response:', response);
-      console.log('[Payment] Payment URL:', response.confirmation_url);
       if (!response.confirmation_url) {
         throw new Error('Payment URL not received');
       }
@@ -156,6 +153,26 @@ export const usePayment = () => {
       return null;
     } finally {
       isProcessing.value = false;
+    }
+  };
+
+  const checkPaymentsList = async () => {
+    try {
+      const response = await authApi.apiWithAuth<PaymentStatusResponse[]>(
+        '/shop/payments/history',
+        {
+          method: 'GET',
+        },
+      );
+      return response;
+    } catch (err) {
+      const fetchError = err as {
+        data?: { message?: string };
+        statusMessage?: string;
+        message?: string;
+      };
+      console.error('[Payment] Check payments list error:', fetchError);
+      return [];
     }
   };
 
@@ -407,6 +424,7 @@ export const usePayment = () => {
 
     // Methods
     createPayment,
+    checkPaymentsList,
     checkPaymentStatus,
     pollPaymentStatus,
     purchaseSubscription,

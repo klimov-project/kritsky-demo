@@ -263,13 +263,9 @@ export interface ThemeOption {
   disabled?: boolean;
 }
 
-export interface KnowledgeBasePayload {
+export interface KnowledgeBaseNitroResponse extends KnowledgeBasePayload {
   works?: Work[];
   poets?: Poet[];
-  poems?: Poem[];
-  themes?: ThemeOption[];
-  stats?: Record<string, any>;
-  settings?: KnowledgeBaseSettings;
   block3?: Block3Data;
   _metadata?: {
     hash: string;
@@ -280,4 +276,27 @@ export interface KnowledgeBasePayload {
       totalEntities: number;
     };
   };
+}
+
+export interface KnowledgeBasePayload extends KnowledgeBaseResponse {
+  poems?: Poem[];
+  themes?: ThemeOption[];
+  stats?: Record<string, any>;
+  _metadata?: {
+    hash: string;
+    fetchedAt: string;
+    computed: {
+      variantsCount: number;
+      poetsCount: number;
+      totalEntities: number;
+    };
+  };
+}
+
+export interface KnowledgeBaseResponse {
+  works?: Work[];
+  poets?: Poet[];
+  block3?: Block3Data;
+  settings: KnowledgeBaseSettings;
+  updatedAt: Date;
 }

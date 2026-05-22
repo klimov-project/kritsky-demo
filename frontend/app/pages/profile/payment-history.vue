@@ -1,19 +1,15 @@
 <script setup lang="ts">
-/**
- * Payment History page - displays mock payment history
- */
-
 definePageMeta({
   middleware: 'auth',
   layout: 'profile',
 });
 
-const config = useRuntimeConfig();
-const apiUrl = config.public.apiUrl;
+const { checkPaymentsList } = usePayment();
 
 interface Payment {
   id: number;
-  date: string;
+  createdAt: string;
+  paymentId: string;
   amount: number;
   description: string;
   status: 'completed' | 'pending' | 'failed';
@@ -28,9 +24,7 @@ const error = ref<string | null>(null);
 onMounted(async () => {
   try {
     // Try to fetch from API first
-    const response = await $fetch<{ items: Payment[] }>(
-      `${apiUrl}/shop/payments/history`,
-    ).catch(() => null);
+    const response = await checkPaymentsList();
 
     if (response?.items) {
       payments.value = response.items;
@@ -39,7 +33,8 @@ onMounted(async () => {
       payments.value = [
         {
           id: 1,
-          date: '2026-05-14T10:30:00Z',
+          createdAt: '2026-05-14T10:30:00Z',
+          paymentId: '31a1a746-000f-5000-b000-19cc5eb014ec',
           amount: 299,
           description: 'Месячная подписка Pro',
           status: 'completed',
@@ -47,7 +42,8 @@ onMounted(async () => {
         },
         {
           id: 2,
-          date: '2026-04-14T14:15:00Z',
+          createdAt: '2026-04-14T14:15:00Z',
+          paymentId: '31a1a746-000f-5000-b000-19cc5eb014ec',
           amount: 299,
           description: 'Месячная подписка Pro',
           status: 'completed',
@@ -55,7 +51,8 @@ onMounted(async () => {
         },
         {
           id: 3,
-          date: '2026-03-20T09:45:00Z',
+          createdAt: '2026-03-20T09:45:00Z',
+          paymentId: '31a1a746-000f-5000-b000-19cc5eb014ec',
           amount: 99,
           description: 'Пакет скачиваний (10 шт)',
           status: 'completed',
@@ -63,7 +60,8 @@ onMounted(async () => {
         },
         {
           id: 4,
-          date: '2026-03-14T16:20:00Z',
+          createdAt: '2026-03-14T16:20:00Z',
+          paymentId: '31a1a746-000f-5000-b000-19cc5eb014ec',
           amount: 299,
           description: 'Месячная подписка Pro',
           status: 'completed',
@@ -71,7 +69,8 @@ onMounted(async () => {
         },
         {
           id: 5,
-          date: '2026-02-28T11:00:00Z',
+          createdAt: '2026-02-28T11:00:00Z',
+          paymentId: '31a1a746-000f-5000-b000-19cc5eb014ec',
           amount: 199,
           description: 'Пакет скачиваний (25 шт)',
           status: 'failed',
@@ -127,24 +126,13 @@ const getStatusColor = (status: Payment['status']) => {
 const getTypeIcon = (type: Payment['type']) => {
   return type === 'subscription' ? 'i-lucide-crown' : 'i-lucide-package';
 };
-
-// Calculate totals
-const totalSpent = computed(() => {
-  return payments.value
-    .filter((p) => p.status === 'completed')
-    .reduce((sum, p) => sum + p.amount, 0);
-});
-
-const completedCount = computed(() => {
-  return payments.value.filter((p) => p.status === 'completed').length;
-});
 </script>
 
 <template>
   <!-- Header -->
   <div class="border-b border-gray-200 mb-8 pb-4">
     <h1 class="text-2xl font-bold">История оплат</h1>
-    <p class="text-gray-500 mt-1">Все ваши транзакции и платежи</p>
+    <p class="text-gray-500 mt-1">Здесь собрана история вашей оплаты</p>
   </div>
 
   <!-- Loading State -->
@@ -165,38 +153,6 @@ const completedCount = computed(() => {
   </div>
 
   <template v-else>
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-      <div class="bg-gray-50 rounded-xl p-5">
-        <div class="flex items-center gap-3">
-          <div
-            class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center"
-          >
-            <UIcon name="i-lucide-wallet" class="w-5 h-5 text-emerald-600" />
-          </div>
-          <div>
-            <p class="text-sm text-gray-500">Всего потрачено</p>
-            <p class="text-xl font-bold">
-              {{ formatAmount(totalSpent) }}
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="bg-gray-50 rounded-xl p-5">
-        <div class="flex items-center gap-3">
-          <div
-            class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center"
-          >
-            <UIcon name="i-lucide-receipt" class="w-5 h-5 text-blue-600" />
-          </div>
-          <div>
-            <p class="text-sm text-gray-500">Успешных платежей</p>
-            <p class="text-xl font-bold">{{ completedCount }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Empty State -->
     <div
       v-if="payments.length === 0"
@@ -221,43 +177,50 @@ const completedCount = computed(() => {
     <div v-else class="space-y-4">
       <div
         v-for="payment in payments"
-        :key="payment.id"
+        :key="payment.paymentId"
         class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
       >
-        <div class="flex items-center gap-4">
-          <div
-            class="w-12 h-12 rounded-full bg-white flex items-center justify-center"
-          >
-            <UIcon
-              :name="getTypeIcon(payment.type)"
-              class="w-6 h-6 text-gray-600"
-            />
+        <!-- <pre>
+    payment: {{payment}}
+      </pre> -->
+
+        <!-- 31a25321-000f-5000-b000-123a06678dd8 -->
+        <NuxtLink :to="`/profile/payment?id=${payment.paymentId}`">
+          <div class="flex items-center gap-4">
+            <div
+              class="w-12 h-12 rounded-full bg-white flex items-center justify-center"
+            >
+              <UIcon
+                :name="getTypeIcon(payment.type)"
+                class="w-6 h-6 text-gray-600"
+              />
+            </div>
+            <div>
+              <p class="font-medium">{{ payment.description }}</p>
+              <p class="text-sm text-gray-500">
+                {{ formatDate(payment.createdAt) }}
+              </p>
+            </div>
           </div>
-          <div>
-            <p class="font-medium">{{ payment.description }}</p>
-            <p class="text-sm text-gray-500">
-              {{ formatDate(payment.date) }}
-            </p>
+          <div class="flex items-center gap-4">
+            <span
+              class="px-2.5 py-1 text-xs font-medium rounded-full"
+              :class="getStatusColor(payment.status)"
+            >
+              {{ getStatusLabel(payment.status) }}
+            </span>
+            <span
+              class="font-bold"
+              :class="
+                payment.status === 'failed'
+                  ? 'text-gray-400 line-through'
+                  : 'text-gray-900'
+              "
+            >
+              {{ formatAmount(payment.amount) }}
+            </span>
           </div>
-        </div>
-        <div class="flex items-center gap-4">
-          <span
-            class="px-2.5 py-1 text-xs font-medium rounded-full"
-            :class="getStatusColor(payment.status)"
-          >
-            {{ getStatusLabel(payment.status) }}
-          </span>
-          <span
-            class="font-bold"
-            :class="
-              payment.status === 'failed'
-                ? 'text-gray-400 line-through'
-                : 'text-gray-900'
-            "
-          >
-            {{ formatAmount(payment.amount) }}
-          </span>
-        </div>
+        </NuxtLink>
       </div>
     </div>
 
