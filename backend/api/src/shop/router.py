@@ -28,6 +28,7 @@ from core.src.repos import (
     DbPaymentsRepo,
     DbUsersRepo,
 )
+from api.src.payments.yookassa_service import yookassa_service
 from api.src.variants.router import _load_knowledge_base_payload
 
 from api.src.auth.utils import AuthenticatedAdmin, AuthenticatedUser, get_current_admin, get_current_user
@@ -282,11 +283,35 @@ async def list_purchases(auth: AuthenticatedUser = Depends(get_current_user)) ->
         return PurchasedItemsListResponse(items=[_order_item_to_purchase_dto(item, include_payload=False) for item in items])
 
 
+async def _refresh_payment_status(payment: Payment, session) -> Payment:
+    if not payment.paymentId:
+        return payment
+    if payment.paymentStatus and payment.paymentStatus.lower() != "pending":
+        return payment
+
+    try:
+        status_info = yookassa_service.get_payment_status(payment.paymentId)
+    except Exception:
+        return payment
+
+    actual_status = status_info.get("status")
+    if actual_status and actual_status != payment.paymentStatus:
+        payment.paymentStatus = actual_status
+        await DbPaymentsRepo().aupdate(payment, session)
+
+    return payment
+
+
 @router.get("/payments/history", response_model=PaymentHistoryListResponse)
 async def list_payment_history(auth: AuthenticatedUser = Depends(get_current_user)) -> PaymentHistoryListResponse:
     async with ainit_session() as session:
         payments = await DbPaymentsRepo().aget_user_payment_history(auth.user.id, session)
-        return PaymentHistoryListResponse(items=[PaymentHistoryItemResponse(id=payment.id, paymentId=payment.paymentId, orderId=payment.order_id, amount=payment.amount or Decimal("0.00"), status=payment.paymentStatus, method=payment.method, kind=_resolve_payment_kind(payment), createdAt=payment.createdAt or datetime.utcnow()) for payment in payments])
+        updated_payments = []
+        for payment in payments:
+            payment = await _refresh_payment_status(payment, session)
+            updated_payments.append(payment)
+
+        return PaymentHistoryListResponse(items=[PaymentHistoryItemResponse(id=payment.id, paymentId=payment.paymentId, orderId=payment.order_id, amount=payment.amount or Decimal("0.00"), status=payment.paymentStatus, method=payment.method, kind=_resolve_payment_kind(payment), createdAt=payment.createdAt or datetime.utcnow()) for payment in updated_payments])
 
 
 @router.get("/purchases/{purchase_id}", response_model=PurchasedItemResponse)
