@@ -98,7 +98,7 @@ onMounted(async () => {
       <button
         class="px-5 py-2.5 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2 disabled:opacity-50"
         :disabled="isProcessing || hasActiveSubscription"
-        @click="purchaseSubscription"
+        @click="purchaseSubscription('5')"
       >
         <UIcon
           v-if="isProcessing"
