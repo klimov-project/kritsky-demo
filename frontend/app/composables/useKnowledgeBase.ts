@@ -36,7 +36,24 @@ export function useKnowledgeBase() {
         return cached || undefined;
       },
       transform: (response) => {
+        // Гидрация только если хеш изменился
+          console.log(
+            'store.lastKnownHash: ',
+            store.lastKnownHash,
+          );
         if (response._metadata?.hash !== store.lastKnownHash) {
+          console.log(
+            '[Store] Hydrating, response.updatedAt:',
+            response.updatedAt,
+          );
+          console.log(
+            '[Store] Hydrating, response.data: ',
+            response.data,
+          );
+          console.log(
+            '[Store] Hydrating, response._metadata:',
+            response._metadata,
+          );
           console.log('[Store] Hydrating, new hash:', response._metadata?.hash);
           store.hydrate(response);
         }
