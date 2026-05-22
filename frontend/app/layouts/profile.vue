@@ -273,14 +273,18 @@ const hasOverflowHidden = computed(() => !isVariantPage.value);
           </div>
           <div class="flex items-center justify-center gap-[5px]">
             <a
-              href="#"
+              href="https://www.youtube.com/@romankritsky"
               class="w-[30px] h-[30px] rounded-full bg-[#333] text-white flex items-center justify-center hover:opacity-75 transition-opacity"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <IconYT />
             </a>
             <a
-              href="#"
+              href="https://t.me/romankritsky"
               class="w-[30px] h-[30px] rounded-full bg-[#333] text-white flex items-center justify-center hover:opacity-75 transition-opacity"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <IconTG />
             </a>
@@ -318,14 +322,18 @@ const hasOverflowHidden = computed(() => !isVariantPage.value);
             </div>
             <div class="flex gap-[5px]">
               <a
-                href="#"
+                href="https://www.youtube.com/@romankritsky"
                 class="w-[34px] h-[34px] rounded-full bg-[#333] text-white flex items-center justify-center"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <IconYT />
               </a>
               <a
-                href="#"
+                href="https://t.me/romankritsky"
                 class="w-[34px] h-[34px] rounded-full bg-[#333] text-white flex items-center justify-center"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <IconTG />
               </a>

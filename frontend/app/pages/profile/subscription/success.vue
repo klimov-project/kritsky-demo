@@ -12,7 +12,6 @@ const router = useRouter();
 const toast = useToast();
 
 const {
-  checkPaymentStatus,
   activateSubscription,
   pollPaymentStatus,
   checkPaymentsList,
@@ -23,58 +22,92 @@ const paymentStatus = ref<
   'pending' | 'succeeded' | 'canceled' | 'rejected' | null
 >(null);
 const error = ref<string | null>(null);
-const paymentDetails = ref<{
-  amount: string;
-  description: string;
-  type: string;
-  expiresAt?: string;
+const subscriptionInfo = ref<{
+  type: 'monthly' | 'semiAnnual' | null;
+  expiresAt: string | null;
+  downloadsPerDay: number;
+  unlimitedGenerations: boolean;
 } | null>(null);
 
-// Get paymentId from URL params or payments list
+// Get paymentId from URL params or fetch from payments list
 const paymentId = computed(async () => {
   const urlPaymentId = route.query.id as string;
   if (urlPaymentId) return urlPaymentId;
+  // Сортируем items по id (по возрастанию)
+  const sortedItems = [...(response?.items || [])].sort((a, b) => {
+    const idA = typeof a.id === 'number' ? a.id : parseInt(a.id);
+    const idB = typeof b.id === 'number' ? b.id : parseInt(b.id);
+    return idA - idB;
+  });
 
-  // Fetch payments list to find the latest payment
-  const response = await checkPaymentsList();
-  const payments = response?.items || [
-    {
-      id: 1,
-      createdAt: '2026-05-14T10:30:00Z',
-      paymentId: '31a1a746-000f-5000-b000-19cc5eb014ec',
-      amount: 299,
-      description: 'Месячная подписка Pro',
-      status: 'completed',
-      type: 'subscription',
-    },
-  ];
+  const payments = sortedItems.length > 0 ? sortedItems : [];
 
-  // Find the latest completed payment
-  const latestPayment = payments
-    .filter((p) => p.status === 'completed')
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    )[0];
+  // Find the latest completed payment (по createdAt)
+  const completedPayments = payments.filter((p) => p.status === 'succeeded');
+
+  console.log(
+    '[paymentId] Completed payments count:',
+    completedPayments.length,
+  );
+  console.log(
+    '[paymentId] Completed payments:',
+    JSON.stringify(completedPayments, null, 2),
+  );
+
+  const latestPayment = completedPayments.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  )[0];
+
+  console.log('[paymentId] Latest payment:', latestPayment);
+  console.log(
+    '[paymentId] Returning paymentId:',
+    latestPayment?.paymentId || null,
+  );
 
   return latestPayment?.paymentId || null;
 });
 
-// Calculate expiration date based on amount
-const calculateExpirationDate = (amount: string): string => {
+// Calculate subscription expiration date
+const calculateExpirationDate = (
+  amount: string | number,
+): { type: 'monthly' | 'semiAnnual'; expiresAt: string } => {
+  const amountStr = String(amount);
   const now = new Date();
-  if (amount.startsWith('699.')) {
-    now.setMonth(now.getMonth() + 6); // 6 months
-  } else if (amount.startsWith('890.')) {
-    now.setMonth(now.getMonth() + 1); // 1 month
+
+  if (amountStr.startsWith('4144.')) {
+    // 6 months subscription
+    now.setMonth(now.getMonth() + 6);
+    return {
+      type: 'semiAnnual',
+      expiresAt: now.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }),
+    };
+  } else if (amountStr.startsWith('890.')) {
+    // 1 month subscription
+    now.setMonth(now.getMonth() + 1);
+    return {
+      type: 'monthly',
+      expiresAt: now.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }),
+    };
   } else {
-    now.setMonth(now.getMonth() + 1); // Default: 1 month
+    // Default: 1 month (fallback)
+    now.setMonth(now.getMonth() + 1);
+    return {
+      type: 'monthly',
+      expiresAt: now.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }),
+    };
   }
-  return now.toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
 };
 
 // Check payment status on mount
@@ -94,16 +127,21 @@ onMounted(async () => {
       },
       onSuccess: async (status) => {
         paymentStatus.value = status.status;
-        const response = await checkPaymentsList();
-        const payments = response?.items || [];
-        const payment = payments.find((p) => p.paymentId === id);
 
-        if (payment) {
-          paymentDetails.value = {
-            amount: payment.amount.toString(),
-            description: payment.description,
-            type: payment.type,
-            expiresAt: calculateExpirationDate(payment.amount.toString()),
+        // Get payment details to determine subscription type
+        const paymentsResponse = await checkPaymentsList();
+        const payments = paymentsResponse?.items || [];
+        const currentPayment = payments.find((p) => p.paymentId === id);
+
+        if (currentPayment) {
+          const { type, expiresAt } = calculateExpirationDate(
+            currentPayment.amount,
+          );
+          subscriptionInfo.value = {
+            type,
+            expiresAt,
+            downloadsPerDay: 3,
+            unlimitedGenerations: true,
           };
         }
 
@@ -122,13 +160,14 @@ onMounted(async () => {
 
           // Redirect to subscription page after 3 seconds
           setTimeout(() => {
-            router.push('/subscription');
-          }, 3000);
+            router.push('/profile/subscription');
+          }, 10000);
         }
       },
       onFailed: (status) => {
         paymentStatus.value = status?.status || 'rejected';
         error.value = 'Оплата не прошла. Пожалуйста, попробуйте снова.';
+
         toast.add({
           title: 'Ошибка оплаты',
           description: error.value,
@@ -181,17 +220,30 @@ const goBack = () => {
         />
         <h2 class="text-xl font-semibold mb-2">Оплата прошла успешно!</h2>
 
-        <div v-if="paymentDetails" class="mb-6 text-left space-y-2">
+        <div v-if="subscriptionInfo" class="mb-6 text-left space-y-2">
           <p class="text-gray-600">
-            Вы купили: <strong>{{ paymentDetails.description }}</strong>
+            Вы купили подписку на
+            <span class="font-semibold">
+              {{
+                subscriptionInfo.type === 'semiAnnual' ? '6 месяцев' : '1 месяц'
+              }} </span
+            >.
           </p>
           <p class="text-gray-600">
-            Подписка активна до: <strong>{{ paymentDetails.expiresAt }}</strong>
+            Она истекает
+            <span class="font-semibold">{{ subscriptionInfo.expiresAt }}</span
+            >.
           </p>
-          <p class="text-gray-500 text-sm">
-            До этого момента доступны безлимитные генерации вариантов и по 3
-            скачивания в день.
+          <p class="text-gray-600">
+            До этого момента вам доступны:
           </p>
+          <ul class="list-disc list-inside text-gray-600 pl-4">
+            <li>Безлимитные генерации вариантов;</li>
+            <li>
+              {{ subscriptionInfo.downloadsPerDay }} бесплатных скачивания в
+              день.
+            </li>
+          </ul>
         </div>
 
         <p class="text-gray-500 mb-4" v-else>
