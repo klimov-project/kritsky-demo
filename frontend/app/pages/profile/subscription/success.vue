@@ -33,6 +33,8 @@ const subscriptionInfo = ref<{
 const paymentId = computed(async () => {
   const urlPaymentId = route.query.id as string;
   if (urlPaymentId) return urlPaymentId;
+
+  const response = await checkPaymentsList();
   // Сортируем items по id (по возрастанию)
   const sortedItems = [...(response?.items || [])].sort((a, b) => {
     const idA = typeof a.id === 'number' ? a.id : parseInt(a.id);

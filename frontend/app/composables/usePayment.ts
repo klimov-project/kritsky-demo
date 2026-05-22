@@ -67,7 +67,7 @@ export const usePayment = () => {
       id: 'yearly',
       name: 'На 6 месяцев подписка',
       price: 690.67,
-      fullPrice: 890.67 * 6,
+      fullPrice: 690.67 * 6,
       period: '6 месяцев',
       discount: '21%',
       features: [
