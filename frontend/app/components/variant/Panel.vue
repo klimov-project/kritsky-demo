@@ -6,7 +6,7 @@ defineProps<{
   disabled?: boolean;
 }>();
 
-const { isAuthenticated } = useAuth();
+const { isAuthenticated, isLocked } = useAuth();
 const { showPaywall } = useSubscription();
 const {
   downloadVariantPdf,
@@ -86,12 +86,12 @@ const handleShare = async () => {
         >
           <p>
             Статус:
-            <span class="font-semibold text-gray-400">{{
-              isAuthenticated ? 'Подписка активна' : 'Базовый доступ'
-            }}</span>
+            <span class="font-semibold text-gray-400">
+              {{ isLocked ? 'Базовый доступ' : 'Подписка активна' }}
+            </span>
           </p>
           <p v-if="!isAuthenticated" class="text-sm">
-            Оформите подписку для всех функций
+            Зарегистрируйтесь для проверки всех функций
           </p>
         </div>
       </div>
