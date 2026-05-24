@@ -298,8 +298,6 @@ export const usePayment = () => {
   const activateSubscription = async () => {
     isProcessing.value = true;
     error.value = null;
-    console.log('[Payment] Activating subscription...');
-    console.log('[Payment] authApi instance:', authApi);
 
     try {
       const response = await authApi.apiWithAuth<{
