@@ -293,10 +293,22 @@ export interface KnowledgeBasePayload extends KnowledgeBaseResponse {
   };
 }
 
-export interface KnowledgeBaseResponse {
+export interface KnowledgeBaseResponseRaw {
   works?: Work[];
   poets?: Poet[];
   block3?: Block3Data;
   settings: KnowledgeBaseSettings;
   updatedAt: Date;
+}
+
+export interface KnowledgeBaseResponse extends KnowledgeBaseResponseRaw {
+  _metadata?: {
+    hash: string;
+    fetchedAt: string;
+    computed: {
+      variantsCount: number;
+      poetsCount: number;
+      totalEntities: number;
+    };
+  };
 }
