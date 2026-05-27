@@ -44,9 +44,7 @@ export function useKnowledgeBase() {
   const store = useKnowledgeBaseStore();
   const config = useRuntimeConfig();
 
-  const apiUrl = import.meta.server
-    ? `${config.apiBackendBase}/api`
-    : config.public.nitroApiUrl;
+  const apiUrl = config.public.nitroApiUrl;
 
   const { data, pending, error, refresh } = useFetch<KnowledgeBaseResponse>(
     `${apiUrl}/knowledge-base`,
