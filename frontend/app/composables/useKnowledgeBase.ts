@@ -54,17 +54,22 @@ export function useKnowledgeBase() {
       server: true,
       key: 'knowledge-base',
       getCachedData: (key) => {
+        console.log('[Composable] getCachedData key:', key);
         const cached = useNuxtApp().payload.data[key];
         return cached || undefined;
       },
       transform: (response) => {
+        console.log('[Composable] transform:');
         // Гидрация только если хеш изменился
         if (response._metadata?.hash !== store.lastKnownHash) {
           console.log(
-            '[Store] Hydrating, response._metadata:',
+            '[Composable] Hydrating, response._metadata:',
             response._metadata,
           );
-          console.log('[Store] Hydrating, new hash:', response._metadata?.hash);
+          console.log(
+            '[Composable] Hydrating, new hash:',
+            response._metadata?.hash,
+          );
           store.hydrate(response);
         }
         return response;
