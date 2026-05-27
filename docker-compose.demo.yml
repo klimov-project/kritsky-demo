@@ -9,7 +9,11 @@ services:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-kritsky}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-kritsky}",
+        ]
       interval: 3s
       timeout: 3s
       retries: 10
@@ -33,10 +37,8 @@ services:
       - proxy-net
 
   redis-cache:
-    image: redis:7-alpine 
+    image: redis:7-alpine
     restart: unless-stopped
-    volumes:
-      - redis_cache_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -119,7 +121,7 @@ volumes:
   redis_cache_data:
   postgres_data:
   redis_data:
-  
+
 networks:
   proxy-net:
     external: true

@@ -60,9 +60,11 @@ export default defineCachedEventHandler(
     // 5. Преобразуем тяжёлый backend payload в лёгкий frontend payload
     const lightPayload = transformToKnowledgeBasePayload(rawPayload);
     const enrichedPayload = enrichPayload(lightPayload, rawPayload);
+    console.log('[KB] Enriched payload keys:', Object.keys(enrichedPayload));
+    console.log('[KB] _metadata exists:', !!enrichedPayload._metadata);
     console.log(
-      'enrichedPayload computed: ',
-      enrichedPayload._metadata.computed,
+      '[KB] _metadata.computed:',
+      enrichedPayload._metadata?.computed,
     );
 
     // 6. Сохраняем в Redis
@@ -76,7 +78,7 @@ export default defineCachedEventHandler(
   },
   {
     maxAge: maxAgeNitro,
-    swr: true, // После `maxAgeNitro` сек при запросе — отдаёт stale и фоново обновляет
+    swr: true,
     name: 'knowledge-base',
   },
 );
@@ -88,8 +90,10 @@ function enrichPayload(payload: KnowledgeBasePayload, rawPayload?: any) {
     .update(payloadString)
     .digest('hex');
 
+  const normalized = normalizeKnowledgeBasePayload(payload);
+
   return {
-    ...payload,
+    ...normalized,
     _metadata: {
       hash: currentHash,
       fetchedAt: new Date().toISOString(),
