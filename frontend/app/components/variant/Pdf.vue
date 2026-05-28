@@ -11,6 +11,16 @@ const generatePdf = async () => {
     const html2canvas = (await import('html2canvas')).default;
     const jsPDF = (await import('jspdf')).default;
 
+    const fontUrl = '/font/MinionPro-Regular.ttf';
+    const fontResponse = await fetch(fontUrl);
+    const fontData = await fontResponse.arrayBuffer();
+    const fontBase64 = btoa(
+      new Uint8Array(fontData).reduce(
+        (data, byte) => data + String.fromCharCode(byte),
+        '',
+      ),
+    );
+
     const element = ticketContainer.value;
     if (!element) throw new Error('Container not found');
 
@@ -18,130 +28,182 @@ const generatePdf = async () => {
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
-    const headerHeight = 15;
-    const footerHeight = 15;
+    const headerHeight = 14;
+    const footerHeight = 14;
     const contentWidth = pageWidth;
-    const contentHeight = pageHeight - headerHeight - footerHeight;
+    const contentHeight = pageHeight - headerHeight - footerHeight; //  компенсация возможных погрешностей при рендеринге
 
     console.log('Page height:', pageHeight, 'mm');
     console.log('Content height:', contentHeight, 'mm');
     console.log('Header:', headerHeight, 'mm / Footer:', footerHeight, 'mm');
 
-    /**
-     * Renders a section, stretching it to fill complete pages.
-     */
+    const paginateSection = (sectionEl, contentHeightPx) => {
+      const pages = [];
+      let currentPage = [];
+      let currentPageHeight = 0;
+      const atoms = getAtomicBlocks(sectionEl);
+      for (const atom of atoms) {
+        const atomHeight = atom.offsetHeight + 24;
+        if (atomHeight > contentHeightPx) {
+          if (currentPage.length > 0) {
+            pages.push(currentPage);
+            currentPage = [];
+            currentPageHeight = 0;
+          }
+          pages.push([atom]);
+          continue;
+        }
+
+        console.log(
+          'currentPageHeight + atomHeight:',
+          currentPageHeight,
+          'px + ',
+          atomHeight,
+          'px',
+        );
+        console.log('Content px height:', contentHeightPx, 'px');
+
+        if (currentPageHeight + atomHeight > contentHeightPx) {
+          pages.push(currentPage);
+          currentPage = [atom];
+          currentPageHeight = atomHeight;
+        } else {
+          currentPage.push(atom);
+          currentPageHeight += atomHeight;
+        }
+      }
+      if (currentPage.length > 0) {
+        pages.push(currentPage);
+      }
+      return pages;
+    };
+
+    const getAtomicBlocks = (container) => {
+      const atoms = [];
+      const children = Array.from(container.children);
+      for (const child of children) {
+        if (
+          child.tagName === 'TABLE' ||
+          child.tagName === 'H1' ||
+          child.tagName === 'H2' ||
+          child.tagName === 'H3' ||
+          child.classList.contains('answer-item')
+        ) {
+          atoms.push(child);
+        } else {
+          atoms.push(child);
+        }
+      }
+      return atoms;
+    };
+
     const renderSection = async (sectionEl, sectionName) => {
-      const originalHeight = sectionEl.style.height;
-      const originalOverflow = sectionEl.style.overflow;
+      const pxPerMm = sectionEl.scrollWidth / contentWidth;
+      const contentHeightPx = contentHeight * pxPerMm;
+      const pages = paginateSection(sectionEl, contentHeightPx);
+      console.log(`Section "${sectionName}": ${pages.length} page(s)`);
+      for (let i = 0; i < pages.length; i++) {
+        const tempContainer = document.createElement('div');
+        tempContainer.className = 'ticket-pdf-container';
+        tempContainer.style.cssText = `
+          width: ${sectionEl.scrollWidth}px;
+          min-height: ${contentHeightPx}px;
+          padding: 55px 55px 25px;
+          position: absolute;
+          left: -9999px;
+          top: 0;
+        `;
 
-      // 1. Measure natural height
-      let canvas = await html2canvas(sectionEl, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        width: sectionEl.scrollWidth,
-      });
+        const watermark = document.createElement('div');
+        watermark.style.cssText = `
+          position: absolute;
+          z-index: 0;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-image: url('/periya-full-x2-compress.svg');
+          background-repeat: repeat-y;
+          background-size: 100% auto;
+          background-position: center center;
+          opacity: 0.05;
+          pointer-events: none;
+        `;
+        tempContainer.style.position = 'absolute';
+        tempContainer.appendChild(watermark);
 
-      const imgHeight = (canvas.height * contentWidth) / canvas.width;
-      const pagesNeeded = Math.max(1, Math.ceil(imgHeight / contentHeight));
-
-      console.log(`Section "${sectionName}": ${pagesNeeded} page(s)`);
-
-      // 2. Stretch to fill complete pages
-      const pxPerMm = (sectionEl.scrollWidth / contentWidth) * 2;
-      const targetPxHeight = (pagesNeeded * contentHeight * pxPerMm) / 2;
-
-      sectionEl.style.height = `${targetPxHeight}px`;
-      sectionEl.style.overflow = 'hidden';
-
-      // 3. Re-render stretched
-      canvas = await html2canvas(sectionEl, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        width: sectionEl.scrollWidth,
-        height: sectionEl.scrollHeight,
-        windowHeight: sectionEl.scrollHeight,
-      });
-
-      sectionEl.style.height = originalHeight;
-      sectionEl.style.overflow = originalOverflow;
-
-      const sectionImgData = canvas.toDataURL('image/png');
-      const sectionFullImgHeight =
-        (canvas.height * contentWidth) / canvas.width;
-
-      // 4. Place image across pages
-      let position = 0;
-      for (let i = 0; i < pagesNeeded; i++) {
+        for (const atom of pages[i]) {
+          tempContainer.appendChild(atom.cloneNode(true));
+        }
+        document.body.appendChild(tempContainer);
+        const canvas = await html2canvas(tempContainer, {
+          scale: 3,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          width: sectionEl.scrollWidth,
+          height: Math.ceil(contentHeightPx),
+        });
+        document.body.removeChild(tempContainer);
         if (i > 0 || pdf.internal.pages.length > 1) {
           pdf.addPage();
         }
-
-        pdf.setFillColor(255, 255, 255);
-        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
-
-        pdf.addImage(
-          sectionImgData,
-          'PNG',
-          0,
-          position,
-          contentWidth,
-          sectionFullImgHeight,
-        );
-
-        position -= pageHeight;
+        const imgData = canvas.toDataURL('image/png'); 
+        pdf.addImage(imgData, 'PNG', 0, 0, contentWidth, contentHeight);
       }
     };
 
-    // Process all sections
     const sections = element.querySelectorAll('.pdf-section');
     for (const section of sections) {
       const name = section.dataset.sectionName || 'unnamed';
       await renderSection(section, name);
     }
 
-    // Delete the initial empty page that jsPDF creates
-    // It's page 1 and should be empty if we've been calling addPage() for our content
     if (pdf.internal.pages.length > 1) {
       pdf.deletePage(1);
     }
 
-    // Now add headers/footers to every page
     const totalPages = pdf.internal.pages.length - 1;
-    console.log(`Total pages before headers: ${totalPages}`);
+    console.log(`Total pages: ${totalPages}`);
+
+    pdf.addFileToVFS('MinionPro-Regular.otf', fontBase64);
+    pdf.addFont('MinionPro-Regular.otf', 'MinionPro', 'normal');
+    pdf.setFont('MinionPro');
 
     for (let i = 1; i <= totalPages; i++) {
       pdf.setPage(i);
 
-      // Semi-transparent white overlay for header/footer areas
+      // Прозрачная заливка: setFillColor с альфа-каналом + reset GState
       pdf.setFillColor(255, 255, 255);
-      pdf.setGState(new pdf.GState({ opacity: 0.85 }));
+      pdf.setGState(new pdf.GState({ opacity: 0.01 }));
       pdf.rect(0, 0, pageWidth, headerHeight, 'F');
       pdf.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, 'F');
       pdf.setGState(new pdf.GState({ opacity: 1 }));
 
-      // Header markers
       pdf.setFontSize(10);
       pdf.setTextColor(180, 180, 180);
-      pdf.text('1', 15, 12);
-      pdf.text('2', pageWidth - 15, 12, { align: 'right' });
 
-      // Footer markers
-      pdf.text('3', 15, pageHeight - 8);
-      pdf.text('4', pageWidth - 15, pageHeight - 8, { align: 'right' });
+      pdf.text('Крицĸий - подготовĸа ĸ ЕГЭ', 15, 10);
+      pdf.text(
+        ` ${new Date(Date.now()).toLocaleDateString()} `,
+        pageWidth - 15,
+        12,
+        { align: 'right' },
+      );
 
-      // Page number
+      pdf.text(' ege.kritsky.academy', 15, pageHeight - 8);
       pdf.setFontSize(8);
-      pdf.text(`p.${i} / ${totalPages}`, pageWidth / 2, pageHeight - 8, {
-        align: 'center',
-      });
+      pdf.text(
+        `страница ${i} / ${totalPages}`,
+        pageWidth - 15,
+        pageHeight - 8,
+        {
+          align: 'right',
+        },
+      );
     }
 
-    console.log(`Total pages: ${totalPages}`);
     pdf.save('variant-ege-literatura.pdf');
   } catch (error) {
     console.error('PDF generation error:', error);
@@ -153,10 +215,8 @@ const generatePdf = async () => {
 </script>
 
 <template>
-  <div>
-    <!-- Контейнер рендерится ЦЕЛИКОМ — водяной знак будет захвачен -->
-    <div ref="ticketContainer" class="ticket-pdf-container">
-      <!-- Водяной знак на фоне всего контейнера -->
+  <div> 
+    <div ref="ticketContainer" class="ticket-pdf-container"> 
       <div class="watermark-background"></div>
 
       <!-- Основной контент -->
@@ -166,7 +226,7 @@ const generatePdf = async () => {
           <h1>Вариант 1</h1>
           <h2>Часть 1</h2>
 
-          <p>
+          <p class="ticket-pdf__task-description">
             <strong>
               Прочитайте приведённый ниже фрагмент художественного произведения
               и выполните задания 1–3, 4.1 или 4.2 (на выбор) и задание 5.
@@ -270,14 +330,14 @@ const generatePdf = async () => {
             </strong>
           </p>
 
-          <p>
+          <p class="ticket-pdf__task">
             <strong>1.</strong> Назовите литературное направление, принципы
             которого нашли своё воплощение в произведении «Старуха Изергиль» М.
             Горького (Ответ запишите в именительном падеже)
           </p>
           <p>Ответ: _________________________________________________</p>
 
-          <p>
+          <p class="ticket-pdf__task">
             <strong>2.</strong> Установите соответствия между персонажами
             произведения и связанными с ними событиями: к каждой позиции первого
             столбца подберите соответствующую позицию из второго столбца.
@@ -306,7 +366,7 @@ const generatePdf = async () => {
           </table>
           <p>Ответ: A____ B____ C____</p>
 
-          <p>
+          <p class="ticket-pdf__task">
             <strong>3.</strong> Разговор двух или нескольких лиц в литературе
             обозначается термином _____________________.
           </p>
@@ -344,33 +404,24 @@ const generatePdf = async () => {
             </li>
           </ul>
 
-          <p>
+          <p class="ticket-pdf__task">
             <strong>4.1</strong> Является ли Изергиль страстной натурой, которая
             живёт только чувствами? (Ответьте, опираясь на приведённый фрагмент)
-          </p>
-          <p>
-            _____________________________________________________________
-          </p>
-          <p>
             _____________________________________________________________
           </p>
 
-          <p>
+          <p class="ticket-pdf__task">
             <strong>4.2</strong> Можно ли назвать поступок Изергиль (спасение
             Аркадэка из плена) подвигом? (Ответьте, опираясь на приведённый
             фрагмент)
-          </p>
-          <p>
-            _____________________________________________________________
-          </p>
-          <p>
             _____________________________________________________________
           </p>
 
-          <p>
-            <strong>5.</strong> Опираясь на приведённый фрагмент произведения
-            (и/или другие эпизоды), сопоставьте образ Изергиль и образ Натальи в
-            «Тихом Доне» М.А. Шолохова. Чем различается их отношение к любви?
+          <p class="ticket-pdf__task">
+            <strong class="ticket-pdf__task-number"> 5.</strong> Опираясь на
+            приведённый фрагмент произведения (и/или другие эпизоды),
+            сопоставьте образ Изергиль и образ Натальи в «Тихом Доне» М.А.
+            Шолохова. Чем различается их отношение к любви?
           </p>
           <p>
             _____________________________________________________________
@@ -548,10 +599,50 @@ const generatePdf = async () => {
 
   h3 {
     font-size: 16pt;
+    text-align: center;
     margin-top: 20pt;
     margin-bottom: 10pt;
     border-bottom: 1px solid #ccc;
     padding-bottom: 5pt;
+  }
+
+  h4 {
+    font-size: 14pt;
+    text-align: center;
+    margin-top: 15pt;
+    margin-bottom: 8pt;
+  }
+
+  h5 {
+    font-size: 12pt;
+    text-align: center;
+    margin-top: 12pt;
+    margin-bottom: 6pt;
+  }
+
+  .ticket-pdf__task-description {
+    background-color: #f5f5f5;
+    border: 1px solid #7c7c7c;
+    border-radius: 10px;
+    padding: 12px 16px;
+  }
+
+  .ticket-pdf__task {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: 12px 0;
+  }
+
+  .ticket-pdf__task-number {
+    display: inline-block;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 18pt;
+    font-weight: bold;
+    margin-right: 8px;
   }
 
   table {
