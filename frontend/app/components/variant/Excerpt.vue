@@ -3,6 +3,8 @@ interface Props {
   excerptText?: string;
   excerptAuthor?: string;
   excerptWork?: string;
+  textColumns?: number;
+  textSecondColumn?: string;
 }
 
 defineProps<Props>();
@@ -28,12 +30,23 @@ const handleNav = (key: 'previous' | 'next') => {
       {{ settings.variantTexts.part1Intro }}
     </VariantTaskInstruction>
 
-    <div class="prose prose-sm max-w-none mb-4">
+    <div class="prose prose-sm max-w-none mb-4" v-if="textColumns !== 2">
       <p
         v-html="
           excerptText || 'Текст отрывка не загрузился, попробуйте ещё раз'
         "
       ></p>
+    </div>
+    <div v-else class="flex gap-8 mb-4">
+      <div class="prose prose-sm max-w-none flex-1">
+        <p v-html="excerptText"></p>
+      </div>
+      <div
+        v-if="textSecondColumn"
+        class="prose prose-sm max-w-none flex-1 border-l pl-8"
+      >
+        <p v-html="textSecondColumn"></p>
+      </div>
     </div>
     <div class="flex justify-end">
       <p class="text-base font-semibold text-gray-600">

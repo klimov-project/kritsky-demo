@@ -26,6 +26,55 @@ export const useGenerateVariant = () => {
   const { apiWithAuth } = useAuthApi();
   const { showPaywall } = useSubscription();
 
+  /**
+   * Удаляет все style-атрибуты из HTML-строк во всех строковых полях объекта (рекурсивно)
+   * Учитывает экранированные кавычки (&quot;) внутри значений атрибутов
+   * @param {*} obj - объект или значение любой вложенности
+   * @returns {*} - новый объект с очищенными строками
+   */
+  function removeStyleAttributes(obj) {
+    if (typeof obj === 'string') {
+      // Сначала декодируем HTML-сущности в кавычках для упрощения парсинга,
+      // затем удаляем style атрибуты, затем восстанавливаем сущности обратно.
+      // Но лучше работать напрямую с регуляркой, учитывающей &quot;
+
+      // Удаляем style="..." где внутри могут быть &quot; (экранированные кавычки)
+      // и обычные кавычки, но не пересекающиеся с границами атрибута
+      let result = obj.replace(
+        /\s*style\s*=\s*"(?:[^"\\]|\\[\s\S]|&quot;)*"/gi,
+        '',
+      );
+
+      // Удаляем style='...' (с одинарными кавычками)
+      result = result.replace(
+        /\s*style\s*=\s*'(?:[^'\\]|\\[\s\S]|&apos;)*'/gi,
+        '',
+      );
+
+      // Удаляем возможные двойные пробелы, оставшиеся после удаления атрибутов
+      result = result.replace(/\s{2,}/g, ' ');
+      result = result.replace(/\s>/g, '>');
+
+      return result;
+    }
+
+    if (Array.isArray(obj)) {
+      console.log('[Normalise] Array.isArray(obj) - Ok');
+      return obj.map((item) => removeStyleAttributes(item));
+    }
+
+    if (obj !== null && typeof obj === 'object') {
+      const result = {};
+      console.log('[Normalise] typeof obj - Ok');
+      for (const key of Object.keys(obj)) {
+        result[key] = removeStyleAttributes(obj[key]);
+      }
+      return result;
+    }
+
+    return obj;
+  }
+
   const apiUrl = import.meta.server
     ? config.apiBackendUrl
     : config.public.apiUrl;
@@ -81,7 +130,8 @@ export const useGenerateVariant = () => {
     const pregeneratedUrl = `${apiUrl}/variants/runtime/pregenerated`;
     try {
       const data = await $fetch<{ variant: GeneratedVariant }>(pregeneratedUrl);
-      variant.value = data.variant;
+
+      variant.value = removeStyleAttributes(data.variant);
 
       // Cache for unauthenticated users
       if (!isAuthenticated.value) {

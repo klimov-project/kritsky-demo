@@ -104,6 +104,8 @@ const manualUpdatePoem = (poemId: string) => {
       <div v-else>
         <VariantExcerpt
           :excerpt-text="variant.excerpt?.text"
+          :text-columns="variant.excerpt?.textColumns"
+          :text-second-column="variant.excerpt?.textSecondColumn"
           :excerpt-author="variant.work?.author"
           :excerpt-work="variant.work?.title"
         />
