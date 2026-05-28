@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:16.3-alpine3.20
     restart: always
     environment:
       POSTGRES_DB: ${DB_NAME:-kritsky}
@@ -19,7 +19,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   redis:
-    image: redis:7-alpine
+    image: redis:7.2.5-alpine3.20
     restart: always
     command: ["redis-server", "--appendonly", "yes"]
     healthcheck:
@@ -77,7 +77,7 @@ services:
       - app-network
 
   redis-cache:
-    image: redis:7-alpine
+    image: redis:7.2.5-alpine3.20
     container_name: kritsky-redis-cache
     restart: unless-stopped
     volumes:
