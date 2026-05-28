@@ -13,6 +13,7 @@ export const useKnowledgeBaseStore = defineStore('knowledgeBase', {
     themes: (state) => state.knowledgeBase?.themes || [],
     worksCount: (state) => state.knowledgeBase?.works?.length,
     poetsCount: (state) => state.knowledgeBase?.poets?.length,
+    settings: (state) => state.knowledgeBase?.settings,
     variantsCount: (state) =>
       state.knowledgeBase?._metadata?.computed?.variantsCount ?? 0,
   },

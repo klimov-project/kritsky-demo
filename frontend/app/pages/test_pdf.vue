@@ -1,3 +1,3 @@
 <template>
-  <VariantPdf />
+  <VariantPdfDemo />
 </template>

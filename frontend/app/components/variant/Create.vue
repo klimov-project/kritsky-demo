@@ -90,7 +90,7 @@ const manualUpdatePoem = (poemId: string) => {
     <div v-if="isLoading" class="text-center py-20">
       <div
         class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"
-      > </div>
+      ></div>
       <p class="mt-4 text-gray-600">Подготовка варианта...</p>
     </div>
 
@@ -156,5 +156,10 @@ const manualUpdatePoem = (poemId: string) => {
   </div>
 
   <VariantSidebar />
+
+  <ClientOnly v-if="variant">
+    <VariantPdfRender />
+  </ClientOnly>
+
   <VariantFooter :block-btns="isLoading" />
 </template>

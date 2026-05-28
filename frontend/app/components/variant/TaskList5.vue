@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { pending: kbPending } = useKnowledgeBase();
+const { pending: kbPending, settings } = useKnowledgeBase();
 const { refreshLoadingByBlock, isInitialLoading } = useVariantState();
 const { refreshBlock } = useGenerateVariant();
 
@@ -17,7 +17,8 @@ const { isLocked } = useAuth();
 <template>
   <section class="w-full bg-white rounded-[10px] mb-3 p-[30px_40px_50px_30px]">
     <VariantTaskInstruction>
-      <p>
+      {{ settings.variantTexts.part3Intro }}
+      <!-- <p>
         Выберите только ОДНУ из пяти предложенных тем сочинений (11.1–11.5).
       </p>
       <p>Напишите сочинение, соблюдая следующие требования:</p>
@@ -49,7 +50,7 @@ const { isLocked } = useAuth();
       <p>
         Не допускается обращения к произведениям со спорной принадлежностью к
         художественной литературе.
-      </p>
+      </p> -->
     </VariantTaskInstruction>
 
     <div class="flex justify-center items-center mb-7">

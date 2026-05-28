@@ -6,12 +6,12 @@ interface Props {
 }
 
 defineProps<Props>();
+const { settings } = useKnowledgeBase();
 </script>
 <template>
   <div class="w-full bg-white rounded-[10px] mb-3 p-[30px_40px_50px_30px]">
     <VariantTaskInstruction>
-      Прочитайте приведённое ниже художественное произведение и выполните
-      задания 6–8, 9.1 или 9.2 (на выбор) и задание 10.
+      {{ settings.variantTexts.part2Intro }}
     </VariantTaskInstruction>
 
     <div class="poem poem-sm max-w-none mb-4">

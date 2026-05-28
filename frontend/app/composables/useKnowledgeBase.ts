@@ -26,12 +26,17 @@ export function useKnowledgeBase() {
     const works = computed(() => mockKnowledgeBaseResponse.works ?? []);
     const poets = computed(() => mockKnowledgeBaseResponse.poets ?? []);
     const themes = computed(() => []);
+    const settings = computed(
+      () => store.settings ?? DEFAULT_KNOWLEDGE_BASE_SETTINGS,
+    );
 
     return {
       data: readonly(mockData),
       works,
       poets,
       themes,
+      settings,
+
       pending: readonly(mockPending),
       error: readonly(mockError),
       refresh,
@@ -71,13 +76,18 @@ export function useKnowledgeBase() {
 
   const works = computed(() => data.value?.works ?? []);
   const poets = computed(() => data.value?.poets ?? []);
-  const themes = computed(() => []);
+  const themes = computed(() => store.themes ?? {});
+  const settings = computed(
+    () => store.settings ?? DEFAULT_KNOWLEDGE_BASE_SETTINGS,
+  );
 
   return {
     data,
     works,
     poets,
     themes,
+    settings,
+
     pending,
     error,
     refresh,

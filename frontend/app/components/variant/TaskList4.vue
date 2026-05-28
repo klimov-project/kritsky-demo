@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const { settings } = useKnowledgeBase();
 const customTasks = ['task9_1', 'task9_2'];
 const task10 = 'task10';
 </script>
@@ -6,16 +7,12 @@ const task10 = 'task10';
 <template>
   <section class="w-full bg-white rounded-[10px] mb-3 p-[30px_40px_50px_30px]">
     <VariantTaskInstruction>
-      При написании развёрнутых ответов на задания 9 и 10 не искажайте авторской
-      позиции, приводите конкретные примеры из текста произведений (обращайтесь
-      к образам, микротемам, деталям и т.п.), не допускайте фактических и
-      логических ошибок; соблюдайте нормы литературной письменной речи,
-      записывайте ответы аккуратно и разборчиво (примерный объём каждого ответа
-      — 5–10 предложений).
+      {{ settings.variantTexts.part2Task9Lead }}
     </VariantTaskInstruction>
 
     <TaskInstruction>
-      Выберите ОДНО из заданий: 9.1 или 9.2. Напишите прямой связный ответ:
+      {{ settings.variantTexts.part2Task9Criteria }}
+      <!-- Выберите ОДНО из заданий: 9.1 или 9.2. Напишите прямой связный ответ:
       <ul>
         <li>— отвечая на вопрос задания, сформулируйте утверждение;</li>
         <li>— аргументируйте его;</li>
@@ -23,7 +20,7 @@ const task10 = 'task10';
           — приведите из стихотворения не менее ДВУХ примеров, подтверждающих
           сформулированное утверждение.
         </li>
-      </ul>
+      </ul> -->
     </TaskInstruction>
     <VariantTask
       v-for="taskKey in customTasks"
@@ -32,7 +29,8 @@ const task10 = 'task10';
     />
 
     <TaskInstruction>
-      Дайте аргументированный связный ответ на вопрос задания:
+      {{ settings.variantTexts.part2Task10Lead }}
+      <!-- Дайте аргументированный связный ответ на вопрос задания:
 
       <ul>
         <li>
@@ -54,7 +52,7 @@ const task10 = 'task10';
           — объясните, как каждый пример подтверждает указанное
           сходство/различие.
         </li>
-      </ul>
+      </ul> -->
     </TaskInstruction>
 
     <VariantTask :task-key="task10" />

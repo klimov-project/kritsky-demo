@@ -13,6 +13,7 @@ const {
   prevTitle,
 } = useNavigateScene();
 
+const { settings } = useKnowledgeBase();
 const { hasPrevious, hasNext } = scene.value;
 
 const { isLocked } = useAuth();
@@ -24,8 +25,7 @@ const handleNav = (key: 'previous' | 'next') => {
 <template>
   <div class="w-full bg-white rounded-[10px] mb-3 p-[30px_40px_50px_30px]">
     <VariantTaskInstruction>
-      Прочитайте приведённый ниже фрагмент художественного произведения и
-      выполните задания 1–3, 4.1 или 4.2 (на выбор) и задание 5.
+      {{ settings.variantTexts.part1Intro }}
     </VariantTaskInstruction>
 
     <div class="prose prose-sm max-w-none mb-4">
