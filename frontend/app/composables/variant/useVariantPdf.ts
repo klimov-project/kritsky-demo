@@ -299,6 +299,57 @@ export const useVariantPdf = () => {
             backgroundColor: '#ffffff',
             width: sectionEl.scrollWidth,
             height: Math.ceil(contentHeightPx),
+            onclone: (clonedDoc) => {
+              // html2canvas fails on oklch() colors - convert them to hex/rgb via canvas
+              const elements = clonedDoc.getElementsByTagName('*');
+              const cvs = clonedDoc.createElement('canvas');
+              cvs.width = 1;
+              cvs.height = 1;
+              const ctx = cvs.getContext('2d');
+              if (!ctx) return;
+
+              const fixColor = (color: string): string => {
+                if (!color || !color.includes('oklch')) return color;
+                try {
+                  ctx.fillStyle = color;
+                  return ctx.fillStyle;
+                } catch {
+                  return color;
+                }
+              };
+
+              const styleProps = [
+                'color',
+                'backgroundColor',
+                'borderColor',
+                'borderTopColor',
+                'borderBottomColor',
+                'borderLeftColor',
+                'borderRightColor',
+                'outlineColor',
+                'fill',
+                'stroke',
+              ];
+
+              for (let i = 0; i < elements.length; i++) {
+                const el = elements[i] as HTMLElement;
+                if (!el.style) continue;
+
+                const computedStyle = window.getComputedStyle(el);
+
+                styleProps.forEach((prop) => {
+                  const camelProp = prop.replace(/-([a-z])/g, (_, c) =>
+                    c.toUpperCase(),
+                  );
+                  const val = computedStyle.getPropertyValue(
+                    prop.replace(/([A-Z])/g, '-$1').toLowerCase(),
+                  );
+                  if (val && val.includes('oklch')) {
+                    (el.style as any)[camelProp] = fixColor(val);
+                  }
+                });
+              }
+            },
           });
 
           document.body.removeChild(tempContainer);
