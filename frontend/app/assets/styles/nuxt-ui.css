@@ -2,99 +2,141 @@
 @import "@nuxt/ui";
 
 :root {
-    --ui-white: #fff;
-    --ui-text: #333;
+    /* --- Базовые переменные --- */
+    --ui-white: rgb(255, 255, 255);
+    --ui-text: rgb(51, 51, 51);
     --ui-radius: 10px;
-    --ui-primary-bg: #f6f6f6;
-    --ui-hover: #eeeeee;
+    --ui-primary-bg: rgb(246, 246, 246);
+    --ui-hover: rgb(238, 238, 238);
 
     /* --- Палитра красного --- */
-    --ui-color-red-50: #fdf2f2;
-    --ui-color-red-100: #fde8e8;
-    --ui-color-red-200: #fbd5d5;
-    --ui-color-red-300: #f8b4b4;
-    --ui-color-red-400: #f27e7e;
-    --ui-color-red-500: #bd5343;
-    /* Основной красный */
-    --ui-color-red-600: #ab4a3c;
-    /* Hover */
-    --ui-color-red-700: #993f33;
-    --ui-color-red-800: #7f352a;
-    --ui-color-red-900: #662a22;
-    --ui-color-red-950: #4a1e19;
+    --ui-color-red-50: rgb(253, 242, 242);
+    --ui-color-red-100: rgb(253, 232, 232);
+    --ui-color-red-200: rgb(251, 213, 213);
+    --ui-color-red-300: rgb(248, 180, 180);
+    --ui-color-red-400: rgb(242, 126, 126);
+    --ui-color-red-500: rgb(189, 83, 67);
+    --ui-color-red-600: rgb(171, 74, 60);
+    --ui-color-red-700: rgb(153, 63, 51);
+    --ui-color-red-800: rgb(127, 53, 42);
+    --ui-color-red-900: rgb(102, 42, 34);
+    --ui-color-red-950: rgb(74, 30, 25);
 
-    /* --- Назначение PRIMARY   --- */
+    /* --- Палитра Sage --- */
+    --ui-color-sage-50: rgb(248, 250, 245);
+    --ui-color-sage-100: rgb(244, 246, 238);
+    --ui-color-sage-200: rgb(238, 242, 233);
+    --ui-color-sage-300: rgb(230, 236, 224);
+    --ui-color-sage-400: rgb(220, 228, 212);
+    --ui-color-sage-500: rgb(239, 242, 232);
+    --ui-color-sage-600: rgb(210, 220, 198);
+    --ui-color-sage-700: rgb(188, 201, 174);
+    --ui-color-sage-800: rgb(157, 172, 139);
+    --ui-color-sage-900: rgb(126, 142, 107);
+    --ui-color-sage-950: rgb(95, 111, 78);
+
+    /* --- Палитра Charcoal --- */
+    --ui-color-charcoal-50: rgb(245, 245, 245);
+    --ui-color-charcoal-100: rgb(232, 232, 232);
+    --ui-color-charcoal-200: rgb(189, 189, 189);
+    --ui-color-charcoal-300: rgb(187, 187, 187);
+    --ui-color-charcoal-400: rgb(140, 140, 140);
+    --ui-color-charcoal-500: rgb(130, 130, 130);
+    --ui-color-charcoal-600: rgb(77, 77, 77);
+    --ui-color-charcoal-700: rgb(64, 64, 64);
+    --ui-color-charcoal-800: rgb(56, 56, 56);
+    --ui-color-charcoal-900: rgb(46, 46, 46);
+    --ui-color-charcoal-950: rgb(31, 31, 31);
+
+    /* --- Семантические привязки --- */
     --ui-primary: var(--ui-color-red-500);
-    /* Для hover-состояний */
     --ui-primary-hover: var(--ui-color-red-600);
-
-
-    /* --- Палитра зеленовато-серого (Sage) на базе #EFF2E8 --- */
-    --ui-color-sage-50: #f8faf5;
-    --ui-color-sage-100: #f4f6ee;
-    --ui-color-sage-200: #eef2e9;
-    --ui-color-sage-300: #e6ece0;
-    --ui-color-sage-400: #dce4d4;
-    --ui-color-sage-500: #EFF2E8;
-    /* ^ исходный цвет */
-    --ui-color-sage-600: #d2dcc6;
-    --ui-color-sage-700: #bcc9ae;
-    --ui-color-sage-800: #9dac8b;
-    --ui-color-sage-900: #7e8e6b;
-    --ui-color-sage-950: #5f6f4e;
-
-    /* --- Палитра темно-серого (Charcoal) на базе #333333 --- */
-    --ui-color-charcoal-50: #f5f5f5;
-    --ui-color-charcoal-100: #e8e8e8;
-    --ui-color-charcoal-200: #bdbdbd;
-    --ui-color-charcoal-300: #b3b3b3;
-    --ui-color-charcoal-400: #8c8c8c;
-    --ui-color-charcoal-500: #828282;
-    --ui-color-charcoal-600: #4d4d4d;
-    --ui-color-charcoal-700: #404040;
-    --ui-color-charcoal-800: #383838;
-    --ui-color-charcoal-900: #2e2e2e;
-    --ui-color-charcoal-950: #1f1f1f;
-
-
-    /* --- Текст (Семантическая привязка) --- */
     --ui-text-dimmed: var(--ui-color-charcoal-200);
     --ui-text-muted: var(--ui-color-charcoal-500);
     --ui-text-toned: var(--ui-color-charcoal-400);
     --ui-text-default: var(--ui-text);
     --ui-text-highlighted: var(--ui-text);
-
-    /* --- Фон (Семантическая привязка) --- */
     --ui-bg: var(--ui-white);
     --ui-bg-muted: var(--ui-hover);
     --ui-bg-elevated: var(--ui-color-charcoal-950);
     --ui-button-bg: var(--ui-primary-bg);
-
-    /* --- Границы (На основе документации) --- */
-    --ui-border: var(--ui-color-neutral-200);
-    --ui-border-muted: var(--ui-color-neutral-200);
-    --ui-border-accented: var(--ui-color-neutral-300);
-
-    /* --- Глобальные   --- */
-    --ui-button-text: var(--ui-text);
-    --tw-ring-color: var(--ui-color-charcoal-50);
-
 }
 
-/* --- Убираем множитель закругления  --- */
+/* --- Переопределения для PDF (перебиваем oklch-цвета Tailwind/UI) --- */
+#variant-content-pdf,
+#variant-content-pdf * {
+    /* Принудительно подменяем все цвета на RGB */
+    color: rgb(var(--ui-text)) !important;
+    background-color: rgb(var(--ui-bg)) !important;
+    border-color: rgb(var(--ui-color-charcoal-200)) !important;
+    outline-color: rgb(var(--ui-primary)) !important;
+    fill: rgb(var(--ui-text)) !important;
+    /* Для SVG иконок */
+    stroke: rgb(var(--ui-text)) !important;
+    /* Для SVG обводок */
+
+    /* Переопределяем переменные Tailwind/UI на RGB */
+    --ui-color-red-50: rgb(253, 242, 242) !important;
+    --ui-color-red-100: rgb(253, 232, 232) !important;
+    --ui-color-red-200: rgb(251, 213, 213) !important;
+    --ui-color-red-300: rgb(248, 180, 180) !important;
+    --ui-color-red-400: rgb(242, 126, 126) !important;
+    --ui-color-red-500: rgb(189, 83, 67) !important;
+    --ui-color-red-600: rgb(171, 74, 60) !important;
+    --ui-color-red-700: rgb(153, 63, 51) !important;
+    --ui-color-red-800: rgb(127, 53, 42) !important;
+    --ui-color-red-900: rgb(102, 42, 34) !important;
+    --ui-color-red-950: rgb(74, 30, 25) !important;
+
+    --ui-color-sage-50: rgb(248, 250, 245) !important;
+    --ui-color-sage-100: rgb(244, 246, 238) !important;
+    --ui-color-sage-200: rgb(238, 242, 233) !important;
+    --ui-color-sage-300: rgb(230, 236, 224) !important;
+    --ui-color-sage-400: rgb(220, 228, 212) !important;
+    --ui-color-sage-500: rgb(239, 242, 232) !important;
+    --ui-color-sage-600: rgb(210, 220, 198) !important;
+    --ui-color-sage-700: rgb(188, 201, 174) !important;
+    --ui-color-sage-800: rgb(157, 172, 139) !important;
+    --ui-color-sage-900: rgb(126, 142, 107) !important;
+    --ui-color-sage-950: rgb(95, 111, 78) !important;
+
+    --ui-color-charcoal-50: rgb(245, 245, 245) !important;
+    --ui-color-charcoal-100: rgb(232, 232, 232) !important;
+    --ui-color-charcoal-200: rgb(189, 189, 189) !important;
+    --ui-color-charcoal-300: rgb(187, 187, 187) !important;
+    --ui-color-charcoal-400: rgb(140, 140, 140) !important;
+    --ui-color-charcoal-500: rgb(130, 130, 130) !important;
+    --ui-color-charcoal-600: rgb(77, 77, 77) !important;
+    --ui-color-charcoal-700: rgb(64, 64, 64) !important;
+    --ui-color-charcoal-800: rgb(56, 56, 56) !important;
+    --ui-color-charcoal-900: rgb(46, 46, 46) !important;
+    --ui-color-charcoal-950: rgb(31, 31, 31) !important;
+
+    --ui-primary: rgb(189, 83, 67) !important;
+    --ui-primary-hover: rgb(171, 74, 60) !important;
+    --ui-text-dimmed: rgb(189, 189, 189) !important;
+    --ui-text-muted: rgb(130, 130, 130) !important;
+    --ui-text-toned: rgb(140, 140, 140) !important;
+    --ui-bg: rgb(255, 255, 255) !important;
+    --ui-bg-muted: rgb(238, 238, 238) !important;
+    --ui-bg-elevated: rgb(31, 31, 31) !important;
+    --ui-button-bg: rgb(246, 246, 246) !important;
+}
+
+/* --- Убираем множитель закругления --- */
 .before\:rounded-md::before {
     border-radius: var(--ui-radius) !important;
 }
 
 /* Базовые настройки для темной темы (если понадобится) */
-.dark {
-    --ui-text-dimmed: var(--ui-color-neutral-500);
-    --ui-text-muted: var(--ui-color-neutral-400);
-    --ui-text-toned: var(--ui-color-neutral-300);
-    --ui-text-default: var(--ui-color-neutral-200);
-    --ui-text-highlighted: white;
-
-    --ui-bg: var(--ui-color-neutral-900);
-    --ui-bg-muted: var(--ui-color-neutral-850);
-    --ui-bg-elevated: var(--ui-color-neutral-800);
+.dark #variant-content-pdf,
+.dark #variant-content-pdf * {
+    --ui-text-dimmed: rgb(187, 187, 187) !important;
+    --ui-text-muted: rgb(140, 140, 140) !important;
+    --ui-text-toned: rgb(189, 189, 189) !important;
+    --ui-text-default: rgb(232, 232, 232) !important;
+    --ui-text-highlighted: rgb(255, 255, 255) !important;
+    --ui-bg: rgb(31, 31, 31) !important;
+    --ui-bg-muted: rgb(46, 46, 46) !important;
+    --ui-bg-elevated: rgb(64, 64, 64) !important;
 }
