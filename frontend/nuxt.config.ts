@@ -45,7 +45,6 @@ export default defineNuxtConfig({
       prefix: '',
     },
   ],
-  plugins: ['~/plugins/auth.client.ts'],
   runtimeConfig: {
     // Server-only runtime config
     apiBackendBase:

@@ -100,8 +100,7 @@ export const useVariantPdf = () => {
     isDownloadingPdf.value = true;
 
     try {
-      const jsPDF = (await import('jspdf')).default;
-      const html2canvas = (await import('html2canvas')).default;
+      const { $html2canvas, $jsPDF } = useNuxtApp();
 
       const fontUrl = '/font/MinionPro-Regular.ttf';
       const fontResponse = await fetch(fontUrl);
@@ -115,7 +114,7 @@ export const useVariantPdf = () => {
 
       if (!elementId) throw new Error('Container not found');
 
-      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdf = new $jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
 
@@ -291,7 +290,7 @@ export const useVariantPdf = () => {
             }
           });
 
-          const canvas = await html2canvas(tempContainer, {
+          const canvas = await $html2canvas(tempContainer, {
             scale: 3,
             useCORS: true,
             allowTaint: true,
