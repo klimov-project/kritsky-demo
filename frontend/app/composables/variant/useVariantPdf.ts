@@ -1,5 +1,96 @@
 export const useVariantPdf = () => {
-  const { isDownloadingPdf } = useVariantState();
+  const { isDownloadingPdf, variant } = useVariantState();
+  const answersText = useState<string>('answers-text', () => '');
+  const answer2 = useState<string>('answer-2', () => '');
+
+  const allTasks = [
+    'task1',
+    'task2',
+    'task3',
+    'task4_1',
+    'task4_2',
+    'task5',
+    'task6',
+    'task7',
+    'task8',
+    'task9_1',
+    'task9_2',
+    'task10',
+    'task11_1',
+    'task11_2',
+    'task11_3',
+    'task11_4',
+    'task11_5',
+  ];
+
+  const getTaskNumber = (taskKey: string): string => {
+    return taskKey.replace('task', '').replace(/_/g, '.');
+  };
+
+  const getAnswerForTask = (taskKey: string): string | null => {
+    const taskData = variant.value?.[taskKey];
+    if (!taskData) return null;
+
+    // Определяем тип задания
+    if (taskKey === 'task1') {
+      return taskData.answer || null;
+    }
+    if (taskKey === 'task2') {
+      // Для task2 ответ собирается из пар, нужна особая логика
+      return answer2.value || null;
+    }
+    if (taskKey === 'task3' || taskKey === 'task6') {
+      const answers = [taskData.answer1, taskData.answer2].filter(Boolean);
+      return answers.length > 0 ? answers.join(', ') : null;
+    }
+    if (taskKey === 'task7') {
+      return taskData.answer || null;
+    }
+    if (taskKey === 'task8') {
+      const options = variant.value?.task8Options || [];
+      const answers = options
+        .filter((opt: any) => opt.isCorrect)
+        .map((opt: any) => opt.term);
+      return answers.length > 0 ? answers.join(', ') : null;
+    }
+    if (
+      taskKey.startsWith('task4_') ||
+      taskKey === 'task5' ||
+      taskKey.startsWith('task9_') ||
+      taskKey === 'task10' ||
+      taskKey.startsWith('task11_')
+    ) {
+      // Задания без ответов
+      return null;
+    }
+
+    // По умолчанию
+    if (Array.isArray(taskData.answer)) {
+      return taskData.answer.join(', ');
+    }
+    return taskData.answer || null;
+  };
+
+  const collectAllAnswers = () => {
+    const lines: string[] = [];
+
+    for (const taskKey of allTasks) {
+      const answer = getAnswerForTask(taskKey);
+      if (answer) {
+        const taskNumber = getTaskNumber(taskKey);
+        lines.push(`Задание ${taskNumber} - Ответ: ${answer} <br />`);
+      }
+    }
+
+    // Сортируем по номеру задания
+    lines.sort((a, b) => {
+      const numA = parseFloat(a.match(/Задание ([\d.]+)/)?.[1] || '0');
+      const numB = parseFloat(b.match(/Задание ([\d.]+)/)?.[1] || '0');
+      return numA - numB;
+    });
+
+    answersText.value = lines.join('\n') + (lines.length > 0 ? '\n' : '');
+  };
 
   const generatePdf = async (ticketContainer: HTMLElement) => {
     if (import.meta.server) return;
@@ -35,7 +126,10 @@ export const useVariantPdf = () => {
       console.log('Content height:', contentHeight, 'mm');
       console.log('Header:', headerHeight, 'mm / Footer:', footerHeight, 'mm');
 
-      const paginateSection = (sectionEl: HTMLElement, contentHeightPx: number) => {
+      const paginateSection = (
+        sectionEl: HTMLElement,
+        contentHeightPx: number,
+      ) => {
         const pages: HTMLElement[][] = [];
         let currentPage: HTMLElement[] = [];
         let currentPageHeight = 0;
@@ -100,7 +194,10 @@ export const useVariantPdf = () => {
         return atoms;
       };
 
-      const renderSection = async (sectionEl: HTMLElement, sectionName: string) => {
+      const renderSection = async (
+        sectionEl: HTMLElement,
+        sectionName: string,
+      ) => {
         const pxPerMm = sectionEl.scrollWidth / contentWidth;
         const contentHeightPx = contentHeight * pxPerMm;
         const pages = paginateSection(sectionEl, contentHeightPx);
@@ -224,7 +321,10 @@ export const useVariantPdf = () => {
   };
 
   return {
+    answersText,
+    answer2,
     generatePdf,
     isDownloadingPdf,
+    collectAllAnswers,
   };
 };

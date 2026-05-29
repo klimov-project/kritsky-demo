@@ -40,31 +40,7 @@ const taskType = computed(() => {
   return 'default';
 });
 
-const hasTermQuestion = computed(() => taskData.value?.isTermQuestion === true);
-const taskColumnsRef = ref();
-const getAnswerFromTask2 = () => taskColumnsRef.value?.answer;
-
-const formattedAnswer = computed(() => {
-  if (taskType.value === 'task2') {
-    return getAnswerFromTask2() || 'Нет ответа';
-  }
-  if (taskType.value === 'task3' || taskType.value === 'task6') {
-    return [taskData.value?.answer1, taskData.value?.answer2]
-      .filter(Boolean)
-      .join(', ');
-  }
-  if (taskType.value === 'task8') {
-    const options = variant.value?.task8Options || [];
-    return options
-      .filter((opt) => opt.isCorrect)
-      .map((opt) => opt.term)
-      .join(', ');
-  }
-  if (Array.isArray(taskData.value?.answer)) {
-    return taskData.value.answer.join(', ');
-  }
-  return taskData.value?.answer || 'Нет ответа';
-});
+// const hasTermQuestion = computed(() => taskData.value?.isTermQuestion === true);
 
 const showAnswerStub = computed(() => {
   return !['task4', 'task5', 'task9', 'task10', 'task11'].includes(
@@ -74,20 +50,18 @@ const showAnswerStub = computed(() => {
 </script>
 
 <template>
-  <TaskNumber :number="getTaskNumber(taskKey)" />
+  <TaskPdfNumber :number="getTaskNumber(taskKey)" />
   <span v-if="!hasContent" class="font-normal not-italic text-xl ml-[55px]">
     Вопрос не задан
   </span>
 
-  <!-- Чекбоксы (только для task1 с isTermQuestion) -->
-
-  <div v-if="taskType === 'task1' && hasTermQuestion">
+  <!-- <div v-if="taskType === 'task1' && hasTermQuestion">
     <TaskTermQuestionToggles />
-  </div>
+  </div> -->
 
   <!-- TASK 2 -->
   <template v-if="taskType === 'task2'">
-    <TaskText :prompt="taskData.prompt" />
+    <TaskPdfText :prompt="taskData.prompt" />
     <TaskTwoColumns
       ref="taskColumnsRef"
       :left-label="taskData.leftLabel"
@@ -96,6 +70,31 @@ const showAnswerStub = computed(() => {
       :options="taskData.options || []"
     />
     <TaskAnswerStub />
+  </template>
+
+  <!-- TASK 3 / TASK 6 -->
+  <template v-else-if="taskType === 'task3' || taskType === 'task6'">
+    <div class="flex items-start gap-[10px] ml-[55px] mr-[55px]">
+      <TaskPdfText :part1="taskData.part1" :part2="taskData.part2" />
+    </div>
+    <TaskAnswerStub />
+  </template>
+
+  <!-- TASK 8 -->
+  <template v-else-if="taskType === 'task8'">
+    <div class="flex flex-col items-start gap-[10px] ml-[55px] mr-[55px]">
+      <TaskPdfText :prompt="taskData.prompt" />
+      <TaskOptionsList :options="variant?.task8Options || []" />
+    </div>
+    <TaskAnswerStub />
+  </template>
+
+  <!-- DEFAULT: task1, task4, task5, task7, task9, task10, task11 -->
+  <template v-else>
+    <div class="flex items-start gap-[10px] ml-[55px] mr-[55px]">
+      <TaskPdfText :text="taskData.text" />
+    </div>
+    <TaskAnswerStub v-if="showAnswerStub" />
   </template>
 </template>
 

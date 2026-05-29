@@ -13,6 +13,6 @@
 </template>
 <style lang="scss">
 .answer-stub__line {
-  border-color: #e2e8f0;
+  border-color: #939496;
 }
 </style>

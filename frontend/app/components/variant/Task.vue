@@ -4,6 +4,7 @@ const props = defineProps<{
 }>();
 const config = useRuntimeConfig();
 const variant = useCurrentVariant();
+const { answer2 } = useVariantPdf();
 
 const getTaskNumber = (key: string) => {
   return key.replace('task', '').replace(/_/g, '.');
@@ -53,7 +54,7 @@ const getAnswerFromTask2 = () => taskColumnsRef.value?.answer;
 
 const formattedAnswer = computed(() => {
   if (taskType.value === 'task2') {
-    return getAnswerFromTask2() || 'Нет ответа';
+    return (answer2.value = getAnswerFromTask2() || 'Нет ответа');
   }
   if (taskType.value === 'task3' || taskType.value === 'task6') {
     return [taskData.value?.answer1, taskData.value?.answer2]

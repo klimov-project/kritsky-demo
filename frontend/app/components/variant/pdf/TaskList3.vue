@@ -5,10 +5,10 @@ const customTasks = ['task6', 'task7', 'task8'];
 
 <template>
   <section class="w-full bg-white rounded-[10px] mb-3 p-[30px_40px_50px_30px]">
-    <VariantTaskInstruction>
+    <VariantPdfTaskInstruction>
       {{ settings.variantTexts.part2QuestionsIntro }}
-    </VariantTaskInstruction>
-    <VariantTask
+    </VariantPdfTaskInstruction>
+    <VariantPdfTask
       v-for="taskKey in customTasks"
       :key="taskKey"
       :task-key="taskKey"

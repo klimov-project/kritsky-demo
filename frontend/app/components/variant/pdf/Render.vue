@@ -3,13 +3,23 @@ const ticketContainer = ref<HTMLElement | null>(null);
 
 const { settings } = useKnowledgeBase();
 const variant = useCurrentVariant();
-const { generatePdf, isDownloadingPdf } = useVariantPdf();
+const {
+  generatePdf,
+  isDownloadingPdf,
+  answersText,
+  collectAllAnswers,
+} = useVariantPdf();
 
 const handleGeneratePdf = async () => {
   if (!ticketContainer.value) {
     console.error('PDF container not found');
     return;
   }
+  collectAllAnswers();
+  console.log(
+    'Collected answersText before generating PDF:',
+    answersText.value,
+  );
   await generatePdf(ticketContainer.value);
 };
 </script>
@@ -19,7 +29,7 @@ const handleGeneratePdf = async () => {
     <!-- Основной контент -->
     <div class="content-wrapper">
       <!-- variant.excerpt : {{ variant.excerpt }} -->
-      <!-- Секция 1: Отрывок и задачи 1-2 -->
+      <!-- Секция 1: Отрывок -->
       <VariantPdfExcerpt
         v-if="variant"
         :part1Intro="settings.variantTexts.part1Intro"
@@ -30,23 +40,35 @@ const handleGeneratePdf = async () => {
         :excerpt-work="variant.work?.title"
       />
 
-      <!-- Секция 2: Задания -->
+      <!-- Секция 2: Задания  1-5  -->
       <div class="pdf-section tasks-section" data-section-name="tasks">
         <VariantPdfTaskList1 />
+        <VariantPdfTaskList2 />
       </div>
 
-      <!-- Секция 3: Стихотворение и задачи 3-4 -->
-      <div class="pdf-section poem-section" data-section-name="poem">
-        <VariantPdfTaskInstruction>
-          {{ settings.variantTexts.part2Intro }}
-        </VariantPdfTaskInstruction>
+      <!-- Секция 3: Стихотворение и задачи 6-10 -->
+      <VariantPdfPoem
+        v-if="variant"
+        :poem-text="variant.poem?.text"
+        :poet-name="variant.poet?.name"
+        :poem-title="variant.poem?.title"
+      />
+      <!-- Секция 4: Задачи 6-10 -->
+      <div class="pdf-section tasks-section" data-section-name="tasks">
+        <VariantPdfTaskList3 />
+        <VariantPdfTaskList4 />
       </div>
 
-      <!-- Секция 3: Задачи 11  -->
+      <!-- Секция 5: Задачи 11  -->
       <div class="pdf-section tasks-11-section" data-section-name="tasks-11">
-        <VariantPdfTaskInstruction>
-          {{ settings.variantTexts.part1QuestionsIntro }}
-        </VariantPdfTaskInstruction>
+        <VariantPdfTaskList5 />
+      </div>
+
+      <!-- Секция 3: Ответы -->
+      <div class="pdf-section answers-section" data-section-name="answers">
+        <h2>Ответы к варианту 1</h2>
+
+        <div class="answers" v-html="answersText"></div>
       </div>
     </div>
   </div>
@@ -64,12 +86,12 @@ const handleGeneratePdf = async () => {
 // Скрытие контейнера от основного отображения
 .hide-from-display {
   position: absolute !important;
-  // left: -9999px;
-  // top: 0;
-  // z-index: -1;
-  left: 100%;
+  left: -9999px;
   top: 0;
-  opacity: 0.5;
+  z-index: -1;
+  // left: 100%;
+  // top: 0;
+  // opacity: 0.5;
 }
 .ticket-pdf-container {
   font-family: 'Times New Roman', Times, serif;

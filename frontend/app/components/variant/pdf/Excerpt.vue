@@ -22,7 +22,14 @@ const singleColumnHtml = computed(() => {
   `;
 
   const excerpt =
-    props.excerptText || 'Текст отрывка не загрузился, попробуйте ещё раз';
+    props.textColumns === 2
+      ? `
+      <div class="flex gap-8 mb-4">
+        <div class="flex-1"> ${props.excerptText || ''} </div>
+        <div class="flex-1 border-l pl-8"> ${props?.textSecondColumn || ''}  
+          </div>
+      </div>`
+      : props.excerptText || 'Текст отрывка не загрузился, попробуйте ещё раз';
 
   const autorBlock = `
       <div class="flex justify-end mt-4">
@@ -38,19 +45,17 @@ const singleColumnHtml = computed(() => {
 <template>
   <div
     v-if="textColumns !== 2"
-    v-html="singleColumnHtml"
     class="pdf-section two-page-excerpt prose"
+    v-html="singleColumnHtml"
     data-section-name="excerpt"
   ></div>
 
   <div
     v-else-if="textSecondColumn"
-    class="pdf-section two-page-excerpt flex gap-8 mb-4"
+    class="pdf-section two-page-excerpt "
+    v-html="singleColumnHtml"
     data-section-name="excerpt"
-  >
-    <div class="flex-1" v-html="excerptText"></div>
-    <div class="flex-1 border-l pl-8" v-html="textSecondColumn"></div>
-  </div>
+  ></div>
 </template>
 <style lang="scss" scoped>
 .prose {

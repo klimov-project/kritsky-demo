@@ -59,13 +59,11 @@ export const useGenerateVariant = () => {
     }
 
     if (Array.isArray(obj)) {
-      console.log('[Normalise] Array.isArray(obj) - Ok');
       return obj.map((item) => removeStyleAttributes(item));
     }
 
     if (obj !== null && typeof obj === 'object') {
       const result = {};
-      console.log('[Normalise] typeof obj - Ok');
       for (const key of Object.keys(obj)) {
         result[key] = removeStyleAttributes(obj[key]);
       }

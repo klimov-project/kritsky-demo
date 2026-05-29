@@ -6,11 +6,11 @@ const task10 = 'task10';
 
 <template>
   <section class="w-full bg-white rounded-[10px] mb-3 p-[30px_40px_50px_30px]">
-    <VariantTaskInstruction>
+    <VariantPdfTaskInstruction>
       {{ settings.variantTexts.part2Task9Lead }}
-    </VariantTaskInstruction>
+    </VariantPdfTaskInstruction>
 
-    <TaskInstruction>
+    <VariantPdfTaskInstruction>
       {{ settings.variantTexts.part2Task9Criteria }}
       <!-- Выберите ОДНО из заданий: 9.1 или 9.2. Напишите прямой связный ответ:
       <ul>
@@ -21,14 +21,14 @@ const task10 = 'task10';
           сформулированное утверждение.
         </li>
       </ul> -->
-    </TaskInstruction>
-    <VariantTask
+    </VariantPdfTaskInstruction>
+    <VariantPdfTask
       v-for="taskKey in customTasks"
       :key="taskKey"
       :task-key="taskKey"
     />
 
-    <TaskInstruction>
+    <VariantPdfTaskInstruction>
       {{ settings.variantTexts.part2Task10Lead }}
       <!-- Дайте аргументированный связный ответ на вопрос задания:
 
@@ -53,8 +53,8 @@ const task10 = 'task10';
           сходство/различие.
         </li>
       </ul> -->
-    </TaskInstruction>
+    </VariantPdfTaskInstruction>
 
-    <VariantTask :task-key="task10" />
+    <VariantPdfTask :task-key="task10" />
   </section>
 </template>
