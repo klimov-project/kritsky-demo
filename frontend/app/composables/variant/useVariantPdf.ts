@@ -1,4 +1,5 @@
 export const useVariantPdf = () => {
+  const toast = useToast();
   const { isDownloadingPdf, variant } = useVariantState();
   const answersText = useState<string>('answers-text', () => '');
   const answer2 = useState<string>('answer-2', () => '');
@@ -92,9 +93,10 @@ export const useVariantPdf = () => {
     answersText.value = lines.join('\n') + (lines.length > 0 ? '\n' : '');
   };
 
-  const generatePdf = async (ticketContainer: HTMLElement) => {
+  const generatePdf = async (elementId: string = 'variant-content-pdf') => {
     if (import.meta.server) return;
 
+    const ticketContainer = document.getElementById(elementId);
     isDownloadingPdf.value = true;
 
     try {
@@ -111,14 +113,14 @@ export const useVariantPdf = () => {
         ),
       );
 
-      if (!ticketContainer) throw new Error('Container not found');
+      if (!elementId) throw new Error('Container not found');
 
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
 
-      const headerHeight = 14;
-      const footerHeight = 14;
+      const headerHeight = 10;
+      const footerHeight = 10;
       const contentWidth = pageWidth;
       const contentHeight = pageHeight - headerHeight - footerHeight;
 
@@ -133,33 +135,72 @@ export const useVariantPdf = () => {
         const pages: HTMLElement[][] = [];
         let currentPage: HTMLElement[] = [];
         let currentPageHeight = 0;
+        const actualContentHeightPx = contentHeightPx - headerHeight * 8;
         const atoms = getAtomicBlocks(sectionEl);
 
+        const topBuffer = document.createElement('div');
+        topBuffer.style.height = `${headerHeight * 8}px`;
+        topBuffer.style.width = '100%';
+        topBuffer.style.background = 'green';
+        topBuffer.style.visibility = 'hidden';
+        currentPage.push(topBuffer);
+
         for (const atom of atoms) {
-          const atomHeight = atom.offsetHeight + 24;
-          if (atomHeight > contentHeightPx) {
+          const atomHeight = atom.offsetHeight + 16;
+
+          if (currentPageHeight + atomHeight > actualContentHeightPx) {
+            // По умолчанию оверфлоу = высоте контентной части
+            let overflow = actualContentHeightPx;
+
             if (currentPage.length > 0) {
+              if (atomHeight > actualContentHeightPx) {
+                const freeForHeadSlice =
+                  actualContentHeightPx - currentPageHeight - headerHeight * 8;
+                const headWrapper = document.createElement('div');
+                headWrapper.style.height = `${freeForHeadSlice}px`;
+                headWrapper.style.width = '100%';
+                headWrapper.style.overflow = 'hidden';
+                headWrapper.style.position = 'relative';
+
+                const clonedAtom1 = atom.cloneNode(true) as HTMLElement;
+                clonedAtom1.style.position = 'relative';
+                clonedAtom1.style.top = `0px`;
+
+                headWrapper.appendChild(clonedAtom1);
+
+                currentPage.push(headWrapper);
+                currentPageHeight += atomHeight;
+                overflow =
+                  currentPageHeight -
+                  actualContentHeightPx +
+                  6 +
+                  headerHeight * 8;
+              }
               pages.push(currentPage);
+            }
+
+            if (atomHeight > actualContentHeightPx) {
               currentPage = [];
               currentPageHeight = 0;
+              currentPage = [topBuffer];
+              const tailWrapper = document.createElement('div');
+              tailWrapper.style.height = `${overflow}px`;
+              tailWrapper.style.width = '100%';
+              tailWrapper.style.overflow = 'hidden';
+              tailWrapper.style.position = 'relative';
+
+              const clonedAtom2 = atom.cloneNode(true) as HTMLElement;
+              clonedAtom2.style.position = 'relative';
+              clonedAtom2.style.top = `-${atomHeight - overflow}px`;
+
+              tailWrapper.appendChild(clonedAtom2);
+
+              currentPage.push(tailWrapper);
+            } else {
+              currentPage = [topBuffer];
+              currentPage.push(atom);
+              currentPageHeight = atomHeight;
             }
-            pages.push([atom]);
-            continue;
-          }
-
-          console.log(
-            'currentPageHeight + atomHeight:',
-            currentPageHeight,
-            'px + ',
-            atomHeight,
-            'px',
-          );
-          console.log('Content px height:', contentHeightPx, 'px');
-
-          if (currentPageHeight + atomHeight > contentHeightPx) {
-            pages.push(currentPage);
-            currentPage = [atom];
-            currentPageHeight = atomHeight;
           } else {
             currentPage.push(atom);
             currentPageHeight += atomHeight;
@@ -211,11 +252,11 @@ export const useVariantPdf = () => {
             width: ${sectionEl.scrollWidth}px;
             min-height: ${contentHeightPx}px;
             padding: 55px 55px 25px;
-            position: absolute;
+            position: absolute !important;
             left: -9999px;
             top: 0;
+            z-index: -1;
           `;
-
           const watermark = document.createElement('div');
           watermark.style.cssText = `
             position: absolute;
@@ -228,7 +269,7 @@ export const useVariantPdf = () => {
             background-repeat: repeat-y;
             background-size: 100% auto;
             background-position: center center;
-            opacity: 0.05;
+            opacity: 0.03;
             pointer-events: none;
           `;
           tempContainer.style.position = 'absolute';
@@ -240,6 +281,15 @@ export const useVariantPdf = () => {
 
           document.body.appendChild(tempContainer);
 
+          const textElements = tempContainer.querySelectorAll(
+            'div.task-instruction-wrapper, div.task-instruction-wrapper>p, span.task-number-pdf__number, p.task-pdf-text, p.task-pdf-text>p',
+          );
+          textElements.forEach((el) => {
+            if (el instanceof HTMLElement) {
+              el.style.paddingTop = '0';
+              el.style.marginTop = '0';
+            }
+          });
           const canvas = await html2canvas(tempContainer, {
             scale: 3,
             useCORS: true,
@@ -257,7 +307,7 @@ export const useVariantPdf = () => {
           }
 
           const imgData = canvas.toDataURL('image/png');
-          pdf.addImage(imgData, 'PNG', 0, 0, contentWidth, contentHeight);
+          pdf.addImage(imgData, 'PNG', 0, 0, contentWidth, pageHeight);
         }
       };
 
@@ -295,7 +345,7 @@ export const useVariantPdf = () => {
         pdf.text(
           ` ${new Date(Date.now()).toLocaleDateString()} `,
           pageWidth - 15,
-          12,
+          10,
           { align: 'right' },
         );
 
@@ -312,9 +362,23 @@ export const useVariantPdf = () => {
       }
 
       pdf.save('variant-ege-literatura.pdf');
+
+      toast.add({
+        title: 'PDF скачан',
+        description: 'Вариант успешно сохранен в PDF',
+        color: 'success',
+        icon: 'i-lucide-download',
+      });
     } catch (error) {
       console.error('PDF generation error:', error);
       alert('Error generating PDF. Check console.');
+
+      toast.add({
+        title: 'Ошибка',
+        description: 'Не удалось создать PDF',
+        color: 'error',
+        icon: 'i-lucide-alert-circle',
+      });
     } finally {
       isDownloadingPdf.value = false;
     }

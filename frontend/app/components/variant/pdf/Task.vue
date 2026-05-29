@@ -50,7 +50,6 @@ const showAnswerStub = computed(() => {
 </script>
 
 <template>
-  <TaskPdfNumber :number="getTaskNumber(taskKey)" />
   <span v-if="!hasContent" class="font-normal not-italic text-xl ml-[55px]">
     Вопрос не задан
   </span>
@@ -58,51 +57,48 @@ const showAnswerStub = computed(() => {
   <!-- <div v-if="taskType === 'task1' && hasTermQuestion">
     <TaskTermQuestionToggles />
   </div> -->
+  <div class="task-pdf rounded-[10px] py-7 px-8 mb-3 relative">
+    <!-- TASK 2 -->
+    <template v-if="taskType === 'task2'">
+      <TaskPdfNumber :number="getTaskNumber(taskKey)" />
+      <TaskPdfText :prompt="taskData.prompt" />
+      <TaskTwoColumns
+        ref="taskColumnsRef"
+        :left-label="taskData.leftLabel"
+        :right-label="taskData.rightLabel"
+        :pairs="taskData.pairs || []"
+        :options="taskData.options || []"
+      />
+      <TaskAnswerStub />
+    </template>
 
-  <!-- TASK 2 -->
-  <template v-if="taskType === 'task2'">
-    <TaskPdfText :prompt="taskData.prompt" />
-    <TaskTwoColumns
-      ref="taskColumnsRef"
-      :left-label="taskData.leftLabel"
-      :right-label="taskData.rightLabel"
-      :pairs="taskData.pairs || []"
-      :options="taskData.options || []"
-    />
-    <TaskAnswerStub />
-  </template>
-
-  <!-- TASK 3 / TASK 6 -->
-  <template v-else-if="taskType === 'task3' || taskType === 'task6'">
-    <div class="flex items-start gap-[10px] ml-[55px] mr-[55px]">
+    <!-- TASK 3 / TASK 6 -->
+    <template v-else-if="taskType === 'task3' || taskType === 'task6'">
+      <TaskPdfNumber :number="getTaskNumber(taskKey)" />
       <TaskPdfText :part1="taskData.part1" :part2="taskData.part2" />
-    </div>
-    <TaskAnswerStub />
-  </template>
+      <TaskAnswerStub />
+    </template>
 
-  <!-- TASK 8 -->
-  <template v-else-if="taskType === 'task8'">
-    <div class="flex flex-col items-start gap-[10px] ml-[55px] mr-[55px]">
+    <!-- TASK 8 -->
+    <template v-else-if="taskType === 'task8'">
+      <TaskPdfNumber :number="getTaskNumber(taskKey)" />
       <TaskPdfText :prompt="taskData.prompt" />
       <TaskOptionsList :options="variant?.task8Options || []" />
-    </div>
-    <TaskAnswerStub />
-  </template>
+      <TaskAnswerStub />
+    </template>
 
-  <!-- DEFAULT: task1, task4, task5, task7, task9, task10, task11 -->
-  <template v-else>
-    <div class="flex items-start gap-[10px] ml-[55px] mr-[55px]">
+    <!-- DEFAULT: task1, task4, task5, task7, task9, task10, task11 -->
+    <template v-else>
+      <TaskPdfNumber :number="getTaskNumber(taskKey)" />
       <TaskPdfText :text="taskData.text" />
-    </div>
-    <TaskAnswerStub v-if="showAnswerStub" />
-  </template>
+      <TaskAnswerStub v-if="showAnswerStub" />
+    </template>
+  </div>
 </template>
 
 <style lang="scss">
-.task-container {
-  --tw-ring-color: #cfcfcf;
-  --ui-border: #e2e8f0;
-  transition: box-shadow 0.3s ease;
+.task-pdf {
+  border: 1px solid #cfcfcf;
   .rounded-md {
     border-radius: 5px;
   }
@@ -112,29 +108,6 @@ const showAnswerStub = computed(() => {
   }
   .text-base > p {
     font-size: 20px !important;
-  }
-  .anchor-for-action:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    height: 100%;
-    width: 280px;
-    z-index: 10;
-  }
-  &:hover {
-    --tw-ring-inset: inset;
-    box-shadow: 0 0 0 2px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
-    .anchor-for-action {
-      z-index: 30;
-      .task-action-btns {
-        z-index: 31;
-        button {
-          box-shadow: 0 10px 15px -3px var(--tw-shadow-color, rgb(0 0 0 / 0.1)),
-            0 4px 6px -4px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
-        }
-      }
-    }
   }
 }
 </style>

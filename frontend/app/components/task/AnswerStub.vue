@@ -8,11 +8,8 @@
     <span class="text-base font-medium uppercase tracking-wider">
       Ответ:
     </span>
-    <div class="answer-stub__line flex-1 border-b-2 h-[19px]"></div>
+    <div class="flex-1 h-[19px]">
+      _____________________________________________________________________________
+    </div>
   </div>
 </template>
-<style lang="scss">
-.answer-stub__line {
-  border-color: #939496;
-}
-</style>

@@ -9,8 +9,8 @@ const props = defineProps<{
 const contentHtml = computed(() => {
   if (props.part1 && props.part2) {
     return `
-      <div class="mb-4">${props.part1}</div>
-      <div>${props.part2}</div>
+      <p>${props.part1}</p>
+      <p>${props.part2}</p>
     `;
   }
 
@@ -19,5 +19,5 @@ const contentHtml = computed(() => {
 </script>
 
 <template>
-  <p v-html="contentHtml"></p>
+  <p v-html="contentHtml" class="task-pdf-text pl-14"></p>
 </template>

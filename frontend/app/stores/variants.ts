@@ -19,6 +19,27 @@ export const useVariantsStore = defineStore('variants', () => {
   const error = ref<string | null>(null);
 
   const authApi = useAuthApi();
+  const { isDownloadingPdf, isInitialLoading } = useVariantState();
+
+  /**
+   * Synchronize the global loading flag with PDF download, initLoad etc...
+   */
+  watch(
+    isDownloadingPdf,
+    (newVal) => {
+      console.log('isDownloadingPdf', newVal);
+      isLoading.value = newVal;
+    },
+    { immediate: true },
+  );
+  watch(
+    isInitialLoading,
+    (newVal) => {
+      console.log('isInitialLoading', newVal);
+      isLoading.value = newVal;
+    },
+    { immediate: true },
+  );
 
   /**
    * Fetch saved variants from backend
@@ -27,7 +48,9 @@ export const useVariantsStore = defineStore('variants', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const data = await authApi.apiWithAuth<SavedVariantsResponse>('/variants');
+      const data = await authApi.apiWithAuth<SavedVariantsResponse>(
+        '/variants',
+      );
       savedVariants.value = data.items || [];
       return data.items;
     } catch (err) {

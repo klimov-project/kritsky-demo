@@ -6,7 +6,7 @@ const task5 = 'task5';
 
 <template>
   <section
-    class="tasks-section-3 w-full bg-white rounded-[10px] mb-3 p-[30px_40px_50px_30px]"
+    class="tasks-section-2 w-full bg-white rounded-[10px] mb-3 p-[30px_40px_50px_30px]"
   >
     <VariantTaskInstruction>
       {{ settings.variantTexts.part1Task4Lead }}

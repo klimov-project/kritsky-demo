@@ -1,8 +1,18 @@
-<template>
-  <NuxtLayout>
-    <NuxtPage />
+<script setup lang="ts">
+import { ToastProvider, TooltipProvider } from 'reka-ui';
+</script>
 
-    <AuthModal />
-    <ModalPaywall />
-  </NuxtLayout>
+<template>
+  <ToastProvider>
+    <TooltipProvider :delay-duration="800" :skip-delay-duration="500">
+      <NuxtLayout>
+
+        <NuxtPage />
+
+        <AuthModal />
+        <ModalPaywall />
+        
+      </NuxtLayout>
+    </TooltipProvider>
+  </ToastProvider>
 </template>

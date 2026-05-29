@@ -1,34 +1,13 @@
 <script setup lang="ts">
-const ticketContainer = ref<HTMLElement | null>(null);
-
 const { settings } = useKnowledgeBase();
 const variant = useCurrentVariant();
-const {
-  generatePdf,
-  isDownloadingPdf,
-  answersText,
-  collectAllAnswers,
-} = useVariantPdf();
-
-const handleGeneratePdf = async () => {
-  if (!ticketContainer.value) {
-    console.error('PDF container not found');
-    return;
-  }
-  collectAllAnswers();
-  console.log(
-    'Collected answersText before generating PDF:',
-    answersText.value,
-  );
-  await generatePdf(ticketContainer.value);
-};
+const { answersText } = useVariantPdf();
 </script>
 
 <template>
-  <div ref="ticketContainer" class="ticket-pdf-container hide-from-display">
+  <div id="variant-content-pdf" class="ticket-pdf-container hide-from-display">
     <!-- Основной контент -->
     <div class="content-wrapper">
-      <!-- variant.excerpt : {{ variant.excerpt }} -->
       <!-- Секция 1: Отрывок -->
       <VariantPdfExcerpt
         v-if="variant"
@@ -72,14 +51,6 @@ const handleGeneratePdf = async () => {
       </div>
     </div>
   </div>
-
-  <button
-    @click="handleGeneratePdf"
-    :disabled="isDownloadingPdf"
-    class="generate-btn"
-  >
-    {{ isDownloadingPdf ? 'Generating PDF...' : 'Download PDF' }}
-  </button>
 </template>
 
 <style lang="scss">
@@ -94,9 +65,11 @@ const handleGeneratePdf = async () => {
   // opacity: 0.5;
 }
 .ticket-pdf-container {
-  font-family: 'Times New Roman', Times, serif;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  vertical-align: baseline;
   font-size: 14pt;
-  line-height: 1.6;
+  line-height: 1.3;
   color: #000;
   background: #ffffff;
   width: 900px;
@@ -127,9 +100,7 @@ const handleGeneratePdf = async () => {
   h3 {
     font-size: 16pt;
     text-align: center;
-    margin-top: 20pt;
     margin-bottom: 10pt;
-    border-bottom: 1px solid #ccc;
     padding-bottom: 5pt;
   }
 
@@ -147,31 +118,6 @@ const handleGeneratePdf = async () => {
     margin-bottom: 6pt;
   }
 
-  .ticket-pdf__task-description {
-    background-color: #f5f5f5;
-    border: 1px solid #7c7c7c;
-    border-radius: 10px;
-    padding: 12px 16px;
-  }
-
-  .ticket-pdf__task {
-    background-color: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    padding: 12px 16px;
-    margin: 12px 0;
-  }
-
-  .ticket-pdf__task-number {
-    display: inline-block;
-    background-color: #f5f5f5;
-    border-radius: 6px;
-    padding: 4px 10px;
-    font-size: 18pt;
-    font-weight: bold;
-    margin-right: 8px;
-  }
-
   table {
     width: 100%;
     margin: 15px 0;
@@ -182,7 +128,7 @@ const handleGeneratePdf = async () => {
   th {
     padding: 8px;
     text-align: left;
-    border: 1px solid #000;
+    border: 1px solid #cfcfcf;
   }
 
   ul {
@@ -218,27 +164,6 @@ const handleGeneratePdf = async () => {
   .tasks-group-1,
   .tasks-group-2 {
     margin-top: 20px;
-  }
-}
-
-.generate-btn {
-  background-color: #2c3e50;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  font-size: 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin-top: 20px;
-
-  &:hover:not(:disabled) {
-    background-color: #34495e;
-  }
-
-  &:disabled {
-    background-color: #95a5a6;
-    cursor: not-allowed;
   }
 }
 </style>

@@ -5,12 +5,28 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div
-    class="relative flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-[5px]"
-    style="background-color: var(--ui-primary-bg);"
-  >
-    <span class="text-base font-semibold leading-[20px] text-center">
-      {{ number }}
-    </span>
+  <div class="task-number-pdf absolute top-7 left-10">
+    <span class="task-number-pdf__number">{{ number }}</span>
+    <div class="task-number-pdf__bg"></div>
   </div>
 </template>
+<style lang="scss">
+.task-number-pdf {
+  &__bg {
+    background-color: #f6f6f6;
+    position: relative;
+    position: absolute;
+    top: 23px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    z-index: 0;
+  }
+  &__number {
+    position: relative;
+    z-index: 10;
+  }
+}
+</style>

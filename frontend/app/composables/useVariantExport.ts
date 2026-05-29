@@ -6,92 +6,14 @@ import type { GeneratedVariant } from '@/types/generatedVariant';
 
 export const useVariantExport = () => {
   const toast = useToast();
-  const { isDownloadingPdf } = useVariantState();
-  const variantsStore = useVariantsStore();
+  const { variant, isDownloadingPdf } = useVariantState();
   const { isAuthenticated, openLoginModal } = useAuth();
-  const config = useRuntimeConfig();
-
-  /**
-   * Generate PDF from variant using html2canvas and jsPDF
-   */
-  const downloadVariantPdf = async (elementId: string = 'variant-content') => {
-    if (!import.meta.client) return;
-
-    isDownloadingPdf.value = true;
-
-    try {
-      // Dynamic imports for client-side only
-
-      const html2canvas = (await import('html2canvas')).default;
-      const jsPDF = (await import('jspdf')).default;
-
-      const element = document.getElementById(elementId);
-      if (!element) {
-        throw new Error('Variant content element not found');
-      }
-
-      // --- ФИКС ЦВЕТОВ ---
-      // fixOklchColors(element);
-      // fixOklchInStyles(element);
-
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-      });
-
-      // Остальной код остаётся без изменений
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      const timestamp = new Date().toISOString().slice(0, 10);
-      const filename = `variant_${timestamp}.pdf`;
-      pdf.save(filename);
-
-      toast.add({
-        title: 'PDF скачан',
-        description: 'Вариант успешно сохранен в PDF',
-        color: 'success',
-        icon: 'i-lucide-download',
-      });
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      toast.add({
-        title: 'Ошибка',
-        description: 'Не удалось создать PDF',
-        color: 'error',
-        icon: 'i-lucide-alert-circle',
-      });
-    } finally {
-      isDownloadingPdf.value = false;
-    }
-  };
+  const variantsStore = useVariantsStore();
 
   /**
    * Print variant using browser print dialog
    */
-  const printVariant = (elementId: string = 'variant-content') => {
+  const printVariant = (elementId: string = 'variant-content-pdf') => {
     if (!import.meta.client) return;
 
     const element = document.getElementById(elementId);
@@ -132,14 +54,13 @@ export const useVariantExport = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Вариант ЕГЭ</title>
+          <title>Вариант ЕГЭ | ege.kritsky.academy </title>
           <style>
             ${styles}
             @media print {
               body { 
                 margin: 0; 
-                padding: 20px;
-                font-family: 'Times New Roman', serif;
+                padding: 20px; 
               }
               .no-print { display: none !important; }
             }
@@ -164,14 +85,16 @@ export const useVariantExport = () => {
   /**
    * Save variant to user profile
    */
-  const saveVariantToProfile = async (variant: GeneratedVariant) => {
+  const saveVariantToProfile = async () => {
     if (!isAuthenticated.value) {
       openLoginModal();
       return false;
     }
 
+    if (!variant.value) return;
+
     try {
-      await variantsStore.saveVariant(variant);
+      await variantsStore.saveVariant(variant.value);
       toast.add({
         title: 'Сохранено',
         description: 'Вариант сохранен в ваш профиль',
@@ -257,7 +180,6 @@ export const useVariantExport = () => {
   };
 
   return {
-    downloadVariantPdf,
     printVariant,
     saveVariantToProfile,
     generateShareableLink,

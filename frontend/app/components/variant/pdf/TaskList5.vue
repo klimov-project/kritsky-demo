@@ -5,7 +5,7 @@ const lastTasks = ['task11_1', 'task11_2', 'task11_3', 'task11_4', 'task11_5'];
 </script>
 
 <template>
-  <section class="w-full bg-white rounded-[10px] mb-3 p-[30px_40px_50px_30px]">
+  <section class="tasks-section-5">
     <VariantPdfTaskInstruction>
       {{ settings.variantTexts.part3Intro }}
       <!-- <p>

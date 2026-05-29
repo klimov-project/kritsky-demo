@@ -9,7 +9,7 @@ const props = defineProps<Props>();
 
 const singleColumnHtml = computed(() => {
   const headerBlock = `
-    <h3 class="text-center text-base font-semibold text-xl leading-7">  
+    <h3 class="text-center text-base font-semibold text-xl">  
         «${props.poemTitle || ''}»
     </h3>
   `;

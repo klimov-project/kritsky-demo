@@ -63,6 +63,53 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
 /**
+ * Удаляет все style-атрибуты из HTML-строк во всех строковых полях объекта (рекурсивно)
+ * Учитывает экранированные кавычки (&quot;) внутри значений атрибутов
+ * @param {*} obj - объект или значение любой вложенности
+ * @returns {*} - новый объект с очищенными строками
+ */
+function removeStyleAttributes(obj) {
+  if (typeof obj === 'string') {
+    // Сначала декодируем HTML-сущности в кавычках для упрощения парсинга,
+    // затем удаляем style атрибуты, затем восстанавливаем сущности обратно.
+    // Но лучше работать напрямую с регуляркой, учитывающей &quot;
+
+    // Удаляем style="..." где внутри могут быть &quot; (экранированные кавычки)
+    // и обычные кавычки, но не пересекающиеся с границами атрибута
+    let result = obj.replace(
+      /\s*style\s*=\s*"(?:[^"\\]|\\[\s\S]|&quot;)*"/gi,
+      '',
+    );
+
+    // Удаляем style='...' (с одинарными кавычками)
+    result = result.replace(
+      /\s*style\s*=\s*'(?:[^'\\]|\\[\s\S]|&apos;)*'/gi,
+      '',
+    );
+
+    // Удаляем возможные двойные пробелы, оставшиеся после удаления атрибутов
+    result = result.replace(/\s{2,}/g, ' ');
+    result = result.replace(/\s>/g, '>');
+
+    return result;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map((item) => removeStyleAttributes(item));
+  }
+
+  if (obj !== null && typeof obj === 'object') {
+    const result = {};
+    for (const key of Object.keys(obj)) {
+      result[key] = removeStyleAttributes(obj[key]);
+    }
+    return result;
+  }
+
+  return obj;
+}
+
+/**
  * Глубокая нормализация данных из БЗ:
  * - удаляет HTML-теги и XML-комментарии из всех строк, кроме ID-полей
  * - нормализует пробелы
@@ -124,8 +171,10 @@ export const normalizeKnowledgeBasePayload = (
   value: unknown,
 ): KnowledgeBasePayload => {
   const normalizedSource = normalizeKB(value);
+  const normalizedSource2 = removeStyleAttributes(normalizedSource);
+  console.log('[Normalise] removeStyleAttributes Ok');
 
-  if (!normalizedSource || typeof normalizedSource !== 'object') {
+  if (!normalizedSource2 || typeof normalizedSource2 !== 'object') {
     return {
       works: [],
       poets: [],
@@ -133,6 +182,7 @@ export const normalizeKnowledgeBasePayload = (
       block3: { ...EMPTY_BLOCK3 },
       settings: DEFAULT_KNOWLEDGE_BASE_SETTINGS,
       stats: {},
+      updatedAt: new Date(Date.now()),
     };
   }
 
@@ -178,6 +228,7 @@ export const normalizeKnowledgeBasePayload = (
     block3: source.block3 || { ...EMPTY_BLOCK3 },
     settings: source.settings || DEFAULT_KNOWLEDGE_BASE_SETTINGS,
     stats: source.stats ?? {},
+    updatedAt: new Date(Date.now()),
     _metadata: source._metadata,
   };
 };
