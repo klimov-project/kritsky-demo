@@ -295,60 +295,129 @@ export const useVariantPdf = () => {
             scale: 3,
             useCORS: true,
             allowTaint: true,
-            logging: false,
+            logging: true, // Enable logging for debugging
             backgroundColor: '#ffffff',
             width: sectionEl.scrollWidth,
             height: Math.ceil(contentHeightPx),
             onclone: (clonedDoc) => {
-              // html2canvas fails on oklch() colors - convert them to hex/rgb via canvas
-              const elements = clonedDoc.getElementsByTagName('*');
+              console.log('[v0] onclone started');
+
+              // html2canvas fails on oklch() colors - we need to convert them in stylesheets
               const cvs = clonedDoc.createElement('canvas');
               cvs.width = 1;
               cvs.height = 1;
               const ctx = cvs.getContext('2d');
-              if (!ctx) return;
+              if (!ctx) {
+                console.log('[v0] Could not get canvas context');
+                return;
+              }
 
               const fixColor = (color: string): string => {
                 if (!color || !color.includes('oklch')) return color;
                 try {
+                  ctx.fillStyle = '#000000'; // Reset first
                   ctx.fillStyle = color;
-                  return ctx.fillStyle;
-                } catch {
-                  return color;
+                  const result = ctx.fillStyle;
+                  console.log(
+                    '[v0] Converted oklch color:',
+                    color,
+                    '->',
+                    result,
+                  );
+                  return result;
+                } catch (e) {
+                  console.log('[v0] Failed to convert color:', color, e);
+                  return '#000000'; // Fallback to black
                 }
               };
 
+              // Step 1: Replace oklch in all <style> tags in the cloned document
+              const styleTags = clonedDoc.querySelectorAll('style');
+              console.log('[v0] Found', styleTags.length, 'style tags');
+
+              let oklchCount = 0;
+              styleTags.forEach((styleTag, idx) => {
+                const originalCss = styleTag.textContent || '';
+                if (originalCss.includes('oklch')) {
+                  // Replace oklch(...) with converted hex colors using regex
+                  const convertedCss = originalCss.replace(
+                    /oklch\([^)]+\)/gi,
+                    (match) => {
+                      oklchCount++;
+                      return fixColor(match);
+                    },
+                  );
+                  styleTag.textContent = convertedCss;
+                  console.log('[v0] Converted oklch in style tag', idx);
+                }
+              });
+              console.log(
+                '[v0] Total oklch replacements in style tags:',
+                oklchCount,
+              );
+
+              // Step 2: Convert CSS custom properties on :root in cloned doc
+              const rootEl = clonedDoc.documentElement;
+              for (const sheet of Array.from(document.styleSheets)) {
+                try {
+                  for (const rule of Array.from(sheet.cssRules || [])) {
+                    if (
+                      rule instanceof CSSStyleRule &&
+                      (rule.selectorText === ':root' ||
+                        rule.selectorText === ':host' ||
+                        rule.selectorText === ':root,:host')
+                    ) {
+                      for (let k = 0; k < rule.style.length; k++) {
+                        const propName = rule.style[k];
+                        if (propName && propName.startsWith('--')) {
+                          const val = rule.style.getPropertyValue(propName);
+                          if (val && val.includes('oklch')) {
+                            rootEl.style.setProperty(propName, fixColor(val));
+                          }
+                        }
+                      }
+                    }
+                  }
+                } catch {
+                  // Skip cross-origin stylesheets
+                }
+              }
+
+              // Step 3: Inline computed styles on all elements
+              const elements = clonedDoc.getElementsByTagName('*');
               const styleProps = [
                 'color',
-                'backgroundColor',
-                'borderColor',
-                'borderTopColor',
-                'borderBottomColor',
-                'borderLeftColor',
-                'borderRightColor',
-                'outlineColor',
+                'background-color',
+                'border-color',
+                'border-top-color',
+                'border-bottom-color',
+                'border-left-color',
+                'border-right-color',
+                'outline-color',
                 'fill',
                 'stroke',
               ];
 
-              for (let i = 0; i < elements.length; i++) {
-                const el = elements[i] as HTMLElement;
+              let elementOklchCount = 0;
+              for (let j = 0; j < elements.length; j++) {
+                const el = elements[j] as HTMLElement;
                 if (!el.style) continue;
 
                 const computedStyle = window.getComputedStyle(el);
 
                 styleProps.forEach((prop) => {
-                  const camelProp = prop.replace(/-([a-z])/g, (_, c) =>
-                    c.toUpperCase(),
-                  );
-                  const val = computedStyle.getPropertyValue(
-                    prop.replace(/([A-Z])/g, '-$1').toLowerCase(),
-                  );
+                  const val = computedStyle.getPropertyValue(prop);
                   if (val && val.includes('oklch')) {
-                    (el.style as any)[camelProp] = fixColor(val);
+                    elementOklchCount++;
+                    el.style.setProperty(prop, fixColor(val), 'important');
                   }
                 });
               }
+              console.log(
+                '[v0] Elements with oklch styles converted:',
+                elementOklchCount,
+              );
+              console.log('[v0] onclone finished');
             },
           });
 
