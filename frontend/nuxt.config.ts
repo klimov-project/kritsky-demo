@@ -84,12 +84,6 @@ export default defineNuxtConfig({
   vite: {
     optimizeDeps: {
       include: ['@vue/devtools-core', '@vue/devtools-kit', 'pinia'],
-      exclude: ['html2canvas', 'jspdf'],
-    },
-    build: {
-      rollupOptions: {
-        external: ['html2canvas', 'jspdf'],
-      },
     },
   },
 });
