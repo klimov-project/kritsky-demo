@@ -45,7 +45,7 @@ export default defineNuxtConfig({
       prefix: '',
     },
   ],
-  plugins: ['~/plugins/auth.client.ts'],
+  plugins: ['~/plugins/auth.client.ts', '~/plugins/html2canvas.client.ts'],
   runtimeConfig: {
     // Server-only runtime config
     apiBackendBase:

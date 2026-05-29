@@ -1,4 +1,5 @@
 export const useVariantPdf = () => {
+  const { $html2canvas } = useNuxtApp();
   const toast = useToast();
   const { isDownloadingPdf, variant } = useVariantState();
   const answersText = useState<string>('answers-text', () => '');
@@ -100,7 +101,6 @@ export const useVariantPdf = () => {
     isDownloadingPdf.value = true;
 
     try {
-      const html2canvas = (await import('html2canvas')).default;
       const jsPDF = (await import('jspdf')).default;
 
       const fontUrl = '/font/MinionPro-Regular.ttf';
@@ -290,7 +290,8 @@ export const useVariantPdf = () => {
               el.style.marginTop = '0';
             }
           });
-          const canvas = await html2canvas(tempContainer, {
+
+          const canvas = await $html2canvas(tempContainer, {
             scale: 3,
             useCORS: true,
             allowTaint: true,
