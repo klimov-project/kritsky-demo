@@ -301,7 +301,6 @@ export const useVariantPdf = () => {
             height: Math.ceil(contentHeightPx),
             onclone: (clonedDoc) => {
               // html2canvas fails on oklch() colors - convert them to hex/rgb via canvas
-              const elements = clonedDoc.getElementsByTagName('*');
               const cvs = clonedDoc.createElement('canvas');
               cvs.width = 1;
               cvs.height = 1;
@@ -318,7 +317,34 @@ export const useVariantPdf = () => {
                 }
               };
 
-              // Use kebab-case property names for getPropertyValue/setProperty
+              // Step 1: Convert all oklch CSS custom properties on :root
+              const rootEl = clonedDoc.documentElement;
+              const rootStyles = window.getComputedStyle(rootEl);
+              
+              // Get all CSS custom properties from stylesheets
+              for (const sheet of Array.from(document.styleSheets)) {
+                try {
+                  for (const rule of Array.from(sheet.cssRules || [])) {
+                    if (rule instanceof CSSStyleRule && 
+                        (rule.selectorText === ':root' || rule.selectorText === ':host' || rule.selectorText === ':root,:host')) {
+                      for (let k = 0; k < rule.style.length; k++) {
+                        const propName = rule.style[k];
+                        if (propName && propName.startsWith('--')) {
+                          const val = rule.style.getPropertyValue(propName);
+                          if (val && val.includes('oklch')) {
+                            rootEl.style.setProperty(propName, fixColor(val));
+                          }
+                        }
+                      }
+                    }
+                  }
+                } catch {
+                  // Skip cross-origin stylesheets
+                }
+              }
+
+              // Step 2: Convert inline styles on all elements
+              const elements = clonedDoc.getElementsByTagName('*');
               const styleProps = [
                 'color',
                 'background-color',
