@@ -295,18 +295,18 @@ export const useVariantPdf = () => {
             scale: 3,
             useCORS: true,
             allowTaint: true,
-            logging: true, // Enable logging for debugging
+            logging: true,
             backgroundColor: '#ffffff',
             width: sectionEl.scrollWidth,
             height: Math.ceil(contentHeightPx),
             onclone: (clonedDoc) => {
               console.log('[v0] onclone started');
-              
-              // html2canvas fails on oklch() colors - we need to convert them in stylesheets
+
+              // Create a canvas to force RGB conversion
               const cvs = clonedDoc.createElement('canvas');
               cvs.width = 1;
               cvs.height = 1;
-              const ctx = cvs.getContext('2d');
+              const ctx = cvs.getContext('2d', { willReadFrequently: true });
               if (!ctx) {
                 console.log('[v0] Could not get canvas context');
                 return;
@@ -315,46 +315,73 @@ export const useVariantPdf = () => {
               const fixColor = (color: string): string => {
                 if (!color || !color.includes('oklch')) return color;
                 try {
-                  ctx.fillStyle = '#000000'; // Reset first
+                  // Draw a 1x1 pixel with the oklch color
+                  ctx.clearRect(0, 0, 1, 1);
                   ctx.fillStyle = color;
-                  const result = ctx.fillStyle;
-                  console.log('[v0] Converted oklch color:', color, '->', result);
-                  return result;
+                  ctx.fillRect(0, 0, 1, 1);
+
+                  // Read back the RGB values
+                  const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data;
+
+                  if (a === 0) {
+                    // Fully transparent - return as rgba
+                    return 'rgba(0, 0, 0, 0)';
+                  }
+
+                  // Convert to hex or rgba
+                  const toHex = (n: number) => n.toString(16).padStart(2, '0');
+                  const hexColor = `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+
+                  console.log(
+                    '[v0] Converted oklch color:',
+                    color,
+                    '->',
+                    hexColor,
+                  );
+                  return a === 255
+                    ? hexColor
+                    : `rgba(${r}, ${g}, ${b}, ${a / 255})`;
                 } catch (e) {
                   console.log('[v0] Failed to convert color:', color, e);
-                  return '#000000'; // Fallback to black
+                  return '#000000';
                 }
               };
 
-              // Step 1: Replace oklch in all <style> tags in the cloned document
+              // Step 1: Replace oklch in all <style> tags
               const styleTags = clonedDoc.querySelectorAll('style');
               console.log('[v0] Found', styleTags.length, 'style tags');
-              
+
               let oklchCount = 0;
               styleTags.forEach((styleTag, idx) => {
                 const originalCss = styleTag.textContent || '';
                 if (originalCss.includes('oklch')) {
-                  // Replace oklch(...) with converted hex colors using regex
                   const convertedCss = originalCss.replace(
                     /oklch\([^)]+\)/gi,
                     (match) => {
                       oklchCount++;
                       return fixColor(match);
-                    }
+                    },
                   );
                   styleTag.textContent = convertedCss;
                   console.log('[v0] Converted oklch in style tag', idx);
                 }
               });
-              console.log('[v0] Total oklch replacements in style tags:', oklchCount);
+              console.log(
+                '[v0] Total oklch replacements in style tags:',
+                oklchCount,
+              );
 
               // Step 2: Convert CSS custom properties on :root in cloned doc
               const rootEl = clonedDoc.documentElement;
               for (const sheet of Array.from(document.styleSheets)) {
                 try {
                   for (const rule of Array.from(sheet.cssRules || [])) {
-                    if (rule instanceof CSSStyleRule && 
-                        (rule.selectorText === ':root' || rule.selectorText === ':host' || rule.selectorText === ':root,:host')) {
+                    if (
+                      rule instanceof CSSStyleRule &&
+                      (rule.selectorText === ':root' ||
+                        rule.selectorText === ':host' ||
+                        rule.selectorText === ':root,:host')
+                    ) {
                       for (let k = 0; k < rule.style.length; k++) {
                         const propName = rule.style[k];
                         if (propName && propName.startsWith('--')) {
@@ -401,7 +428,10 @@ export const useVariantPdf = () => {
                   }
                 });
               }
-              console.log('[v0] Elements with oklch styles converted:', elementOklchCount);
+              console.log(
+                '[v0] Elements with oklch styles converted:',
+                elementOklchCount,
+              );
               console.log('[v0] onclone finished');
             },
           });

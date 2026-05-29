@@ -12,7 +12,11 @@ const {
 
 const { generatePdf, isDownloadingPdf, collectAllAnswers } = useVariantPdf();
 
-const handleDownload = async () => { 
+const handleDownload = async () => {
+  if (!isAuthenticated.value) {
+    showPaywall();
+    return;
+  }
   try {
     collectAllAnswers();
     await generatePdf();
@@ -57,6 +61,7 @@ const handleShare = async () => {
     <BaseButton
       icon="i-lucide-download"
       @click="handleDownload"
+      :disabled="disabled || !isAuthenticated"
     >
       {{ isDownloadingPdf ? 'ЗАГРУЗКА...' : 'СКАЧАТЬ' }}
     </BaseButton>
@@ -64,18 +69,21 @@ const handleShare = async () => {
     <BaseButton
       icon="i-lucide-printer"
       @click="handlePrint"
+      :disabled="disabled || !isAuthenticated"
     >
       ПЕЧАТЬ
     </BaseButton>
     <BaseButton
       icon="i-lucide-save"
       @click="handleSave"
+      :disabled="disabled || !isAuthenticated"
     >
       СОХРАНИТЬ
     </BaseButton>
     <BaseButton
       icon="i-lucide-share-2"
       @click="handleShare"
+      :disabled="disabled || !isAuthenticated"
     >
       ПОДЕЛИТЬСЯ
     </BaseButton>
