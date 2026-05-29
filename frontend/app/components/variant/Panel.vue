@@ -12,11 +12,7 @@ const {
 
 const { generatePdf, isDownloadingPdf, collectAllAnswers } = useVariantPdf();
 
-const handleDownload = async () => {
-  if (!isAuthenticated.value) {
-    showPaywall();
-    return;
-  }
+const handleDownload = async () => { 
   try {
     collectAllAnswers();
     await generatePdf();
