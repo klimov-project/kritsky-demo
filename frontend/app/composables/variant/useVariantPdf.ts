@@ -299,6 +299,53 @@ export const useVariantPdf = () => {
             backgroundColor: '#ffffff',
             width: sectionEl.scrollWidth,
             height: Math.ceil(contentHeightPx),
+            onclone: (clonedDoc) => {
+              // html2canvas fails on oklch() colors - convert them to hex/rgb via canvas
+              const elements = clonedDoc.getElementsByTagName('*');
+              const cvs = clonedDoc.createElement('canvas');
+              cvs.width = 1;
+              cvs.height = 1;
+              const ctx = cvs.getContext('2d');
+              if (!ctx) return;
+
+              const fixColor = (color: string): string => {
+                if (!color || !color.includes('oklch')) return color;
+                try {
+                  ctx.fillStyle = color;
+                  return ctx.fillStyle;
+                } catch {
+                  return color;
+                }
+              };
+
+              // Use kebab-case property names for getPropertyValue/setProperty
+              const styleProps = [
+                'color',
+                'background-color',
+                'border-color',
+                'border-top-color',
+                'border-bottom-color',
+                'border-left-color',
+                'border-right-color',
+                'outline-color',
+                'fill',
+                'stroke',
+              ];
+
+              for (let j = 0; j < elements.length; j++) {
+                const el = elements[j] as HTMLElement;
+                if (!el.style) continue;
+
+                const computedStyle = window.getComputedStyle(el);
+
+                styleProps.forEach((prop) => {
+                  const val = computedStyle.getPropertyValue(prop);
+                  if (val && val.includes('oklch')) {
+                    el.style.setProperty(prop, fixColor(val), 'important');
+                  }
+                });
+              }
+            },
           });
 
           document.body.removeChild(tempContainer);

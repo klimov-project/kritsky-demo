@@ -44,12 +44,7 @@
 1. Создать дамп базы с прода (используя корректный docker-compose файл и env):
    `docker compose -f docker-compose.prod.yml --env-file .env.prod exec -T db pg_dump -U postgres -d kritsky -Fc > ./kritsky-backup.dump`
 
-2. Очистить целевую базу данных на дев-сервере:
-   `docker compose down -v`
-
-   ### Возможные ответвления
-
-   #### С очисткой подключений и пересозданием базы
+2. Очистить целевую базу данных и пересозданием базы на дев-сервере:
 
    - Поднять только Postgres
      `docker compose up -d backend`
@@ -60,23 +55,11 @@
    - Создать пустую базу с названием "kritsky"
      `docker compose exec -T db psql -U postgres -c "CREATE DATABASE kritsky;"`
 
-   #### Со схемой и миграциями
+3. Залить дамп (с явным указанием compose-файла и env):
+   `docker compose -f docker-compose.yml --env-file .env exec -T db pg_restore -U postgres -d kritsky --clean --if-exists --no-owner --verbose < kritsky-backup_date-today.dump`
 
-   - Запустить контейнеры (бэкенд, базу данных, редис) для применения схемы:
-     `docker compose up -d db backend`
-
-   - Применить миграции Alembic (если в дампе старая структура или есть конфликт):
-
-   ```
-     docker compose exec backend uv run alembic downgrade -1
-     docker compose exec backend uv run alembic upgrade head
-   ```
-
-3) Залить дамп (с явным указанием compose-файла и env):
-   `docker compose -f docker-compose.yml --env-file .env exec -T db pg_restore -U postgres -d kritsky --clean --if-exists --no-owner --verbose < kritsky-backup.dump`
-
-4) Очистить кеш Redis (критично, иначе данные останутся старыми):
+4. Очистить кеш Redis (критично, иначе данные останутся старыми):
    `docker compose exec redis redis-cli flushall`
 
-5) Пересобрать и поднять всё финально:
-   `docker compose down && docker compose up -d --build --force-recreate`
+5. Пересобрать и поднять всё финально:
+   `docker compose down && docker compose up backend -d --build --force-recreate`
