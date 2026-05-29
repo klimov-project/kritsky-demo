@@ -318,34 +318,30 @@ export const useVariantPdf = () => {
                 }
               };
 
+              // Use kebab-case property names for getPropertyValue/setProperty
               const styleProps = [
                 'color',
-                'backgroundColor',
-                'borderColor',
-                'borderTopColor',
-                'borderBottomColor',
-                'borderLeftColor',
-                'borderRightColor',
-                'outlineColor',
+                'background-color',
+                'border-color',
+                'border-top-color',
+                'border-bottom-color',
+                'border-left-color',
+                'border-right-color',
+                'outline-color',
                 'fill',
                 'stroke',
               ];
 
-              for (let i = 0; i < elements.length; i++) {
-                const el = elements[i] as HTMLElement;
+              for (let j = 0; j < elements.length; j++) {
+                const el = elements[j] as HTMLElement;
                 if (!el.style) continue;
 
                 const computedStyle = window.getComputedStyle(el);
 
                 styleProps.forEach((prop) => {
-                  const camelProp = prop.replace(/-([a-z])/g, (_, c) =>
-                    c.toUpperCase(),
-                  );
-                  const val = computedStyle.getPropertyValue(
-                    prop.replace(/([A-Z])/g, '-$1').toLowerCase(),
-                  );
+                  const val = computedStyle.getPropertyValue(prop);
                   if (val && val.includes('oklch')) {
-                    (el.style as any)[camelProp] = fixColor(val);
+                    el.style.setProperty(prop, fixColor(val), 'important');
                   }
                 });
               }
