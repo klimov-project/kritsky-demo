@@ -29,11 +29,11 @@ const task5 = 'task5';
       :task-key="taskKey"
     />
 
-    <VariantPdfTaskInstruction>
+    <TaskInstruction>
       {{ settings.variantTexts.part1Task5Lead }}
       <!-- Дайте аргументированный связный ответ на вопрос задания: <br />
       - укажите сходство ИЛИ различие произведений в соответствии с заданием; -->
-    </VariantPdfTaskInstruction>
+    </TaskInstruction>
 
     <VariantPdfTask :task-key="task5" />
   </section>

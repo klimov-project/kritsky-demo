@@ -127,7 +127,7 @@ const showAnswerButton = computed(() => {
         </div>
 
         <!-- Основной контент задания -->
-        <div class="flex-1 space-y-3 min-h-[50px]">
+        <div class="space-y-3 min-h-[50px]">
           <!-- TASK 2 -->
           <template v-if="taskType === 'task2'">
             <div

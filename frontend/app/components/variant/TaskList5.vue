@@ -15,7 +15,7 @@ const { isLocked } = useAuth();
 </script>
 
 <template>
-  <section class="w-full bg-white rounded-[10px] mb-3 p-[30px_40px_50px_30px]">
+  <section class="w-full bg-white rounded-[10px] mb-3 p-[30px_40px]">
     <VariantTaskInstruction>
       {{ settings.variantTexts.part3Intro }}
       <!-- <p>

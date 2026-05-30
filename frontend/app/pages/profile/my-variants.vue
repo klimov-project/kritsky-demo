@@ -11,7 +11,6 @@ definePageMeta({
 const toast = useToast();
 const variantsStore = useVariantsStore();
 const { savedVariants, isLoading, error } = storeToRefs(variantsStore);
-const { downloadVariantPdf, printVariant } = useVariantExport();
 
 const isDeleting = ref<number | null>(null);
 const showDeleteConfirm = ref(false);
@@ -135,7 +134,7 @@ const cancelDelete = () => {
                 @click="variantsStore.fetchSavedVariants()"
               >
                 Попробовать снова
-              </button>  
+              </button>
             </div>
 
             <!-- Empty State -->

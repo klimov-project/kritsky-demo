@@ -30,10 +30,9 @@ const task5 = 'task5';
       :key="taskKey"
       :task-key="taskKey"
     />
-
+    
     <TaskInstruction>
-      Дайте аргументированный связный ответ на вопрос задания: <br />
-      - укажите сходство ИЛИ различие произведений в соответствии с заданием;
+      {{ settings.variantTexts.part1Task5Lead }}
     </TaskInstruction>
 
     <VariantTask :task-key="task5" />

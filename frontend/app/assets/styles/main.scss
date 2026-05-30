@@ -142,6 +142,16 @@ button[aria-haspopup="dialog"][data-state="closed"] {
     display: none;
 }
 
+.task-container {
+    +.task-instruction-wrapper {
+        margin-top: 20px;
+    }
+}
+
+[data-slot=content] {
+    border-radius: unset;
+}
+
 // from react realisation
 
 .rich-content p {

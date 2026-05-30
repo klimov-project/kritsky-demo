@@ -17,6 +17,62 @@ export const useVariantsStore = defineStore('variants', () => {
   const savedVariants = ref<SavedVariant[]>([]);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
+  // Demo variant + update limits (for demo users)
+  const demoVariant = ref<SavedVariant | null>(null);
+  const demoUpdateCounts = ref<Record<string, number>>({});
+
+  const DEMO_VARIANT_LS_KEY = 'demoVariant';
+  const DEMO_COUNTS_LS_KEY = 'demoUpdateCounts';
+
+  const loadDemoState = () => {
+    try {
+      const raw = localStorage.getItem(DEMO_VARIANT_LS_KEY);
+      if (raw) demoVariant.value = JSON.parse(raw) as SavedVariant;
+      const rawCounts = localStorage.getItem(DEMO_COUNTS_LS_KEY);
+      if (rawCounts)
+        demoUpdateCounts.value = JSON.parse(rawCounts) as Record<
+          string,
+          number
+        >;
+    } catch (e) {
+      console.warn('Failed to load demo state', e);
+    }
+  };
+
+  const saveDemoState = () => {
+    try {
+      localStorage.setItem(
+        DEMO_VARIANT_LS_KEY,
+        JSON.stringify(demoVariant.value),
+      );
+      localStorage.setItem(
+        DEMO_COUNTS_LS_KEY,
+        JSON.stringify(demoUpdateCounts.value || {}),
+      );
+    } catch (e) {
+      console.warn('Failed to save demo state', e);
+    }
+  };
+
+  const setDemoVariant = (v: SavedVariant | null) => {
+    demoVariant.value = v;
+    saveDemoState();
+  };
+
+  const getDemoUpdateCount = (taskKey: string) => {
+    return demoUpdateCounts.value[taskKey] || 0;
+  };
+
+  const canUpdateTask = (taskKey: string, isPro = false) => {
+    if (isPro) return true;
+    return getDemoUpdateCount(taskKey) < 3;
+  };
+
+  const recordDemoUpdate = (taskKey: string) => {
+    demoUpdateCounts.value[taskKey] = getDemoUpdateCount(taskKey) + 1;
+    saveDemoState();
+    return demoUpdateCounts.value[taskKey];
+  };
 
   const authApi = useAuthApi();
   const { isDownloadingPdf, isInitialLoading } = useVariantState();
@@ -27,7 +83,6 @@ export const useVariantsStore = defineStore('variants', () => {
   watch(
     isDownloadingPdf,
     (newVal) => {
-      console.log('isDownloadingPdf', newVal);
       isLoading.value = newVal;
     },
     { immediate: true },
@@ -35,11 +90,15 @@ export const useVariantsStore = defineStore('variants', () => {
   watch(
     isInitialLoading,
     (newVal) => {
-      console.log('isInitialLoading', newVal);
       isLoading.value = newVal;
     },
     { immediate: true },
   );
+
+  // Initialize demo state from localStorage
+  if (typeof window !== 'undefined') {
+    loadDemoState();
+  }
 
   /**
    * Fetch saved variants from backend
@@ -57,7 +116,7 @@ export const useVariantsStore = defineStore('variants', () => {
       const fetchError = err as { data?: { message?: string } };
       error.value =
         fetchError?.data?.message || 'Ошибка загрузки сохраненных вариантов';
-      console.error('[v0] Fetch saved variants error:', err);
+      console.error('[variantStore] Fetch saved variants error:', err);
       throw err;
     } finally {
       isLoading.value = false;
@@ -92,7 +151,7 @@ export const useVariantsStore = defineStore('variants', () => {
     } catch (err) {
       const fetchError = err as { data?: { message?: string } };
       error.value = fetchError?.data?.message || 'Ошибка сохранения варианта';
-      console.error('[v0] Save variant error:', err);
+      console.error('[variantStore] Save variant error:', err);
       throw err;
     } finally {
       isLoading.value = false;
@@ -115,7 +174,7 @@ export const useVariantsStore = defineStore('variants', () => {
     } catch (err) {
       const fetchError = err as { data?: { message?: string } };
       error.value = fetchError?.data?.message || 'Ошибка удаления варианта';
-      console.error('[v0] Delete variant error:', err);
+      console.error('[variantStore] Delete variant error:', err);
       throw err;
     } finally {
       isLoading.value = false;
@@ -171,5 +230,11 @@ export const useVariantsStore = defineStore('variants', () => {
     clearVariants,
     formatDate,
     getVariantTitle,
+    // Demo API
+    demoVariant,
+    setDemoVariant,
+    canUpdateTask,
+    recordDemoUpdate,
+    getDemoUpdateCount,
   };
 });

@@ -19,5 +19,5 @@ const contentHtml = computed(() => {
 </script>
 
 <template>
-  <p v-html="contentHtml" class="task-pdf-text pl-14"></p>
+  <p v-html="contentHtml" class="task-pdf-text text-justify pl-14"></p>
 </template>

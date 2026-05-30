@@ -5,7 +5,6 @@ import type { mKnowledgeBaseResponse } from './mockData';
 import { mockKnowledgeBaseResponse, mockStore } from './mockData';
 
 export function useKnowledgeBase() {
-  // В моковом режиме возвращаем сразу заглушку, даже не инициализируя запрос
   if (USE_MOCK) {
     const mockPending = ref(false);
     const mockError = ref(null);
@@ -26,9 +25,8 @@ export function useKnowledgeBase() {
     const works = computed(() => mockKnowledgeBaseResponse.works ?? []);
     const poets = computed(() => mockKnowledgeBaseResponse.poets ?? []);
     const themes = computed(() => []);
-    const settings = computed(
-      () => store.settings ?? DEFAULT_KNOWLEDGE_BASE_SETTINGS,
-    );
+    const settings = computed(() => mockStore.settings ?? null);
+    const weeklyVariant = computed(() => settings.value?.weeklyVariant ?? null);
 
     return {
       data: readonly(mockData),
@@ -36,6 +34,7 @@ export function useKnowledgeBase() {
       poets,
       themes,
       settings,
+      weeklyVariant,
 
       pending: readonly(mockPending),
       error: readonly(mockError),

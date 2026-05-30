@@ -8,7 +8,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="text-base flex-1 pt-[8px] leading-[23px]">
+  <div class="text-base flex-1 pt-[12px] leading-[23px]">
     <template v-if="part1 && part2">
       <div v-html="part1" class="text-justify mb-4"></div>
       <div v-html="part2" class="text-justify"></div>
