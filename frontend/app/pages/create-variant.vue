@@ -56,10 +56,9 @@ onMounted(async () => {
 <template>
   <GlobalLoader v-if="isLoading" />
 
-  <div class="w-full max-w-[956px] text-[#333333] mt-8">
+  <VariantCreateSkeleton v-if="isInitialLoading" />
+  <div v-else class="w-full max-w-[956px]">
     <VariantCreateHeading />
-  </div>
-  <div class="relative min-h-screen w-full max-w-[956px]">
     <VariantCreate />
   </div>
 

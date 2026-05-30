@@ -11,7 +11,7 @@ const toggle = () => {
 </script>
 
 <template>
-  <div class="flex items-center justify-center">
+  <div class="flex items-center justify-center no-print">
     <button
       type="button"
       class="icon-button flex-shrink-0 p-1 rounded-[5px] transition-all duration-200 hover:bg-[var(--ui-bg-muted)] active:scale-95"

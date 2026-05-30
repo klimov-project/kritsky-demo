@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full max-w-[956px] text-[#333333] mt-8">
+  <div class="create-variant-skeleton w-full max-w-[956px] text-[#333333] mt-8">
     <!-- Заголовок "Вариант 1" -->
     <div
       class="w-full bg-white rounded-[10px] flex justify-center items-center p-5 mb-3"
@@ -53,3 +53,8 @@
     </div>
   </div>
 </template>
+<style>
+.create-variant-skeleton {
+  --ui-bg-elevated: #ededed;
+}
+</style>

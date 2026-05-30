@@ -19,7 +19,7 @@ const isOpen = ref(true);
       />
 
       <template #content>
-        <p class="text-default text-xl leading-[23px] m-0">
+        <p class="text-default text-base leading-[23px] m-0 text-justify">
           <slot />
         </p>
       </template>

@@ -36,7 +36,10 @@ const { settings } = useKnowledgeBase();
       {{ settings.variantTexts.part2Intro }}
     </VariantPdfTaskInstruction>
 
-    <div v-html="singleColumnHtml" class="poem poem-sm max-w-none mb-4"></div>
+    <div
+      v-html="singleColumnHtml"
+      class="poem poem-sm max-w-none text-justify mb-4"
+    ></div>
   </div>
 </template>
 <style lang="scss">

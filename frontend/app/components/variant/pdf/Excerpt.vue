@@ -15,7 +15,7 @@ const singleColumnHtml = computed(() => {
     <h1>Вариант 1</h1>
     <h2>Часть 1</h2>
     <div class="task-instruction-wrapper text-default ticket-pdf__task-description">
-      <p class="task-instruction leading-[23px]">
+      <p class="task-instruction leading-[23px] text-justify">
         ${props.part1Intro || ''}
       </p>
     </div>

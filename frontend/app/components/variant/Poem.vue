@@ -14,12 +14,12 @@ const { settings } = useKnowledgeBase();
       {{ settings.variantTexts.part2Intro }}
     </VariantTaskInstruction>
 
-    <div class="poem poem-sm max-w-none mb-4">
+    <div class="poem poem-sm max-w-none text-justify mb-4">
       <h3 class="text-center text-base font-semibold text-xl leading-7">
         «{{ poemTitle }}»
       </h3>
     </div>
-    <div class="poem poem-sm max-w-none mb-4">
+    <div class="poem poem-sm max-w-none text-justify mb-4">
       <p
         v-html="poemText || 'Стихотворение не загрузилось, попробуйте ещё раз'"
       ></p>

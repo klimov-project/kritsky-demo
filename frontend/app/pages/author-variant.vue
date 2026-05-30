@@ -4,6 +4,7 @@ import type { SavedVariant } from '@/stores/variants';
 const variantId = computed(() => 1);
 
 const variantsStore = useVariantsStore();
+const knowledgeStore = useKnowledgeBaseStore();
 const { variant, isInitialLoading } = useVariantState();
 const { downloadVariantPdf, printVariant } = useVariantExport();
 
@@ -24,9 +25,9 @@ onMounted(async () => {
     savedVariant.value = response;
 
     // Set the variant in state for rendering
-    if (response?.variant) {
-      variant.value = response.variant;
-    }
+      if (response?.variant) {
+        variant.value = response.variant;
+      }
   } catch (err) {
     // Check if variant exists in local store
     const localVariant = variantsStore.getVariantById(variantId.value);
@@ -81,21 +82,29 @@ const handlePrint = () => {
         </NuxtLink>
       </div>
 
-      <!-- Variant Content -->
-      <template v-else-if="savedVariant">
-        <!-- Header -->
+      <!-- Variant Content (read-only full layout) -->
+      <template v-else-if="savedVariant || knowledgeStore.weeklyVariant">
         <div class="bg-white rounded-2xl p-6 mb-6 shadow-sm">
           <div class="flex items-start justify-between">
             <div>
               <h1 class="text-2xl font-bold">
-                {{ variantsStore.getVariantTitle(savedVariant.variant) }}
+                {{
+                  savedVariant
+                    ? variantsStore.getVariantTitle(savedVariant.variant)
+                    : 'Вариант недели'
+                }}
               </h1>
               <p class="text-gray-500 mt-1">
-                Создан: {{ variantsStore.formatDate(savedVariant.createdAt) }}
+                {{
+                  savedVariant
+                    ? `Создан: ${variantsStore.formatDate(savedVariant.createdAt)}`
+                    : 'Только для просмотра'
+                }}
               </p>
             </div>
             <div class="flex gap-2">
               <button
+                v-if="savedVariant"
                 class="p-2.5 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                 title="Скачать PDF"
                 @click="handleDownload"
@@ -103,6 +112,7 @@ const handlePrint = () => {
                 <UIcon name="i-lucide-download" class="w-5 h-5" />
               </button>
               <button
+                v-if="savedVariant"
                 class="p-2.5 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                 title="Печать"
                 @click="handlePrint"
@@ -113,59 +123,52 @@ const handlePrint = () => {
           </div>
         </div>
 
-        <!-- Variant Tasks (simplified display) -->
         <div id="variant-content" class="bg-white rounded-2xl p-6 shadow-sm">
           <div class="prose max-w-none">
             <!-- Work info -->
-            <div v-if="savedVariant.variant.work" class="mb-8 pb-6 border-b">
+            <div
+              v-if="(savedVariant && savedVariant.variant.work) || (!savedVariant && knowledgeStore.weeklyVariant?.work)"
+              class="mb-8 pb-6 border-b"
+            >
               <h2 class="text-xl font-semibold mb-2">
-                {{ savedVariant.variant.work.author }}
+                {{
+                  savedVariant
+                    ? savedVariant.variant.work.author
+                    : knowledgeStore.weeklyVariant?.work?.author
+                }}
               </h2>
               <p class="text-lg text-gray-600">
-                {{ savedVariant.variant.work.title }}
+                {{
+                  savedVariant
+                    ? savedVariant.variant.work.title
+                    : knowledgeStore.weeklyVariant?.work?.title
+                }}
               </p>
             </div>
 
-            <!-- Tasks summary -->
-            <div class="space-y-6">
-              <div
-                v-if="savedVariant.variant.task1"
-                class="p-4 bg-gray-50 rounded-lg"
-              >
-                <h3 class="font-medium mb-2">Задание 1</h3>
-                <div
-                  class="text-gray-700"
-                  v-html="savedVariant.variant.task1.text"
-                />
-              </div>
+            <!-- Full read-only variant layout using existing components -->
+            <ClientOnly>
+              <VariantExcerpt
+                :excerpt-text="(savedVariant && savedVariant.variant.excerpt?.text) || (!savedVariant && knowledgeStore.weeklyVariant?.excerpt?.text)"
+                :text-columns="(savedVariant && savedVariant.variant.excerpt?.textColumns) || (!savedVariant && knowledgeStore.weeklyVariant?.excerpt?.textColumns)"
+                :text-second-column="(savedVariant && savedVariant.variant.excerpt?.textSecondColumn) || (!savedVariant && knowledgeStore.weeklyVariant?.excerpt?.textSecondColumn)"
+                :excerpt-author="(savedVariant && savedVariant.variant.work?.author) || (!savedVariant && knowledgeStore.weeklyVariant?.work?.author)"
+                :excerpt-work="(savedVariant && savedVariant.variant.work?.title) || (!savedVariant && knowledgeStore.weeklyVariant?.work?.title)"
+              />
 
-              <div
-                v-if="savedVariant.variant.task2"
-                class="p-4 bg-gray-50 rounded-lg"
-              >
-                <h3 class="font-medium mb-2">Задание 2</h3>
-                <div
-                  class="text-gray-700"
-                  v-html="savedVariant.variant.task2.prompt"
-                />
+              <!-- Render tasks 1-5 (and more as present) using ReadOnlyTask -->
+              <div class="space-y-4 mt-6">
+                <ReadOnlyTask v-if="(savedVariant && savedVariant.variant.task1) || (!savedVariant && knowledgeStore.weeklyVariant?.task1)" task-key="task1" />
+                <ReadOnlyTask v-if="(savedVariant && savedVariant.variant.task2) || (!savedVariant && knowledgeStore.weeklyVariant?.task2)" task-key="task2" />
+                <ReadOnlyTask v-if="(savedVariant && savedVariant.variant.task3) || (!savedVariant && knowledgeStore.weeklyVariant?.task3)" task-key="task3" />
+                <ReadOnlyTask v-if="(savedVariant && savedVariant.variant.task4_1) || (!savedVariant && knowledgeStore.weeklyVariant?.task4_1)" task-key="task4_1" />
+                <ReadOnlyTask v-if="(savedVariant && savedVariant.variant.task5) || (!savedVariant && knowledgeStore.weeklyVariant?.task5)" task-key="task5" />
               </div>
+            </ClientOnly>
 
-              <div
-                v-if="savedVariant.variant.task3"
-                class="p-4 bg-gray-50 rounded-lg"
-              >
-                <h3 class="font-medium mb-2">Задание 3</h3>
-                <div
-                  class="text-gray-700"
-                  v-html="savedVariant.variant.task3.part1"
-                />
-              </div>
-
-              <!-- More tasks can be added here -->
-              <p class="text-center text-gray-500 py-4">
-                Для полного просмотра варианта откройте его в конструкторе
-              </p>
-            </div>
+            <p class="text-center text-gray-500 py-4">
+              Для редактирования варианта откройте его в конструкторе
+            </p>
           </div>
         </div>
 

@@ -53,7 +53,7 @@ const { isLocked } = useAuth();
       </p> -->
     </VariantTaskInstruction>
 
-    <div class="flex justify-center items-center mb-7">
+    <div class="flex justify-center items-center mb-7 no-print">
       <BaseButton
         @click="refreshBlock('block3')"
         :loading="isLoading"

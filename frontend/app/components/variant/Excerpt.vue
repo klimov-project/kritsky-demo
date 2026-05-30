@@ -30,7 +30,10 @@ const handleNav = (key: 'previous' | 'next') => {
       {{ settings.variantTexts.part1Intro }}
     </VariantTaskInstruction>
 
-    <div class="prose prose-sm max-w-none mb-4" v-if="textColumns !== 2">
+    <div
+      class="prose prose-sm max-w-none text-justify mb-4"
+      v-if="textColumns !== 2"
+    >
       <p
         v-html="
           excerptText || 'Текст отрывка не загрузился, попробуйте ещё раз'
@@ -54,7 +57,7 @@ const handleNav = (key: 'previous' | 'next') => {
       </p>
     </div>
 
-    <div class="prose-nav pt-7 flex justify-between items-center">
+    <div class="prose-nav pt-7 flex justify-between items-center no-print">
       <BaseButton
         v-show="hasNext"
         :isLocked="isLocked"
@@ -89,6 +92,12 @@ const handleNav = (key: 'previous' | 'next') => {
   &-nav {
     .text-rigth {
       margin-inline-start: auto;
+    }
+    & > span {
+      max-width: 270px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 }

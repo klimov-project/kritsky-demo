@@ -110,7 +110,7 @@ const showAnswerButton = computed(() => {
     </div>
     <UCollapsible v-model:open="isOpen">
       <div
-        class="absolute w-auto top-0 right-0 p-[30px] flex items-center justify-center"
+        class="absolute w-auto top-0 right-0 p-[30px] flex items-center justify-center no-print"
       >
         <TaskVisibilityToggle :is-task-open="isOpen" />
       </div>
@@ -121,7 +121,7 @@ const showAnswerButton = computed(() => {
 
         <div
           v-if="taskType === 'task1' && hasTermQuestion"
-          class="flex items-start gap-[10px] pt-1 ml-[55px] mr-[55px]"
+          class="flex items-start gap-[10px] pt-1 ml-[55px] mr-[55px] no-print"
         >
           <TaskTermQuestionToggles />
         </div>

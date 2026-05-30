@@ -13,7 +13,7 @@ export const useVariantExport = () => {
   /**
    * Print variant using browser print dialog
    */
-  const printVariant = (elementId: string = 'variant-content-pdf') => {
+  const printVariant = (elementId: string = 'variant-content') => {
     if (!import.meta.client) return;
 
     const element = document.getElementById(elementId);

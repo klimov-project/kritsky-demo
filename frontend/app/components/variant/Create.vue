@@ -73,95 +73,77 @@ const manualUpdatePoem = (poemId: string) => {
 </script>
 
 <template>
-  <div class="max-w-6xl w-full bg-white rounded-[10px] mb-3 p-4">
-    <VariantExcerptFilters
-      :selected-work-id="selectedWorkId"
-      :selected-chapter="selectedChapter"
-      :selected-excerpt-id="selectedExcerptId"
-      :is-loading="isLoading"
-      @update:selected-work-id="manualUpdateWork"
-      @update:selected-chapter="manualUpdateChapter"
-      @update:selected-excerpt-id="selectedExcerptId = $event"
-      @refresh-block-1="refreshBlock('block1')"
-    />
-  </div>
-
-  <div id="variant-content" class="max-w-6xl mb-[30px]">
-    <div v-if="isLoading" class="text-center py-20">
-      <div
-        class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"
-      ></div>
-      <p class="mt-4 text-gray-600">Подготовка варианта...</p>
-    </div>
-
-    <ClientOnly v-else>
-      <div v-if="!variant" class="bg-white rounded-lg shadow p-6 text-center">
-        <p class="text-gray-600">
-          Нет данных для отображения. Нажмите "Новый вариант" для генерации.
-        </p>
-      </div>
-
-      <div v-else>
-        <VariantExcerpt
-          :excerpt-text="variant.excerpt?.text"
-          :text-columns="variant.excerpt?.textColumns"
-          :text-second-column="variant.excerpt?.textSecondColumn"
-          :excerpt-author="variant.work?.author"
-          :excerpt-work="variant.work?.title"
-        />
-
-        <VariantTaskList1 />
-
-        <VariantTaskList2 />
-      </div>
-    </ClientOnly>
-
+  <div class="relative min-h-screen">
     <div class="max-w-6xl w-full bg-white rounded-[10px] mb-3 p-4">
-      <VariantPoemFilters
-        :selected-poet-id="selectedPoetId"
-        :selected-poem-id="selectedPoemId"
-        :selected-theme-id="selectedThemeId"
+      <VariantExcerptFilters
+        :selected-work-id="selectedWorkId"
+        :selected-chapter="selectedChapter"
+        :selected-excerpt-id="selectedExcerptId"
         :is-loading="isLoading"
-        @update:selected-poet-id="manualUpdatePoet"
-        @update:selected-poem-id="manualUpdatePoem"
-        @update:selected-theme-id="selectedThemeId = $event"
-        @refresh-block-2="refreshBlock('block2')"
+        @update:selected-work-id="manualUpdateWork"
+        @update:selected-chapter="manualUpdateChapter"
+        @update:selected-excerpt-id="selectedExcerptId = $event"
+        @refresh-block-1="refreshBlock('block1')"
       />
     </div>
 
-    <div v-if="isLoading" class="text-center py-20">
-      <div
-        class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"
-      ></div>
-      <p class="mt-4 text-gray-600">Подготовка варианта...</p>
+    <div id="variant-content" class="max-w-6xl mb-[30px]">
+      <ClientOnly>
+        <div v-if="!variant" class="bg-white rounded-lg shadow p-6 text-center">
+          <p class="text-gray-600">
+            Нет данных для отображения. Нажмите "Новый вариант" для генерации.
+          </p>
+        </div>
+
+        <div v-else>
+          <VariantExcerpt
+            :excerpt-text="variant.excerpt?.text"
+            :text-columns="variant.excerpt?.textColumns"
+            :text-second-column="variant.excerpt?.textSecondColumn"
+            :excerpt-author="variant.work?.author"
+            :excerpt-work="variant.work?.title"
+          />
+
+          <VariantTaskList1 />
+
+          <VariantTaskList2 />
+        </div>
+      </ClientOnly>
+
+      <div class="max-w-6xl w-full bg-white rounded-[10px] mb-3 p-4 no-print">
+        <VariantPoemFilters
+          :selected-poet-id="selectedPoetId"
+          :selected-poem-id="selectedPoemId"
+          :selected-theme-id="selectedThemeId"
+          :is-loading="isLoading"
+          @update:selected-poet-id="manualUpdatePoet"
+          @update:selected-poem-id="manualUpdatePoem"
+          @update:selected-theme-id="selectedThemeId = $event"
+          @refresh-block-2="refreshBlock('block2')"
+        />
+      </div>
+
+      <ClientOnly v-if="variant">
+        <VariantPoem
+          :poem-text="variant.poem?.text"
+          :poet-name="variant.poet?.name"
+          :poem-title="variant.poem?.title"
+        />
+        <VariantTaskList3 />
+        <VariantTaskList4 />
+      </ClientOnly>
+      <VariantCreatePartTwo />
+      <ClientOnly v-if="variant">
+        <VariantTaskList5 />
+      </ClientOnly>
     </div>
 
+    <VariantSidebar />
+
     <ClientOnly v-if="variant">
-      <VariantPoem
-        :poem-text="variant.poem?.text"
-        :poet-name="variant.poet?.name"
-        :poem-title="variant.poem?.title"
-      />
-      <VariantTaskList3 />
-      <VariantTaskList4 />
+      <VariantPdfRender />
     </ClientOnly>
-    <VariantCreatePartTwo />
-    <div v-if="isLoading" class="text-center py-20">
-      <div
-        class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"
-      ></div>
-      <p class="mt-4 text-gray-600">Подготовка варианта...</p>
-    </div>
-    <ClientOnly v-if="variant">
-      <VariantTaskList5 />
-    </ClientOnly>
+
+    <VariantFooter :block-btns="isLoading" />
   </div>
-
-  <VariantSidebar />
-
-  <ClientOnly v-if="variant">
-    <VariantPdfRender />
-  </ClientOnly>
-
-  <VariantFooter :block-btns="isLoading" />
 </template>

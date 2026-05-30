@@ -6,7 +6,7 @@ const message = computed(() => {
     return 'Подготовка варианта...';
   }
   if (isDownloadingPdf.value) {
-    return 'Скачивание PDF...';
+    return 'Создание PDF...';
   }
   return 'Обновление варианта...';
 });

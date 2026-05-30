@@ -122,7 +122,7 @@ export const useVariantPdf = () => {
       const headerHeight = 10;
       const footerHeight = 10;
       const contentWidth = pageWidth;
-      const contentHeight = pageHeight - headerHeight - footerHeight;
+      const contentHeight = pageHeight;
 
       console.log('Page height:', pageHeight, 'mm');
       console.log('Content height:', contentHeight, 'mm');
@@ -292,114 +292,73 @@ export const useVariantPdf = () => {
           });
 
           const canvas = await html2canvas(tempContainer, {
-            scale: 3,
+            scale: 1.5,
             useCORS: true,
             allowTaint: true,
-            logging: true,
+            logging: false,
             backgroundColor: '#ffffff',
             width: sectionEl.scrollWidth,
             height: Math.ceil(contentHeightPx),
-            onclone: (clonedDoc) => {
-              console.log('[v0] onclone started');
 
-              // Create a canvas to force RGB conversion
+            // Опции для ускорения:
+            imageTimeout: 5000, // таймаут загрузки изображений
+            removeContainer: true, // удаляем временный контейнер
+            foreignObjectRendering: false, // иногда замедляет
+
+            onclone: (clonedDoc) => {
+              // Один canvas для всех преобразований
               const cvs = clonedDoc.createElement('canvas');
               cvs.width = 1;
               cvs.height = 1;
               const ctx = cvs.getContext('2d', { willReadFrequently: true });
-              if (!ctx) {
-                console.log('[v0] Could not get canvas context');
-                return;
-              }
+              if (!ctx) return;
+
+              // Кэш для уже сконвертированных цветов
+              const colorCache = new Map<string, string>();
 
               const fixColor = (color: string): string => {
                 if (!color || !color.includes('oklch')) return color;
+                if (colorCache.has(color)) return colorCache.get(color)!;
+
                 try {
-                  // Draw a 1x1 pixel with the oklch color
                   ctx.clearRect(0, 0, 1, 1);
                   ctx.fillStyle = color;
                   ctx.fillRect(0, 0, 1, 1);
-
-                  // Read back the RGB values
                   const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data;
 
+                  let result: string;
                   if (a === 0) {
-                    // Fully transparent - return as rgba
-                    return 'rgba(0, 0, 0, 0)';
+                    result = 'rgba(0, 0, 0, 0)';
+                  } else {
+                    const toHex = (n: number) =>
+                      n.toString(16).padStart(2, '0');
+                    result =
+                      a === 255
+                        ? `#${toHex(r)}${toHex(g)}${toHex(b)}`
+                        : `rgba(${r}, ${g}, ${b}, ${a / 255})`;
                   }
 
-                  // Convert to hex or rgba
-                  const toHex = (n: number) => n.toString(16).padStart(2, '0');
-                  const hexColor = `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-
-                  console.log(
-                    '[v0] Converted oklch color:',
-                    color,
-                    '->',
-                    hexColor,
-                  );
-                  return a === 255
-                    ? hexColor
-                    : `rgba(${r}, ${g}, ${b}, ${a / 255})`;
-                } catch (e) {
-                  console.log('[v0] Failed to convert color:', color, e);
+                  colorCache.set(color, result);
+                  return result;
+                } catch {
                   return '#000000';
                 }
               };
 
-              // Step 1: Replace oklch in all <style> tags
+              // Обрабатываем только <style> — это покрывает и :root и инлайн-стили
               const styleTags = clonedDoc.querySelectorAll('style');
-              console.log('[v0] Found', styleTags.length, 'style tags');
-
-              let oklchCount = 0;
-              styleTags.forEach((styleTag, idx) => {
+              styleTags.forEach((styleTag) => {
                 const originalCss = styleTag.textContent || '';
                 if (originalCss.includes('oklch')) {
-                  const convertedCss = originalCss.replace(
+                  styleTag.textContent = originalCss.replace(
                     /oklch\([^)]+\)/gi,
-                    (match) => {
-                      oklchCount++;
-                      return fixColor(match);
-                    },
+                    (match) => fixColor(match),
                   );
-                  styleTag.textContent = convertedCss;
-                  console.log('[v0] Converted oklch in style tag', idx);
                 }
               });
-              console.log(
-                '[v0] Total oklch replacements in style tags:',
-                oklchCount,
-              );
 
-              // Step 2: Convert CSS custom properties on :root in cloned doc
-              const rootEl = clonedDoc.documentElement;
-              for (const sheet of Array.from(document.styleSheets)) {
-                try {
-                  for (const rule of Array.from(sheet.cssRules || [])) {
-                    if (
-                      rule instanceof CSSStyleRule &&
-                      (rule.selectorText === ':root' ||
-                        rule.selectorText === ':host' ||
-                        rule.selectorText === ':root,:host')
-                    ) {
-                      for (let k = 0; k < rule.style.length; k++) {
-                        const propName = rule.style[k];
-                        if (propName && propName.startsWith('--')) {
-                          const val = rule.style.getPropertyValue(propName);
-                          if (val && val.includes('oklch')) {
-                            rootEl.style.setProperty(propName, fixColor(val));
-                          }
-                        }
-                      }
-                    }
-                  }
-                } catch {
-                  // Skip cross-origin stylesheets
-                }
-              }
-
-              // Step 3: Inline computed styles on all elements
-              const elements = clonedDoc.getElementsByTagName('*');
+              // Вместо перебора всех элементов — только те, у которых реально есть oklch
+              const allElements = clonedDoc.getElementsByTagName('*');
               const styleProps = [
                 'color',
                 'background-color',
@@ -413,26 +372,18 @@ export const useVariantPdf = () => {
                 'stroke',
               ];
 
-              let elementOklchCount = 0;
-              for (let j = 0; j < elements.length; j++) {
-                const el = elements[j] as HTMLElement;
-                if (!el.style) continue;
+              for (const el of allElements) {
+                const htmlEl = el as HTMLElement;
+                if (!htmlEl.style) continue;
+                const computed = window.getComputedStyle(htmlEl);
 
-                const computedStyle = window.getComputedStyle(el);
-
-                styleProps.forEach((prop) => {
-                  const val = computedStyle.getPropertyValue(prop);
+                for (const prop of styleProps) {
+                  const val = computed.getPropertyValue(prop);
                   if (val && val.includes('oklch')) {
-                    elementOklchCount++;
-                    el.style.setProperty(prop, fixColor(val), 'important');
+                    htmlEl.style.setProperty(prop, fixColor(val), 'important');
                   }
-                });
+                }
               }
-              console.log(
-                '[v0] Elements with oklch styles converted:',
-                elementOklchCount,
-              );
-              console.log('[v0] onclone finished');
             },
           });
 
@@ -442,8 +393,8 @@ export const useVariantPdf = () => {
             pdf.addPage();
           }
 
-          const imgData = canvas.toDataURL('image/png');
-          pdf.addImage(imgData, 'PNG', 0, 0, contentWidth, pageHeight);
+          const imgData = canvas.toDataURL('image/jpeg');
+          pdf.addImage(imgData, 'JPG', 0, 0, contentWidth, pageHeight);
         }
       };
 
