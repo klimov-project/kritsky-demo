@@ -14,7 +14,9 @@ import {
 } from '@/utils/variantUtils';
 
 export const useVariantState = () => {
+  
   const variant = useCurrentVariant();
+
   const taskHistory = useState<TaskVariantHistory>('variant-task-history', () =>
     createEmptyTaskHistory(),
   );

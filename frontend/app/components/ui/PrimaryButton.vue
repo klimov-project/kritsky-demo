@@ -17,7 +17,7 @@ defineEmits<{
     :type="type || 'button'"
     :disabled="disabled || loading"
     @click="$emit('click')"
-    class="w-full h-[54px] rounded-[12px] font-medium uppercase text-sm transition-colors flex items-center justify-center gap-2 bg-[#1F1F1F] text-white hover:bg-black font-bold disabled:opacity-60"
+    class="primary-btn w-full h-[54px] rounded-[12px] font-medium uppercase text-sm transition-colors flex items-center justify-center gap-2 bg-[#1F1F1F] text-white hover:bg-black font-bold disabled:opacity-60"
   >
     <UIcon v-if="icon" :name="icon" class="w-5 h-5" />
 
@@ -26,3 +26,8 @@ defineEmits<{
     <UIcon v-if="trailingIcon" :name="trailingIcon" class="w-5 h-5" />
   </button>
 </template>
+<style lang="scss">
+.primary-btn {
+  padding: 0 25px;
+}
+</style>

@@ -22,6 +22,8 @@ export const useGenerateVariant = () => {
   } = useVariantState();
 
   const config = useRuntimeConfig();
+  const router = useRouter();
+  const { weeklyVariant } = useKnowledgeBase();
   const { isAuthenticated, isLocked } = useAuth();
   const { apiWithAuth } = useAuthApi();
   const { showPaywall } = useSubscription();
@@ -142,6 +144,12 @@ export const useGenerateVariant = () => {
     } catch (e) {
       statusMessage.value = (e as Error).message || 'Ошибка генерации варианта';
     }
+  };
+
+  const editWeeklyVariant = async () => {
+    variant.value = weeklyVariant.value;
+
+    router.push('/create-variant');
   };
 
   /**
@@ -344,5 +352,6 @@ export const useGenerateVariant = () => {
     refreshBlock,
     refreshTask,
     refreshAllTasks,
+    editWeeklyVariant,
   };
 };

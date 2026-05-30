@@ -1,7 +1,12 @@
 <script setup lang="ts">
-defineProps<{
-  blockBtns: boolean;
-}>();
+interface FooterVariantProps {
+  blockBtns?: boolean;
+  isDemo?: boolean;
+}
+withDefaults(defineProps<FooterVariantProps>(), {
+  blockBtns: false,
+  isDemo: false,
+});
 
 const { isAuthenticated, isLocked } = useAuth();
 const { pending: kbPending, error: kbError } = useKnowledgeBase();

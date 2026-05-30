@@ -1,4 +1,5 @@
 import type { KnowledgeBaseResponse } from '~/types/knowledgeBaseTypes';
+import type { GeneratedVariant } from '@/types/generatedVariant';
 
 import { USE_MOCK } from '~/utils/mode/mode';
 import type { mKnowledgeBaseResponse } from './mockData';
@@ -26,7 +27,9 @@ export function useKnowledgeBase() {
     const poets = computed(() => mockKnowledgeBaseResponse.poets ?? []);
     const themes = computed(() => []);
     const settings = computed(() => mockStore.settings ?? null);
-    const weeklyVariant = computed(() => settings.value?.weeklyVariant ?? null);
+    const weeklyVariant = computed<GeneratedVariant | null>(
+      () => settings.value?.weeklyVariant ?? null,
+    );
 
     return {
       data: readonly(mockData),
@@ -76,8 +79,13 @@ export function useKnowledgeBase() {
   const works = computed(() => data.value?.works ?? []);
   const poets = computed(() => data.value?.poets ?? []);
   const themes = computed(() => store.themes ?? {});
+  // weeklyVariant здесь уже приходит без форматирования, пока он не обновляется - берём моковый с форматированием
+  // и settings тоже
   const settings = computed(
-    () => store.settings ?? DEFAULT_KNOWLEDGE_BASE_SETTINGS,
+    () => mockStore.settings ?? DEFAULT_KNOWLEDGE_BASE_SETTINGS,
+  );
+  const weeklyVariant = computed<GeneratedVariant | null>(
+    () => settings.value?.weeklyVariant ?? null,
   );
 
   return {
@@ -86,6 +94,7 @@ export function useKnowledgeBase() {
     poets,
     themes,
     settings,
+    weeklyVariant,
 
     pending,
     error,

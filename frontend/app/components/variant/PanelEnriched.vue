@@ -4,7 +4,11 @@ const disabled = computed(() => variantsStore.isLoading);
 
 const { isAuthenticated } = useAuth();
 const { showPaywall } = useSubscription();
-const { printVariant } = useVariantExport();
+const {
+  printVariant,
+  saveVariantToProfile,
+  generateShareableLink,
+} = useVariantExport();
 
 const { generatePdf, isDownloadingPdf, collectAllAnswers } = useVariantPdf();
 
@@ -29,6 +33,26 @@ const handlePrint = () => {
   collectAllAnswers();
   printVariant();
 };
+
+const handleSave = async () => {
+  if (!isAuthenticated.value) {
+    showPaywall();
+    return;
+  }
+  try {
+    await saveVariantToProfile();
+  } catch (error) {
+    console.error('Error saving variant:', error);
+  }
+};
+
+const handleShare = async () => {
+  if (!isAuthenticated.value) {
+    showPaywall();
+    return;
+  }
+  await generateShareableLink();
+};
 </script>
 
 <template>
@@ -48,6 +72,20 @@ const handlePrint = () => {
       :disabled="disabled || !isAuthenticated"
     >
       ПЕЧАТЬ
+    </BaseButton>
+    <BaseButton
+      icon="i-lucide-save"
+      @click="handleSave"
+      :disabled="disabled || !isAuthenticated"
+    >
+      СОХРАНИТЬ
+    </BaseButton>
+    <BaseButton
+      icon="i-lucide-share-2"
+      @click="handleShare"
+      :disabled="disabled || !isAuthenticated"
+    >
+      ПОДЕЛИТЬСЯ
     </BaseButton>
   </div>
 </template>

@@ -24,6 +24,7 @@ const { variant, isInitialLoading } = useVariantState();
 const { pregenerateVariant } = useGenerateVariant();
 const variantsStore = useVariantsStore();
 const isLoading = computed(() => variantsStore.isLoading);
+isInitialLoading.value = true;
 
 const sentinelRef = ref<HTMLElement>();
 const isEndOfPage = ref(false);
@@ -32,10 +33,8 @@ let observer;
 onMounted(async () => {
   if (!variant.value) {
     const res = await pregenerateVariant();
-    console.log('Pregenerate result:', res);
-
-    isInitialLoading.value = false;
   }
+  isInitialLoading.value = false;
 
   const threshold = 300;
   if (typeof window === 'undefined' || !sentinelRef.value) return;
