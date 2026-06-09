@@ -5,6 +5,7 @@ const disabled = computed(() => variantsStore.isLoading);
 const { isAuthenticated } = useAuth();
 const { showPaywall } = useSubscription();
 const { printVariant } = useVariantExport();
+const open = ref(false);
 
 const { generatePdf, isDownloadingPdf, collectAllAnswers } = useVariantPdf();
 
@@ -32,22 +33,26 @@ const handlePrint = () => {
 </script>
 
 <template>
-  <!-- Main buttons group -->
-  <div class="flex flex-wrap gap-3">
-    <BaseButton
-      icon="i-lucide-download"
-      @click="handleDownload"
-      :disabled="disabled || !isAuthenticated"
-    >
-      {{ isDownloadingPdf ? 'ЗАГРУЗКА...' : 'СКАЧАТЬ' }}
-    </BaseButton>
+  <UPopover v-model:open="open" arrow mode="hover">
+    <div class="flex flex-wrap gap-3">
+      <BaseButton
+        icon="i-lucide-download"
+        @click="handleDownload"
+        :disabled="disabled || !isAuthenticated"
+      >
+        {{ isDownloadingPdf ? 'ЗАГРУЗКА...' : 'СКАЧАТЬ' }}
+      </BaseButton>
 
-    <BaseButton
-      icon="i-lucide-printer"
-      @click="handlePrint"
-      :disabled="disabled || !isAuthenticated"
-    >
-      ПЕЧАТЬ
-    </BaseButton>
-  </div>
+      <BaseButton
+        icon="i-lucide-printer"
+        @click="handlePrint"
+        :disabled="disabled || !isAuthenticated"
+      >
+        ПЕЧАТЬ
+      </BaseButton>
+    </div>
+    <template #content>
+      <HoverPaywall @click="open = false" />
+    </template>
+  </UPopover>
 </template>

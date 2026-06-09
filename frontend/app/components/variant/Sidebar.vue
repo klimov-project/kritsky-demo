@@ -2,7 +2,7 @@
 
 <template>
   <aside
-    class="hidden lg:block w-[250px] flex-shrink-0 absolute top-0 right-0 h-full translate-x-full"
+    class="hidden lg:block w-auto 2xl:w-[250px] flex-shrink-0 absolute top-0 right-0 h-full translate-x-full  "
   >
     <div class="sticky top-12 bg-glass">
       <div class="hidden bg-white rounded-[10px] py-4 px-6 mr-5 mb-6">
@@ -22,13 +22,13 @@
           Только стихотворение
         </button>
       </div>
-      <div class="bg-white rounded-[10px] py-4 px-7 ml-5">
+      <div class="bg-white rounded-[10px] py-4 px-4 2xl:px-7 ml-2 2xl:ml-5">
         <a
           href="mailto:support@kritsky.academy"
           class="interactive-element font-normal text-xs leading-[14px] tracking-[0.1em] uppercase text-[#333333] px-3 flex items-center gap-2"
         >
           <IconEmail />
-          Обратная связь
+          <span class="hidden xl:inline">Обратная связь</span>
         </a>
       </div>
     </div>

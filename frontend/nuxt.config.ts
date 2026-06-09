@@ -66,13 +66,6 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    // devProxy: {
-    //   '/api': {
-    //     target:
-    //       process.env.NUXT_API_BACKEND_BASE || 'http://localhost:8000/api',
-    //     changeOrigin: true,
-    //   },
-    // },
     storage: {
       cache: {
         driver: 'redis',
@@ -83,7 +76,13 @@ export default defineNuxtConfig({
 
   vite: {
     optimizeDeps: {
-      include: ['@vue/devtools-core', '@vue/devtools-kit', 'pinia'],
+      include: [
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
+        'html2canvas',
+        'jspdf',
+        'pinia',
+      ],
     },
   },
 });

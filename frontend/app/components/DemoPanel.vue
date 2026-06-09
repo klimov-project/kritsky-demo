@@ -10,6 +10,7 @@ const handlePrint = () => {
   // collectAllAnswers();
   // printVariant();
 };
+const open = ref(false);
 </script>
 
 <template>
@@ -24,13 +25,18 @@ const handlePrint = () => {
       ПЕЧАТЬ
     </BaseButton> -->
 
-    <PrimaryButton
-      :disabled="!isAuthenticated"
-      icon="i-lucide-edit"
-      @click="editWeeklyVariant"
-    >
-      РЕДАКТИРОВАТЬ В КОНСТРУКТОРЕ
-    </PrimaryButton>
+    <UPopover v-model:open="open" arrow mode="hover">
+      <PrimaryButton
+        :disabled="!isAuthenticated"
+        icon="i-lucide-edit"
+        @click="editWeeklyVariant"
+      >
+        Изменить вариант
+      </PrimaryButton>
+      <template #content>
+        <HoverPaywall v-if="!isAuthenticated" @click="open = false" />
+      </template>
+    </UPopover>
   </div>
 </template>
 

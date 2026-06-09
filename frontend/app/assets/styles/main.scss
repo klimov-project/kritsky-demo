@@ -37,6 +37,10 @@ body {
     color: var(--color-text-primary);
 }
 
+button {
+    cursor: pointer;
+}
+
 .font-serif {
     font-family: var(--font-pt-serif) !important;
 }
@@ -125,7 +129,7 @@ a:not(.nav-link-animated, .text-white, .text-xs) {
     -webkit-touch-callout: default;
 
     /* Возвращаем нормальный курсор */
-    cursor: auto;
+    cursor: inherit;
 }
 
 /* Убедитесь, что input и textarea можно выделять и редактировать */

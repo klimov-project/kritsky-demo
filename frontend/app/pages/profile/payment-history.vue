@@ -8,12 +8,13 @@ const { checkPaymentsList } = usePayment();
 
 interface Payment {
   id: number;
-  createdAt: string;
   paymentId: string;
-  amount: number;
-  description: string;
-  status: 'completed' | 'pending' | 'failed';
-  type: 'subscription' | 'package';
+  orderId: string | null;
+  amount: string;
+  status: 'succeeded' | 'canceled' | 'pending';
+  method: string;
+  kind: 'subscription' | 'package';
+  createdAt: string;
 }
 
 const payments = ref<Payment[]>([]);
@@ -23,58 +24,52 @@ const error = ref<string | null>(null);
 // Fetch payment history on mount
 onMounted(async () => {
   try {
-    // Try to fetch from API first
     const response = await checkPaymentsList();
 
     if (response?.items) {
       payments.value = response.items;
     } else {
-      // Use mock data if API not available
+      // Используем моковые данные, если API недоступно
       payments.value = [
         {
           id: 1,
-          createdAt: '2026-05-14T10:30:00Z',
           paymentId: '31a1a746-000f-5000-b000-19cc5eb014ec',
-          amount: 299,
-          description: 'Месячная подписка Pro',
-          status: 'completed',
-          type: 'subscription',
+          orderId: null,
+          amount: '4144.02',
+          status: 'succeeded',
+          method: 'yookassa',
+          kind: 'subscription',
+          createdAt: '2026-05-21T10:30:00Z',
         },
         {
           id: 2,
+          paymentId: '31a1a746-000f-5000-b000-19cc5eb014eb',
+          orderId: null,
+          amount: '890.00',
+          status: 'succeeded',
+          method: 'yookassa',
+          kind: 'subscription',
           createdAt: '2026-04-14T14:15:00Z',
-          paymentId: '31a1a746-000f-5000-b000-19cc5eb014ec',
-          amount: 299,
-          description: 'Месячная подписка Pro',
-          status: 'completed',
-          type: 'subscription',
-        },
-        {
-          id: 3,
-          createdAt: '2026-03-20T09:45:00Z',
-          paymentId: '31a1a746-000f-5000-b000-19cc5eb014ec',
-          amount: 99,
-          description: 'Пакет скачиваний (10 шт)',
-          status: 'completed',
-          type: 'package',
-        },
+        }, 
         {
           id: 4,
+          paymentId: '31a1a746-000f-5000-b000-19cc5eb014ed',
+          orderId: null,
+          amount: '4144.02',
+          status: 'pending',
+          method: 'yookassa',
+          kind: 'subscription',
           createdAt: '2026-03-14T16:20:00Z',
-          paymentId: '31a1a746-000f-5000-b000-19cc5eb014ec',
-          amount: 299,
-          description: 'Месячная подписка Pro',
-          status: 'completed',
-          type: 'subscription',
         },
         {
           id: 5,
-          createdAt: '2026-02-28T11:00:00Z',
           paymentId: '31a1a746-000f-5000-b000-19cc5eb014ec',
-          amount: 199,
-          description: 'Пакет скачиваний (25 шт)',
-          status: 'failed',
-          type: 'package',
+          orderId: null,
+          amount: '199.00',
+          status: 'canceled',
+          method: 'yookassa',
+          kind: 'package',
+          createdAt: '2026-02-28T11:00:00Z',
         },
       ];
     }
@@ -86,6 +81,7 @@ onMounted(async () => {
   }
 });
 
+// Форматирование даты
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString('ru-RU', {
@@ -97,34 +93,86 @@ const formatDate = (dateString: string) => {
   });
 };
 
-const formatAmount = (amount: number) => {
+// Форматирование только даты (без времени)
+const formatDateOnly = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+};
+
+// Форматирование суммы (приводим к числу)
+const formatAmount = (amount: string | number) => {
+  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
   return new Intl.NumberFormat('ru-RU', {
     style: 'currency',
     currency: 'RUB',
     minimumFractionDigits: 0,
-  }).format(amount);
+  }).format(numAmount);
 };
 
+// Расчет срока подписки на основе суммы
+const getSubscriptionPeriod = (amount: string | number, createdAt: string) => {
+  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  const startDate = new Date(createdAt);
+  const endDate = new Date(startDate);
+  
+  // 4144.02 - 6 месяцев, 890 - 1 месяц
+  if (numAmount >= 4000) {
+    endDate.setMonth(endDate.getMonth() + 6);
+  } else if (numAmount >= 800) {
+    endDate.setMonth(endDate.getMonth() + 1);
+  } else {
+    return null; // Для пакетов и других товаров
+  }
+  
+  return {
+    startDate,
+    endDate,
+    period: `${formatDateOnly(startDate.toISOString())} - ${formatDateOnly(endDate.toISOString())}`
+  };
+};
+
+// Получение описания платежа
+const getPaymentDescription = (payment: Payment) => {
+  if (payment.kind === 'subscription') {
+    const amount = parseFloat(payment.amount);
+    if (amount >= 4000) return 'Подписка на 6 месяцев';
+    if (amount >= 800) return 'Подписка на 1 месяц';
+    return 'Подписка';
+  }
+  return 'Пакет услуг';
+};
+
+// Статусы и их отображение
 const getStatusLabel = (status: Payment['status']) => {
   const labels = {
-    completed: 'Выполнен',
+    succeeded: 'Выполнен',
     pending: 'В обработке',
-    failed: 'Ошибка',
+    canceled: 'Отменен',
   };
-  return labels[status];
+  return labels[status] || status;
 };
 
 const getStatusColor = (status: Payment['status']) => {
   const colors = {
-    completed: 'bg-emerald-100 text-emerald-700',
+    succeeded: 'bg-emerald-100 text-emerald-700',
     pending: 'bg-yellow-100 text-yellow-700',
-    failed: 'bg-red-100 text-red-700',
+    canceled: 'bg-gray-200 text-gray-500',
   };
-  return colors[status];
+  return colors[status] || 'bg-gray-100 text-gray-600';
 };
 
-const getTypeIcon = (type: Payment['type']) => {
-  return type === 'subscription' ? 'i-lucide-crown' : 'i-lucide-package';
+// Иконка типа платежа
+const getTypeIcon = (kind: Payment['kind']) => {
+  return kind === 'subscription' ? 'i-lucide-crown' : 'i-lucide-package';
+};
+
+// Проверка, является ли платеж успешной подпиской
+const isActiveSubscription = (payment: Payment) => {
+  return payment.kind === 'subscription' && payment.status === 'succeeded';
 };
 </script>
 
@@ -173,55 +221,84 @@ const getTypeIcon = (type: Payment['type']) => {
       </NuxtLink>
     </div>
 
-    <!-- Payments List -->
-    <div v-else class="space-y-4">
-      <div
-        v-for="payment in payments"
-        :key="payment.paymentId"
-        class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-      >
-        <!-- <pre>
-    payment: {{payment}}
-      </pre> -->
-
-        <!-- 31a25321-000f-5000-b000-123a06678dd8 -->
-        <NuxtLink :to="`/profile/payment?id=${payment.paymentId}`">
-          <div class="flex items-center gap-4">
-            <div
-              class="w-12 h-12 rounded-full bg-white flex items-center justify-center"
-            >
-              <UIcon
-                :name="getTypeIcon(payment.type)"
-                class="w-6 h-6 text-gray-600"
-              />
-            </div>
-            <div>
-              <p class="font-medium">{{ payment.description }}</p>
-              <p class="text-sm text-gray-500">
-                {{ formatDate(payment.createdAt) }}
-              </p>
-            </div>
-          </div>
-          <div class="flex items-center gap-4">
-            <span
-              class="px-2.5 py-1 text-xs font-medium rounded-full"
-              :class="getStatusColor(payment.status)"
-            >
-              {{ getStatusLabel(payment.status) }}
-            </span>
-            <span
-              class="font-bold"
-              :class="
-                payment.status === 'failed'
-                  ? 'text-gray-400 line-through'
-                  : 'text-gray-900'
-              "
-            >
-              {{ formatAmount(payment.amount) }}
-            </span>
-          </div>
-        </NuxtLink>
-      </div>
+    <!-- Payments Table -->
+    <div v-else class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-200">
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Описание</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Дата</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Сумма</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Статус</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Срок подписки</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="payment in payments"
+            :key="payment.paymentId"
+            class="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+          >
+            <td class="py-4 px-4">
+              <NuxtLink 
+                :to="`/profile/payment?id=${payment.paymentId}`"
+                class="flex items-center gap-3 hover:text-gray-600"
+              >
+                <div
+                  class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0"
+                >
+                  <UIcon
+                    :name="getTypeIcon(payment.kind)"
+                    class="w-5 h-5 text-gray-600"
+                  />
+                </div>
+                <span class="font-medium text-gray-900">
+                  {{ getPaymentDescription(payment) }}
+                </span>
+              </NuxtLink>
+            </td>
+            <td class="py-4 px-4 text-sm text-gray-600">
+              {{ formatDate(payment.createdAt) }}
+            </td>
+            <td class="py-4 px-4">
+              <span
+                class="font-medium"
+                :class="
+                  payment.status === 'canceled'
+                    ? 'text-gray-400 line-through'
+                    : 'text-gray-900'
+                "
+              >
+                {{ formatAmount(payment.amount) }}
+              </span>
+            </td>
+            <td class="py-4 px-4">
+              <span
+                class="inline-flex px-2.5 py-1 text-xs font-medium rounded-full"
+                :class="getStatusColor(payment.status)"
+              >
+                {{ getStatusLabel(payment.status) }}
+              </span>
+            </td>
+            <td class="py-4 px-4 text-sm text-gray-600">
+              <template v-if="isActiveSubscription(payment)">
+                <div class="flex items-center gap-1">
+                  <UIcon 
+                    name="i-lucide-calendar" 
+                    class="w-4 h-4 text-gray-400" 
+                  />
+                  <span>
+                    {{ getSubscriptionPeriod(payment.amount, payment.createdAt)?.period }}
+                  </span>
+                </div>
+              </template>
+              <template v-else>
+                <span class="text-gray-400">—</span>
+              </template>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Pagination placeholder -->

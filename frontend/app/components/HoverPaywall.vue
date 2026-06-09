@@ -5,24 +5,27 @@ const title = 'Ограниченный доступ';
 
 const description = computed(() => {
   if (!isAuthenticated.value) {
-    return 'Для обновления целого блока заданий необходимо войти в аккаунт и приобрести подписку.';
+    return 'Для доступа к этому функционалу необходимо зарегистрироваться или войти в аккаунт.';
   }
-  return 'Выбор отрывка доступен только по подписке.';
+  return 'Функционал доступен только по подписке.';
 });
+
+const emit = defineEmits(['click']);
 
 const handleRegister = () => {
   openLoginModal('register');
+  emit('click');
 };
 
 const handleSubscribe = () => {
   router.push('/profile/subscription');
+  emit('click');
 };
 
 const handleSubscriptionsInfo = () => {
   router.push('/subscriptions');
+  emit('click');
 };
-
-defineEmits(['click']);
 </script>
 
 <template>
@@ -36,7 +39,7 @@ defineEmits(['click']);
       </p>
 
       <a
-        v-if="!isAuthenticated"
+        v-if="isAuthenticated"
         href="/subscriptions"
         class="text-primary-600 hover:text-primary-700 underline text-sm font-medium inline-block"
         @click.prevent="handleSubscriptionsInfo"
