@@ -72,7 +72,7 @@ const handleRegister = () => {
         </div>
 
         <!-- Правая часть (кнопки) -->
-        <div class="w-full md:w-auto">
+        <div class="w-full md:w-auto"> 
           <DemoPanel v-if="isDemo" />
           <VariantPanel v-else />
         </div>
