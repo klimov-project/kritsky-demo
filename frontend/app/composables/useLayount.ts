@@ -1,7 +1,8 @@
+const showMobileMenu = ref(false); // Выносим за пределы функции
+
 export const useLayout = () => {
   const auth = useAuth();
   const { isAuthenticated, logout, openLoginModal } = auth;
-  const showMobileMenu = ref(false);
 
   const handleLogout = async () => {
     try {
@@ -33,8 +34,8 @@ export const useLayout = () => {
   const hasOverflowHidden = computed(() => !isVariantPage.value);
 
   return {
-    isAuthenticated,
     showMobileMenu,
+    isAuthenticated,
     handleLogout,
     handleLogin,
     toggleMobileMenu,

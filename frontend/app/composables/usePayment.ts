@@ -40,7 +40,6 @@ export const usePayment = () => {
   const authApi = useAuthApi();
   const toast = useToast();
   const userStore = useUserStore();
-  const router = useRouter();
 
   const isProcessing = ref(false);
   const isCheckingStatus = ref(false);
