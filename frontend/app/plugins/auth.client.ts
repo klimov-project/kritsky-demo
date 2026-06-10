@@ -7,8 +7,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   const auth = useAuth();
   const userStore = useUserStore();
 
-  console.log('Validating session on app initialization...');
-
   // Проверяем пользователя
   const data = await auth.checkMe();
 

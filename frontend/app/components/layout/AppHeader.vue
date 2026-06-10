@@ -1,5 +1,10 @@
 <script setup lang="ts">
-const { isAuthenticated, toggleMobileMenu, isIndexPage } = useLayout();
+const {
+  isAuthenticated,
+  toggleMobileMenu,
+  isIndexPage,
+  handleLogin,
+} = useLayout();
 </script>
 
 <template>

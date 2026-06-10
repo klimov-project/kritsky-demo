@@ -1,19 +1,17 @@
 <script setup lang="ts">
-interface FooterVariantProps {
-  blockBtns?: boolean;
+interface VariantPanelProps {
   isDemo?: boolean;
 }
-withDefaults(defineProps<FooterVariantProps>(), {
-  blockBtns: false,
+withDefaults(defineProps<VariantPanelProps>(), {
   isDemo: false,
 });
 
-const { isAuthenticated, isLocked, openLoginModal } = useAuth();
+const { checkMe } = useAuth();
 const variantsStore = useVariantsStore();
 const isLoading = computed(() => variantsStore.isLoading);
-const handleRegister = () => {
-  openLoginModal('register');
-};
+onMounted(async () => {
+  await checkMe();
+});
 </script>
 
 <template>
@@ -33,49 +31,7 @@ const handleRegister = () => {
       <div
         class="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 lg:gap-6"
       >
-        <!-- Левая часть -->
-        <div
-          class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 lg:gap-8"
-        >
-          <h3
-            class="text-lg sm:text-xl lg:text-2xl font-normal leading-5 sm:leading-6 lg:leading-7 uppercase text-default"
-          >
-            ПАНЕЛЬ <br class="hidden sm:block" />
-            ВАРИАНТА
-          </h3>
-          <div
-            class="text-sm sm:text-base lg:text-xl flex flex-col items-start justify-center leading-5 sm:leading-6 text-gray-300"
-          >
-            <p v-if="isDemo">
-              Статус:
-              <span class="font-semibold text-gray-400">
-                Демонстрационный режим
-              </span>
-            </p>
-            <p v-else>
-              Статус:
-              <span class="font-semibold text-gray-400">
-                {{ isLocked ? 'Базовый доступ' : 'Подписка активна' }}
-              </span>
-            </p>
-            <p v-if="!isAuthenticated" class="text-xs sm:text-sm mt-0.5">
-              <a
-                href="#"
-                class="text-primary-600 hover:text-primary-700 underline font-medium inline-block"
-                @click.prevent="handleRegister"
-              >
-                Зарегистрируйтесь
-              </a>
-              для проверки всех функций
-            </p>
-          </div>
-        </div>
-
-        <!-- Правая часть (кнопки) -->
-        <div class="w-full md:w-auto"> 
-          <DemoPanel v-if="isDemo" />
-          <VariantPanel v-else />
-        </div>
+        <VariantPanelLayout :is-demo="isDemo" />
       </div>
     </div>
   </div>

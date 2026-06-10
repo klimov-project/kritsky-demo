@@ -3,22 +3,18 @@ const { hasOverflowHidden } = useLayout();
 </script>
 
 <template>
-  <div class="min-h-screen">
-    <div
-      :class="[
-        'w-full min-h-screen flex flex-col relative',
-        hasOverflowHidden
-          ? 'bg-transparent z-10 overflow-hidden'
-          : 'bg-default',
-      ]"
-    >
-      <LayoutAppHeader />
-      <LayoutMobileMenu />
+  <div
+    :class="[
+      'w-full min-h-screen flex flex-col relative',
+      hasOverflowHidden ? 'bg-transparent z-10 overflow-hidden' : 'bg-default',
+    ]"
+  >
+    <LayoutAppHeader />
+    <LayoutMobileMenu />
 
-      <slot />
+    <slot />
 
-      <LayoutAppFooter />
-    </div>
+    <LayoutAppFooter />
   </div>
 </template>
 

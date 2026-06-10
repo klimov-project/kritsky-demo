@@ -1,10 +1,12 @@
 <script setup lang="ts">
 const variantsStore = useVariantsStore();
-const disabled = computed(() => variantsStore.isLoading);
 
-const { isAuthenticated } = useAuth();
+const { isAuthenticated, user } = useAuth();
 const { showPaywall } = useSubscription();
 const { printVariant } = useVariantExport();
+const disabled = computed(
+  () => variantsStore.isLoading || !isAuthenticated.value || !user.value.isPro,
+);
 const open = ref(false);
 
 const { generatePdf, isDownloadingPdf, collectAllAnswers } = useVariantPdf();
@@ -38,7 +40,7 @@ const handlePrint = () => {
       <BaseButton
         icon="i-lucide-download"
         @click="handleDownload"
-        :disabled="disabled || !isAuthenticated"
+        :disabled="disabled"
       >
         {{ isDownloadingPdf ? 'ЗАГРУЗКА...' : 'СКАЧАТЬ' }}
       </BaseButton>
@@ -46,13 +48,13 @@ const handlePrint = () => {
       <BaseButton
         icon="i-lucide-printer"
         @click="handlePrint"
-        :disabled="disabled || !isAuthenticated"
+        :disabled="disabled"
       >
         ПЕЧАТЬ
       </BaseButton>
     </div>
     <template #content>
-      <HoverPaywall @click="open = false" />
+      <HoverPaywall v-if="!user.value.isPro" @click="open = false" />
     </template>
   </UPopover>
 </template>
