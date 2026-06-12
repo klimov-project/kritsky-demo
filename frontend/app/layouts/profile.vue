@@ -26,3 +26,8 @@
     </div>
   </LayoutPageWrapper>
 </template>
+<style>
+.cool_style {
+  text-align: right;
+}
+</style>

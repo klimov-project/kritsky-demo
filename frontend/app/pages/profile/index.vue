@@ -102,7 +102,7 @@ const saveProfile = async () => {
     />
   </div>
 
-  <template v-else>
+  <div v-else>
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <!-- Subscription Card -->
@@ -208,5 +208,5 @@ const saveProfile = async () => {
         Купить пакеты
       </NuxtLink>
     </div>
-  </template>
+  </div>
 </template>

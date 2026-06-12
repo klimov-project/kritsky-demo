@@ -89,7 +89,10 @@ const manualUpdatePoem = (poemId: string) => {
 
     <div id="variant-content" class="max-w-6xl mb-[30px]">
       <ClientOnly>
-        <div v-if="!variant" class="bg-white rounded-lg shadow p-6 text-center">
+        <div
+          v-if="!variant"
+          class="bg-white rounded-lg shadow p-6 text-center mb-5"
+        >
           <p class="text-gray-600">
             Нет данных для отображения. Нажмите "Новый вариант" для генерации.
           </p>

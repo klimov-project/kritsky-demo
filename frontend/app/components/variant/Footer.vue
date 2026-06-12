@@ -53,7 +53,7 @@ const handleRefreshAll = async () => {
       </button>
     </div>
 
-    <div class="flex items-center justify-between mb-[20px] gap-3">
+    <div class="flex flex-wrap items-center justify-between mb-[20px] gap-3">
       <WhiteButton
         icon="i-lucide-file"
         class="white-btn w-full h-[50px] whitespace-nowrap"
